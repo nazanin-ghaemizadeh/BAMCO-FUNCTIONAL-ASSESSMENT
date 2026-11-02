@@ -41,3 +41,6 @@ body[data-view=home] .main{position:relative}
 #landing .gate-number{display:none}
 @media(min-height:950px) and (min-width:701px){#landing{padding-top:65px}.welcome-divider{margin-bottom:40px}}
 @media(max-width:700px){#landing{padding-top:30px}#landing .gate-title{font-size:34px;line-height:1.6}.welcome-divider{margin:19px auto 28px}#landing .gate-grid.one{max-width:320px}#landing .gate-card{height:260px;min-height:260px;padding:24px}#landing .gate-card .gate-illustration{width:92px;height:92px;flex-basis:92px}}
+
+#landing .welcome-title{white-space:nowrap;font-size:clamp(16px,3.4vw,48px)}
+@media(max-width:700px){#landing .welcome-title{font-size:clamp(16px,4.2vw,29px)}}

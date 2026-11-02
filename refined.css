@@ -203,3 +203,8 @@ body[data-view=home] #innerHero,body[data-view=home] #legacySteps,body[data-view
 .vehicle-dropdown-list[hidden]{display:none!important}
 .vehicle-dropdown-option{display:block;width:100%;padding:9px 12px;border:0;border-radius:9px;background:transparent;text-align:right;color:#285040;cursor:pointer}
 .vehicle-dropdown-option:hover,.vehicle-dropdown-option:focus-visible,.vehicle-dropdown-option[aria-selected=true]{background:#e7f4ec}
+
+/* Keep landing header identical to internal page headers. */
+body[data-view=home] .app-header{width:100%;max-width:1920px;min-height:138px;height:auto;margin:0 auto 28px;padding:28px 36px;flex:0 0 auto}
+body[data-view=home] .brand-logo.original-brand-logo{height:72px}
+@media(max-width:700px){body[data-view=home] .app-header{min-height:120px;padding:22px 18px;margin:0 auto 28px;flex-wrap:wrap}body[data-view=home] .brand-logo.original-brand-logo{height:56px}}

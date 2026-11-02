@@ -100,7 +100,7 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
  #vehicleForm select,#vehicleForm select[dir=ltr]{padding:10px 16px 10px 42px}
  #vehicleForm select::picker-icon{position:absolute;left:16px;right:auto;top:50%;transform:translateY(-50%);margin:0;rotate:0;line-height:1}
  #vehicleForm select:open::picker-icon{rotate:0;transform:translateY(-50%) rotate(180deg)}
- #vehicleForm select::picker(select){position-area:none;position-try-fallbacks:none;top:anchor(bottom);bottom:auto;left:anchor(left);right:auto;width:anchor-size(width);min-width:anchor-size(width);margin:7px 0 0;box-sizing:border-box}
+ #vehicleForm select::picker(select){position-area:bottom span-right;position-try-fallbacks:none;inset:auto;width:anchor-size(width);min-width:anchor-size(width);margin:7px 0 0;box-sizing:border-box;max-height:min(260px,45vh);overflow-y:auto}
 }
 
 /* Assessment cards share the welcome card's visual language. */

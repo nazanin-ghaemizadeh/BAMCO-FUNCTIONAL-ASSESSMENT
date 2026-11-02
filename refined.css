@@ -114,3 +114,7 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
 #moduleLanding .gate-card strong{width:100%;font-size:28px;line-height:1.3;font-weight:700;color:#2c4b41}
 #moduleLanding .gate-card .gate-cta{display:flex;align-items:center;justify-content:center;width:100%;margin:0;padding-top:12px;border-top:1px solid #e7eeea;color:#497969;font-size:16px;font-weight:400}
 @media(max-width:700px){#moduleLanding{padding-top:24px}#moduleLanding .gate-card{height:280px;min-height:280px;padding:20px}#moduleLanding .gate-card strong{font-size:25px}}
+
+/* Right-aligned category and drivetrain values, with Latin code typography. */
+#vehicleForm #vclass,#vehicleForm #driveType{direction:rtl;text-align:right;font-family:"Times New Roman",serif;padding:10px 16px 10px 42px}
+#vehicleForm #vclass option,#vehicleForm #driveType option{direction:rtl;text-align:right}

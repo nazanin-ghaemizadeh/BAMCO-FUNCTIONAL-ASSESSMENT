@@ -93,3 +93,12 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
  #vehicleForm select option:checked{background:#e4f2e9;color:#20664b;font-weight:700}
  #vehicleForm select option::checkmark{color:#368166}
 }
+
+/* Consistent left arrows and dropdowns anchored below each field. */
+#vehicleForm select,#vehicleForm select[dir=ltr]{position:relative;padding:10px 16px 10px 42px;background-position:left 14px center}
+@supports(appearance:base-select){
+ #vehicleForm select,#vehicleForm select[dir=ltr]{padding:10px 16px 10px 42px}
+ #vehicleForm select::picker-icon{position:absolute;left:16px;right:auto;top:50%;transform:translateY(-50%);margin:0;rotate:0;line-height:1}
+ #vehicleForm select:open::picker-icon{rotate:0;transform:translateY(-50%) rotate(180deg)}
+ #vehicleForm select::picker(select){position-area:none;position-try-fallbacks:none;top:anchor(bottom);bottom:auto;left:anchor(left);right:auto;width:anchor-size(width);min-width:anchor-size(width);margin:7px 0 0;box-sizing:border-box}
+}

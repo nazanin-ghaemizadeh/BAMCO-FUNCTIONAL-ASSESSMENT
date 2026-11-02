@@ -71,7 +71,7 @@ function record(t){return state.records[ratedKey(t)]||{}}
 function avg(items){if(!items.length)return null;return items.reduce((a,b)=>a+b,0)/items.length}
 function scoresForTab(tab){return Object.entries(state.records).filter(([k,v])=>k.startsWith(tab+':')&&num(v.score)>=1&&num(v.score)<=10).map(([k,v])=>({id:k.split(':').pop(),score:num(v.score),entry:v}))}
 function viewSummary(items){const scored=items.filter(t=>num(record(t).score)>0).length;return [items.length,scored]}
-function renderSetup(){for(const [k,v] of Object.entries(conf())){const e=byId(k);if(e)e.value=e.dataset.numeric?String(v).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]):v;}const m=Math.ceil(num(conf().durKm||45000)/Math.max(1,num(conf().durDays||90)));byId('setupInfo').textContent='میانگین لازم: '+number(m)+' کیلومتر در روز. مسافت هدف هر نوع مسیر و روزهای کنترل، بعد از شروع برنامه محاسبه می‌شوند. داده‌های قبلی شما در همین مرورگر باقی می‌مانند.'}
+function renderSetup(){for(const [k,v] of Object.entries(conf())){const e=byId(k);if(k==='durDays'&&e&&!Array.from(e.options).some(o=>o.value===String(v))){const o=document.createElement('option');o.value=v;o.textContent=number(v)+' روز';e.append(o);}if(e)e.value=e.dataset.numeric?String(v).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]):v;}const m=Math.ceil(num(conf().durKm||45000)/Math.max(1,num(conf().durDays||90)));byId('setupInfo').textContent='میانگین لازم: '+number(m)+' کیلومتر در روز. مسافت هدف هر نوع مسیر و روزهای کنترل، بعد از شروع برنامه محاسبه می‌شوند. داده‌های قبلی شما در همین مرورگر باقی می‌مانند.'}
 function getDriveRoute(p){return p.name||p.route||'تهران'}
 function routeTokens(label){
  const v=String(label||'').replace(/[\u200c\u200f]/g,' ').replace(/ و بازگشت.*| دور برگشت.*|مطابق مجوز مسیر/g,'').trim();

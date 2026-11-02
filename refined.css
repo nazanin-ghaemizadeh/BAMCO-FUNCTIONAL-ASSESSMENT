@@ -128,3 +128,29 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
 .route-progress-table tbody th{background:#f7fbf8;color:#25443b;font-weight:600;white-space:nowrap}
 .route-progress-table tfoot th,.route-progress-table tfoot td{background:#e6f2eb;color:#214e3e;font-weight:700;border-top:2px solid #94bca9}
 .route-table-note{font-size:15px;color:#647d72;line-height:1.8;margin:10px 0 0}
+
+/* Reference-style assessment rows and justified site text. */
+body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,input,textarea,select,span,strong,b){text-align:justify;text-justify:inter-word}
+#landing .gate-card strong,#moduleLanding .gate-card strong,.gate-title,.welcome-title{ text-align:justify }
+.question{padding:20px 0 24px;border:0;border-bottom:1px dashed #d3e3ee;border-radius:0;background:#fff;box-shadow:none}
+.question-head{margin-bottom:12px}
+.question h3{font-size:20px;color:#305c82;font-weight:700}
+.test-hierarchy{display:flex;gap:10px 24px;flex-wrap:wrap;color:#66819a;font-size:15px;margin-bottom:8px}
+.test-conditions{margin:0 0 20px;padding:14px 18px;background:linear-gradient(100deg,#f8fbfd,#eff7f8);border-right:4px solid #1aa4ac;border-radius:12px;color:#547590}
+.test-conditions>div{display:flex;align-items:baseline;gap:8px;padding:4px 0;line-height:1.9}
+.test-conditions dt{flex:0 0 115px;font-weight:700}
+.test-conditions dd{flex:1;min-width:0;margin:0;overflow-wrap:anywhere}
+.question .scores{direction:ltr;gap:8px;margin:18px 0 22px}
+.question .score{border-width:2px;border-radius:12px;min-height:64px;padding:7px 4px}
+.question .score strong,.question .score small{text-align:center}
+.question .score strong{font-size:23px}
+.question .score small{font-size:12px}
+.assessment-attachment{border:1px solid #d4e5f2;border-radius:12px;background:#fbfdff}
+.assessment-attachment summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;padding:13px 16px;color:#3e6b91;font-weight:700}
+.assessment-attachment summary::-webkit-details-marker{display:none}
+.attachment-plus{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#e4f3f5;color:#008b9c;font-family:Arial,sans-serif;font-size:22px;text-align:center}
+.assessment-attachment[open] .attachment-plus{transform:rotate(45deg)}
+.assessment-attachment .note-wrap{margin:0;border:0;border-top:1px solid #e0ebf3;border-radius:0 0 12px 12px;background:#fff}
+@media(max-width:700px){.test-conditions>div{display:block}.test-conditions dt{margin-bottom:2px}.test-conditions dd{margin-bottom:8px}.question .scores{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+body :where(h1,h2,h3,h4,p,dt,dd,li,caption,summary),.question .test-hierarchy span,.question .note-wrap textarea{text-align:justify!important;text-justify:inter-word}

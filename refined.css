@@ -154,3 +154,22 @@ body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,inpu
 @media(max-width:700px){.test-conditions>div{display:block}.test-conditions dt{margin-bottom:2px}.test-conditions dd{margin-bottom:8px}.question .scores{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
 body :where(h1,h2,h3,h4,p,dt,dd,li,caption,summary),.question .test-hierarchy span,.question .note-wrap textarea{text-align:justify!important;text-justify:inter-word}
+
+/* Unified green assessment details and native Persian image picker. */
+.question h3,.test-hierarchy,.assessment-attachment summary,.note-wrap .label-block{color:#326a56}
+.test-conditions{background:linear-gradient(100deg,#f8fbf9,#eef6f1);border-right-color:#2b967b;color:#4e7161}
+.assessment-attachment{border-color:#d7e5dc;background:#fbfdfb}
+.assessment-attachment .note-wrap{border-top-color:#e0ebe4}
+.attachment-plus{background:#e4f2e9;color:#287c66}
+.question{border-bottom-color:#d7e5dc}
+.photo-picker{position:relative;display:inline-flex;align-items:center;gap:12px;max-width:100%;padding:6px;border:1px solid #d7e5dc;border-radius:10px;background:#f8fcf9;cursor:pointer;font-size:16px;color:#547561}
+.photo-picker .photo-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;max-width:none}
+.photo-picker-button{padding:7px 15px;background:#226c54;color:#fff;border-radius:7px;white-space:nowrap}
+.photo-file-name{padding:0 6px;overflow-wrap:anywhere}
+.photo-picker:focus-within{outline:2px solid #78bda7;outline-offset:3px}
+.assessment-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+body[data-view]:not([data-view=setup]) #legacySteps{display:none!important}
+#schedulePanel .day-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:9px;max-height:none;overflow:visible;padding:8px 0}
+#schedulePanel .day-btn{width:100%;min-width:0;margin:0;padding:9px 6px}
+.route-info,.route-info p,.route-info h3,.route-estimate,.route-estimate small,.map-link{font-family:'B Nazanin','BNazanin',serif}
+@media(max-width:700px){#innerHero{flex-wrap:wrap;gap:12px}.assessment-nav{width:100%}#schedulePanel .day-list{grid-template-columns:repeat(auto-fit,minmax(72px,1fr))}}

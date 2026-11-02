@@ -102,3 +102,15 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
  #vehicleForm select:open::picker-icon{rotate:0;transform:translateY(-50%) rotate(180deg)}
  #vehicleForm select::picker(select){position-area:none;position-try-fallbacks:none;top:anchor(bottom);bottom:auto;left:anchor(left);right:auto;width:anchor-size(width);min-width:anchor-size(width);margin:7px 0 0;box-sizing:border-box}
 }
+
+/* Assessment cards share the welcome card's visual language. */
+#moduleLanding{padding:36px 0 12px}
+#moduleLanding .gate-grid{max-width:none}
+#moduleLanding .gate-card{display:grid;grid-template-rows:minmax(0,1fr) max-content max-content;justify-items:center;align-items:center;gap:14px;height:300px;min-height:300px;padding:22px 24px;text-align:center;border:1.5px solid transparent;border-radius:27px;background:linear-gradient(145deg,#fff,#fcfdfc) padding-box,linear-gradient(125deg,#63bba5,#a6c8d7 37%,#c4a4d5 65%,#e5bb80) border-box;box-shadow:0 18px 55px #345b4a0c,0 4px 14px #785c8f06}
+#moduleLanding .gate-card:hover{background:linear-gradient(145deg,#fff,#f5fbf8) padding-box,linear-gradient(125deg,#39a88c,#81b7d1 37%,#af86c4 65%,#dca65e) border-box;box-shadow:0 22px 60px #345b4a17;transform:translateY(-5px)}
+#moduleLanding .gate-card:focus-visible{outline:3px solid #529d88;outline-offset:6px}
+#moduleLanding .gate-card .gate-illustration{display:flex;align-items:center;justify-content:center;align-self:stretch;width:100%;height:100%;min-height:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none}
+#moduleLanding .gate-illustration svg{width:100%;height:100%;max-width:200px;max-height:160px;stroke-width:2;overflow:visible}
+#moduleLanding .gate-card strong{width:100%;font-size:28px;line-height:1.3;font-weight:700;color:#2c4b41}
+#moduleLanding .gate-card .gate-cta{display:flex;align-items:center;justify-content:center;width:100%;margin:0;padding-top:12px;border-top:1px solid #e7eeea;color:#497969;font-size:16px;font-weight:400}
+@media(max-width:700px){#moduleLanding{padding-top:24px}#moduleLanding .gate-card{height:280px;min-height:280px;padding:20px}#moduleLanding .gate-card strong{font-size:25px}}

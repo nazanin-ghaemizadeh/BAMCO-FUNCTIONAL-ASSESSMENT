@@ -194,12 +194,12 @@ function renderGate(){
  byId('innerHero').classList.toggle('hidden',main);
  byId('legacySteps').classList.toggle('hidden',main);if(!main&&state.tab!=='setup')byId('legacySteps').innerHTML='<button type="button" class="secondary" data-open="modules">بازگشت به بخش‌ها</button>';
  if(state.tab==='home')landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
- if(state.tab==='modules')modules.innerHTML='<div class="gate-eyebrow">BAMCO · ASSESSMENT</div><h1 class="gate-title">بخش‌های ارزیابی</h1><div class="gate-grid">'+[
+ if(state.tab==='modules')modules.innerHTML='<div class="gate-grid">'+[
  ['drive','۰۱','قابلیت رانندگی','برنامه ۲۶ روزه، مسیرهای پیشنهادی و نمره‌دهی روزانه','↗'],
  ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],
  ['supplementary','۰۳','پرسشنامه تکمیلی','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
  ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗']
- ].map(x=>'<button type="button" class="gate-card" data-open="'+x[0]+'"><span class="gate-number">'+x[1]+' / BAMCO</span><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div><button class="gate-edit" data-open="setup">ویرایش مشخصات خودرو و برنامه</button>';
+ ].map(x=>'<button type="button" class="gate-card" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div><button class="gate-edit" data-open="setup">ویرایش مشخصات خودرو و برنامه</button>';
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');

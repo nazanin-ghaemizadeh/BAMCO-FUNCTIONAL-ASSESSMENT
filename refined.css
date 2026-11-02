@@ -173,3 +173,20 @@ body[data-view]:not([data-view=setup]) #legacySteps{display:none!important}
 #schedulePanel .day-btn{width:100%;min-width:0;margin:0;padding:9px 6px}
 .route-info,.route-info p,.route-info h3,.route-estimate,.route-estimate small,.map-link{font-family:'B Nazanin','BNazanin',serif}
 @media(max-width:700px){#innerHero{flex-wrap:wrap;gap:12px}.assessment-nav{width:100%}#schedulePanel .day-list{grid-template-columns:repeat(auto-fit,minmax(72px,1fr))}}
+
+/* Compact program-day chooser. Days are program indices, not calendar dates. */
+.day-picker-trigger{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 22px;min-width:230px;padding:10px 16px;border:1px solid #b8d7c7;border-radius:12px;background:#f1f8f3;color:#285e48}
+.day-picker-trigger span{font-size:15px}.day-picker-trigger strong{font-size:21px}.day-picker-trigger small{grid-column:2;grid-row:1/3;text-align:center;font-size:19px}
+.day-picker-dialog{width:min(650px,calc(100vw - 28px));max-height:90dvh;overflow:auto;border:1px solid #c9dfd2;border-radius:22px;padding:24px;color:#25443b;background:#fff;box-shadow:0 25px 90px #153a3038;font-family:'B Nazanin',serif}
+.day-picker-dialog::backdrop{background:#102e3666;backdrop-filter:blur(3px)}
+.day-picker-heading,.day-picker-paging{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.day-picker-heading h2{margin:0;font-size:25px}.day-picker-range{margin:12px 0;color:#6b8475}
+.day-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;direction:rtl}
+.day-calendar-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:92px;padding:8px 3px;border:1px solid #d7e6dc;border-radius:12px;background:#f8fbf9;color:#365f4a}
+.day-calendar-cell b,.day-calendar-cell strong,.day-calendar-cell small{text-align:center!important;width:100%}
+.day-calendar-cell b{font-size:15px;font-weight:400}.day-calendar-cell strong{font-size:23px;line-height:1.15}.day-calendar-cell small{font-size:12px}
+.day-calendar-cell:hover{background:#e6f3eb;border-color:#80b79c}
+.day-calendar-cell.active{background:#226c54;border-color:#226c54;color:#fff}
+.day-calendar-cell:focus-visible,.day-picker-trigger:focus-visible{outline:3px solid #82bba1;outline-offset:2px}
+.day-picker-paging{margin-top:18px}.day-picker-paging span{text-align:center}
+@media(max-width:500px){.day-picker-dialog{padding:16px 12px}.day-calendar{gap:4px}.day-calendar-cell{min-height:80px;border-radius:8px}.day-calendar-cell strong{font-size:19px}.day-calendar-cell b{font-size:13px}.day-calendar-cell small{font-size:11px}.day-picker-trigger{width:100%}}

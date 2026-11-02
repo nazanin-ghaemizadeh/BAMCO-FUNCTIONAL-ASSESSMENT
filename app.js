@@ -151,15 +151,29 @@ function renderCategories(items){
 const grouped=new Map();items.forEach(t=>grouped.set(t.cat,(grouped.get(t.cat)||0)+1));
 byId('categories').innerHTML=['<button class="cat-item '+(state.category==='همه'?'active':'')+'" data-category="همه"><span>همه شاخص‌ها</span><span>'+number(items.length)+'</span></button>'].concat(categories.filter(c=>grouped.has(c)).map(c=>'<button class="cat-item '+(state.category===c?'active':'')+'" data-category="'+esc(c)+'"><span>'+esc(c)+'</span><span>'+number(grouped.get(c))+'</span></button>')).join('')
 }
+
+let dayPickerPage=0;
+function showDayPicker(reset=true){
+ const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),selected=currentDay(),size=35;
+ if(reset)dayPickerPage=Math.floor((selected-1)/size);
+ dayPickerPage=Math.max(0,Math.min(dayPickerPage,Math.ceil(plan.length/size)-1));
+ let dialog=byId('dayPickerDialog');
+ if(!dialog){dialog=document.createElement('dialog');dialog.id='dayPickerDialog';dialog.className='day-picker-dialog';dialog.setAttribute('aria-labelledby','dayPickerTitle');document.body.append(dialog);}
+ const from=dayPickerPage*size,to=Math.min(from+size,plan.length);
+ dialog.innerHTML='<div class="day-picker-heading"><h2 id="dayPickerTitle">انتخاب روز برنامه</h2><button type="button" class="secondary" data-closedays="1" aria-label="بستن انتخاب روز">بستن ×</button></div><p class="day-picker-range">روز '+number(from+1)+' تا '+number(to)+' از '+number(plan.length)+'</p><div class="day-calendar">'+plan.slice(from,to).map(x=>'<button type="button" class="day-calendar-cell '+(x.day===selected?'active':'')+'" data-day="'+x.day+'" '+(x.day===selected?'aria-current="true"':'')+' aria-label="روز '+number(x.day)+'، '+number(x.km)+' کیلومتر"><b>روز '+number(x.day)+'</b><strong>'+number(x.km)+'</strong><small>کیلومتر</small></button>').join('')+'</div><div class="day-picker-paging"><button type="button" class="secondary" data-daypage="-1" '+(from===0?'disabled':'')+'>روزهای قبل</button><span>'+number(dayPickerPage+1)+' / '+number(Math.ceil(plan.length/size))+'</span><button type="button" class="secondary" data-daypage="1" '+(to===plan.length?'disabled':'')+'>روزهای بعد</button></div>';
+ if(!dialog.open)dialog.showModal();
+ dialog.querySelector('.active, [data-day]')?.focus();
+}
+
 function renderSchedule(){
 const s=byId('schedulePanel');
 if(state.tab==='supplementary'){s.innerHTML='<div class="section-heading"><div><h2>پرسشنامه تکمیلی</h2><p>این موارد برنامه روزانه ندارند و بر اساس وضعیت خودرو قابل ارزیابی هستند.</p></div><span class="chip">بدون روز و کیلومتر</span></div>';return}
 const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),d=state.tab==='drive'?state.driveDay:state.durDay,p=plan[d-1],milestone=state.tab==='durability'?(checksOnPlan(plan).get(d)||[]):[];
 if(!p){s.innerHTML='<div class="empty">برنامه روزانه پیدا نشد.</div>';return}
 const indexText=state.tab==='drive'?'برنامه ۲۶ روزه قابلیت رانندگی':'برنامه انعطاف‌پذیر دوام';
-const buttons=plan.map(x=>'<button class="day-btn '+(x.day===d?'active':'')+'" data-day="'+x.day+'"><b>روز '+number(x.day)+'</b><small>'+number(x.km)+' km</small></button>').join('');
+
 const mVal=num((state.mileage[state.tab]||{})[d])||0;
-s.innerHTML='<div class="section-heading"><div><h2>'+indexText+'</h2><p>روز موردنظر را انتخاب کنید تا مسیر و آزمون‌های مرتبط نمایش داده شوند.</p></div><span class="chip">روز '+number(d)+' از '+number(plan.length)+'</span></div><div class="day-list">'+buttons+'</div><div class="day-meta"><span class="meta-tag">هدف روز: '+number(p.km)+' km</span><span class="meta-tag">هدف تجمعی: '+number(p.cum)+' km</span>'+(state.tab==='durability'?'<span class="meta-tag">کیلومترشمار هدف: '+number(p.odo)+' km</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)).join('، ')+' km</span>':'')+'</div>'+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'<hr class="separator"><div class="day-status"><b>پیمایش واقعی روز '+number(d)+':</b> <input aria-label="کیلومتر واقعی پیموده‌شده" id="actualKm" type="number" min="0" step="0.1" value="'+mVal+'"> <span>کیلومتر</span> <button class="secondary" data-savekm="1">ثبت کیلومتر</button></div>'
+s.innerHTML='<div class="section-heading"><div><h2>'+indexText+'</h2></div><button type="button" class="day-picker-trigger" data-opendays="1" aria-haspopup="dialog" aria-controls="dayPickerDialog"><span>انتخاب روز برنامه</span><strong>روز '+number(d)+' از '+number(plan.length)+'</strong><small>'+number(p.km)+' کیلومتر</small></button></div><div class="day-meta"><span class="meta-tag">هدف روز: '+number(p.km)+' km</span><span class="meta-tag">هدف تجمعی: '+number(p.cum)+' km</span>'+(state.tab==='durability'?'<span class="meta-tag">کیلومترشمار هدف: '+number(p.odo)+' km</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)).join('، ')+' km</span>':'')+'</div>'+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'<hr class="separator"><div class="day-status"><b>پیمایش واقعی روز '+number(d)+':</b> <input aria-label="کیلومتر واقعی پیموده‌شده" id="actualKm" type="number" min="0" step="0.1" value="'+mVal+'"> <span>کیلومتر</span> <button class="secondary" data-savekm="1">ثبت کیلومتر</button></div>'
 }
 const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#be304a'],['#fae8e1','#f5b49d','#c84c33'],['#fff0df','#f5c09a','#cf752a'],['#fff4df','#f5ce8f','#cb8a1d'],['#fff7dd','#e9d075','#b79817'],['#eff6df','#bdd889','#619825'],['#e4f4e8','#9fd5ad','#22834e'],['#def1eb','#93ceb6','#167d55'],['#dcefe8','#85c1aa','#0e7451']];
 function renderQuestions(){
@@ -275,7 +289,10 @@ byId('vehicleForm').addEventListener('submit',e=>{e.preventDefault();for(const k
 document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
 if(el.id==='editSetupBtn'){changeTab('setup');return}
 if(el.id==='backupBtn'){exportJSON();return}
-if(el.dataset.day){const v=num(el.dataset.day);if(state.tab==='drive')state.driveDay=v;else state.durDay=v;state.page=0;state.category='همه';state.query='';render();return}
+if(el.dataset.opendays){showDayPicker();return}
+if(el.dataset.closedays){byId('dayPickerDialog')?.close();return}
+if(el.dataset.daypage){dayPickerPage+=num(el.dataset.daypage);showDayPicker(false);return}
+if(el.dataset.day){byId('dayPickerDialog')?.close();const v=num(el.dataset.day);if(state.tab==='drive')state.driveDay=v;else state.durDay=v;state.page=0;state.category='همه';state.query='';render();byId('schedulePanel').querySelector('[data-opendays]')?.focus();return}
 if(el.dataset.category){state.category=el.dataset.category;state.page=0;render();return}
 if(el.dataset.score){updateRating(el);return}
 if(el.dataset.pagejump){state.page=num(el.dataset.pagejump);renderQuestions();byId('questionsPanel').scrollIntoView({behavior:'smooth',block:'start'});return}

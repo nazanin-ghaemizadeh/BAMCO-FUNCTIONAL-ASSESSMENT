@@ -118,3 +118,13 @@ body[data-view=home] #landing .gate-card .gate-cta{margin:0;padding-top:10px;fon
 /* Right-aligned category and drivetrain values, with Latin code typography. */
 #vehicleForm #vclass,#vehicleForm #driveType{direction:rtl;text-align:right;font-family:"Times New Roman",serif;padding:10px 16px 10px 42px}
 #vehicleForm #vclass option,#vehicleForm #driveType option{direction:rtl;text-align:right}
+
+/* Compact mileage monitoring tables. */
+.route-table-scroll{overflow-x:auto;border:1px solid #dce7e1;border-radius:12px}
+.route-progress-table{min-width:980px;font-variant-numeric:tabular-nums}
+.route-progress-table caption{text-align:right;padding:10px 14px;color:#647d72;font-size:15px}
+.route-progress-table thead th{white-space:nowrap;background:#226c54}
+.route-progress-table td{text-align:center;white-space:nowrap}
+.route-progress-table tbody th{background:#f7fbf8;color:#25443b;font-weight:600;white-space:nowrap}
+.route-progress-table tfoot th,.route-progress-table tfoot td{background:#e6f2eb;color:#214e3e;font-weight:700;border-top:2px solid #94bca9}
+.route-table-note{font-size:15px;color:#647d72;line-height:1.8;margin:10px 0 0}

@@ -221,10 +221,12 @@ function routeMixHtml(tab){
   const real=num(actual[p.day]);if(Object.prototype.hasOwnProperty.call(actual,p.day)&&Number.isFinite(real)&&real>=0){group[k].actual+=real;got+=real}
  }
  const total=plan.reduce((a,b)=>a+b.km,0);
- return '<div class="route-report"><div class="section-heading"><div><h2>ترکیب مسیرهای '+(tab==='drive'?'قابلیت رانندگی':'دوام')+'</h2><p>سهم مسیر، کیلومتر هدف و پیمایش ثبت‌شده؛ مبنای سهم‌ها کل مسافت برنامه است.</p></div><span class="chip">پیمایش ثبت‌شده: '+number(got)+' کیلومتر</span></div><div class="route-report-grid">'+Object.entries(group).sort((a,b)=>b[1].target-a[1].target).map(([k,v])=>{
- const pct=total?100*v.target/total:0;const coverage=v.target?100*v.actual/v.target:0;
- return '<div class="route-report-card"><div class="route-label"><strong>'+esc(k)+'</strong><span>'+number(pct)+'٪ از برنامه</span></div><div class="route-target">'+number(v.target)+' <small>کیلومتر هدف</small></div><div class="route-actual">'+number(v.actual)+' کیلومتر ثبت‌شده · '+number(coverage)+'٪ تحقق</div><div class="route-track"><i style="width:'+Math.min(100,Math.max(0,coverage))+'%"></i></div><div class="route-foot">سهم هدف: '+number(pct)+'٪ · '+number(v.days)+' روز</div></div>';
- }).join('')+'</div><p class="disclaimer">کیلومتر واقعی از بخش «پیمایش واقعی» روزهای آزمون خوانده می‌شود و تا زمان ثبت، صفر نمایش داده می‌شود. دسته‌بندی مسیرها براساس عنوان برنامه است.</p></div>';
+ const row=(label,target,real,days,totalRow=false)=>{
+ const targetShare=total?100*target/total:0,actualShare=got?100*real/got:0,coverage=target?100*real/target:0;
+ return '<tr'+(totalRow?' class="route-total"':'')+'><th scope="row">'+esc(label)+'</th><td>'+number(days)+'</td><td>'+number(targetShare)+'٪</td><td>'+number(target)+'</td><td>'+number(real)+'</td><td>'+number(actualShare)+'٪</td><td>'+number(Math.max(0,target-real))+'</td><td>'+number(real-target)+'</td><td>'+number(coverage)+'٪</td></tr>';
+ };
+ return '<div class="route-report"><div class="section-heading"><h2>پایش برنامه و پیمایش '+(tab==='drive'?'قابلیت رانندگی':'دوام')+'</h2></div><div class="route-table-scroll"><table class="result-table route-progress-table"><caption>مسافت‌ها بر حسب کیلومتر؛ تحقق برابر پیمایش ثبت‌شده تقسیم بر هدف است.</caption><thead><tr><th scope="col">نوع مسیر</th><th scope="col">روزهای برنامه</th><th scope="col">سهم هدف</th><th scope="col">هدف برنامه</th><th scope="col">پیمایش ثبت‌شده</th><th scope="col">سهم پیمایش</th><th scope="col">باقی‌مانده</th><th scope="col">انحراف از هدف</th><th scope="col">تحقق برنامه</th></tr></thead><tbody>'+Object.entries(group).sort((a,b)=>b[1].target-a[1].target).map(([k,v])=>row(k,v.target,v.actual,v.days)).join('')+'</tbody><tfoot>'+row('جمع کل',total,got,plan.length,true)+'</tfoot></table></div><p class="route-table-note">پیمایش از مقادیر ثبت‌شده روزهای آزمون محاسبه می‌شود؛ روزهای بدون ثبت، صفر در نظر گرفته می‌شوند. انحراف برابر پیمایش ثبت‌شده منهای کل هدف برنامه است.</p></div>';
+
 }
 
 function renderResults(){

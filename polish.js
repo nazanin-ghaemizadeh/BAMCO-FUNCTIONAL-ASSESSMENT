@@ -1,0 +1,8 @@
+
+(function(){
+const digits=s=>String(s).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const car='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 36l5-17h30l5 17M8 36h48v15H8zM8 43h48M17 51v6M47 51v6M18 36h28M12 30h-6M52 30h6"/><circle cx="17" cy="40" r="2"/><circle cx="47" cy="40" r="2"/></svg>';
+const icons={setup:car,drive:car,durability:'<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l21 8v18c0 13-21 25-21 25S11 45 11 32V14zM22 31l7 7 14-17"/></svg>',supplementary:'<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M21 12H12v44h40V12h-9M23 7h18v12H23zM21 30h22M21 39h22M21 48h14"/></svg>',results:'<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 7v47h47M20 45V32h7v13M33 45V22h7v23M46 45V12h7v33"/></svg>'};
+function polish(root){if(root.nodeType===3){if(root.parentElement&&!root.parentElement.closest('script,style,textarea,input,select,option,code'))root.nodeValue=digits(root.nodeValue);return;}if(root.nodeType!==1&&root!==document.body)return;root.querySelectorAll?.('.gate-card').forEach(c=>{const i=c.querySelector('.gate-illustration');if(i&&!i.querySelector('svg'))i.innerHTML=icons[c.dataset.open]||car;});const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walk.nextNode())if(!n.parentElement.closest('script,style,textarea,input,select,option,code'))n.nodeValue=digits(n.nodeValue);}
+const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if(m.type==='characterData')polish(m.target);else m.addedNodes.forEach(polish)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});polish(document.body);observer.observe(document.body,{childList:true,subtree:true,characterData:true});
+})();

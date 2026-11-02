@@ -193,7 +193,7 @@ function renderGate(){
  modules.classList.toggle('hidden',state.tab!=='modules');
  byId('innerHero').classList.toggle('hidden',main);
  byId('legacySteps').classList.toggle('hidden',main);if(!main&&state.tab!=='setup')byId('legacySteps').innerHTML='<button type="button" class="secondary" data-open="modules">بازگشت به بخش‌ها</button>';
- if(state.tab==='home')landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title">ارزیابی عملکرد و دوام خودرو</h1><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-number">۰۱</span><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
+ if(state.tab==='home')landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span><br>آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
  if(state.tab==='modules')modules.innerHTML='<div class="gate-eyebrow">BAMCO · ASSESSMENT</div><h1 class="gate-title">بخش‌های ارزیابی</h1><div class="gate-grid">'+[
  ['drive','۰۱','قابلیت رانندگی','برنامه ۲۶ روزه، مسیرهای پیشنهادی و نمره‌دهی روزانه','↗'],
  ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],

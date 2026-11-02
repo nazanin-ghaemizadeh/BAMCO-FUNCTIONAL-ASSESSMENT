@@ -6,3 +6,16 @@ html{scrollbar-gutter:stable}body{background:#fff;color:var(--text);font-family:
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
 body[data-view]:not([data-view=setup]) #legacySteps:not(.hidden){display:flex!important}.gate-card{gap:0}.gate-number{font-family:inherit;font-size:16px}.app-header{border:1px solid #ffffff20}
+
+/* Compact entry and Persian company identity. */
+.app-header .brand b{font-family:'B Nazanin','Times New Roman',serif;font-size:30px}
+.app-header .brand strong{font-weight:700;font-size:22px}
+#landing .gate-title{display:none}
+#landing{padding-top:44px}
+.gate-grid.one{grid-template-columns:minmax(0,320px);max-width:320px}
+#landing .gate-card{height:230px;min-height:230px;padding:20px}
+#landing .gate-illustration{width:70px;height:70px;border-radius:18px;margin:4px 0 16px}
+#landing .gate-illustration svg{width:42px;height:42px}
+#landing .gate-card strong{font-size:26px}
+#landing .gate-cta{font-size:16px;padding-top:14px}
+@media(max-width:700px){.app-header .brand b{font-size:24px}.app-header .brand strong{font-size:18px}#landing{padding-top:30px}.gate-grid.one{max-width:300px}}

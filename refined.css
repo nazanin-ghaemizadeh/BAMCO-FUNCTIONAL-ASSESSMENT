@@ -190,3 +190,16 @@ body[data-view]:not([data-view=setup]) #legacySteps{display:none!important}
 .day-calendar-cell:focus-visible,.day-picker-trigger:focus-visible{outline:3px solid #82bba1;outline-offset:2px}
 .day-picker-paging{margin-top:18px}.day-picker-paging span{text-align:center}
 @media(max-width:500px){.day-picker-dialog{padding:16px 12px}.day-calendar{gap:4px}.day-calendar-cell{min-height:80px;border-radius:8px}.day-calendar-cell strong{font-size:19px}.day-calendar-cell b{font-size:13px}.day-calendar-cell small{font-size:11px}.day-picker-trigger{width:100%}}
+
+/* Stable initial landing and anchored custom vehicle dropdowns */
+body[data-view=home] #innerHero,body[data-view=home] #legacySteps,body[data-view=home] #setupPanel{display:none!important}
+#vehicleForm .field{position:relative}
+#vehicleForm select.vehicle-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;overflow:hidden!important}
+.vehicle-dropdown-trigger{display:flex;width:100%;align-items:center;justify-content:space-between;min-height:50px;padding:10px 16px;border:1px solid #d8e7df;border-radius:14px;background:#f8fcfa;color:#25473c;cursor:pointer;text-align:right}
+.vehicle-dropdown-trigger:focus-visible{outline:2px solid #68af95;outline-offset:2px}
+.vehicle-dropdown-trigger .vehicle-dropdown-arrow{color:#4e987b;font-size:17px;line-height:1;transition:transform .18s}
+.vehicle-dropdown-trigger[aria-expanded=true] .vehicle-dropdown-arrow{transform:rotate(180deg)}
+.vehicle-dropdown-list{position:absolute;z-index:3000;top:calc(100% + 6px);left:0;right:0;max-height:260px;overflow-y:auto;overscroll-behavior:contain;padding:6px;border:1px solid #d8e7df;border-radius:14px;background:#fff;box-shadow:0 14px 30px #173e3229;direction:rtl}
+.vehicle-dropdown-list[hidden]{display:none!important}
+.vehicle-dropdown-option{display:block;width:100%;padding:9px 12px;border:0;border-radius:9px;background:transparent;text-align:right;color:#285040;cursor:pointer}
+.vehicle-dropdown-option:hover,.vehicle-dropdown-option:focus-visible,.vehicle-dropdown-option[aria-selected=true]{background:#e7f4ec}

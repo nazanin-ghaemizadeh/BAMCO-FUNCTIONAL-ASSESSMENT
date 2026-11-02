@@ -276,7 +276,7 @@ byId('setupPanel').classList.toggle('hidden',state.tab!=='setup');
 byId('workPanel').classList.toggle('hidden',!['drive','durability','supplementary'].includes(state.tab));
 byId('resultsPanel').classList.toggle('hidden',state.tab!=='results');
 byId('editSetupBtn').classList.toggle('hidden',['setup','home','modules'].includes(state.tab));
-if(state.tab==='setup')renderSetup();else if(state.tab==='results')renderResults();else if(['home','modules'].includes(state.tab)){}else{const items=dayItems();renderKpis(items);renderSchedule();renderQuestions();}
+if(state.tab==='setup')renderSetup();else if(state.tab==='results')renderResults();else if(['home','modules'].includes(state.tab)){}else{const items=dayItems();renderKpis(items);renderSchedule();renderQuestions();document.dispatchEvent(new CustomEvent('bamco:day-render'));}
 }
 function changeTab(tab){if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}state.tab=tab;state.category='همه';state.query='';state.page=0;render();window.scrollTo({top:0,behavior:'smooth'})}
 function exportFile(content,name,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}

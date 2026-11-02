@@ -284,27 +284,45 @@ function exportJSON(){exportFile(JSON.stringify({schema:1,savedAt:new Date().toI
 function csvCell(x){return '"'+String(x??'').replace(/"/g,'""')+'"'}
 
 function excelReportSheets(){
- const labels={drive:'قابلیت رانندگی',durability:'دوام عملکردی',supplementary:'پرسشنامه تکمیلی'};
- const summary=[['گزارش ارزیابی عملکرد و دوام خودرو','تعداد نمره','میانگین از ۱۰'],['کل ارزیابی‌ها',...(()=>{const v=Object.values(state.records).map(r=>num(r.score)).filter(n=>n>=1&&n<=10);return [v.length,avg(v)??'']})()]];
- for(const [tab,label] of Object.entries(labels)){
- const values=scoresForTab(tab);summary.push([label,values.length,avg(values.map(v=>v.score))??'']);
- for(const cat of categories){const v=values.filter(x=>testById.get(x.id)?.cat===cat);if(v.length)summary.push([label+' — '+fa(cat),v.length,avg(v.map(x=>x.score))]);}
- }
- const details=[['حوزه','روز برنامه','شاخص','زیرشاخص','عنوان آزمون','نمره از ۱۰','یادداشت','تصویر پیوست']];
- for(const [key,r] of Object.entries(state.records)){const [tab,day,id]=key.split(':'),t=testById.get(id);if(!t)continue;details.push([labels[tab]||tab,day==='general'?'بدون زمان‌بندی':num(day),fa(t.cat),fa(t.sub),fa(t.name),num(r.score)>=1?num(r.score):'',r.note||'',r.photo?'دارد':'ندارد']);}
- const mileage=[['حوزه','روز برنامه','نوع مسیر','مسیر پیشنهادی','هدف روز (کیلومتر)','پیمایش ثبت‌شده (کیلومتر)','هدف تجمعی (کیلومتر)']];
- const mix=[['حوزه','نوع مسیر','روزهای برنامه','سهم هدف','هدف برنامه (کیلومتر)','پیمایش ثبت‌شده (کیلومتر)','سهم پیمایش','باقی‌مانده (کیلومتر)','تحقق برنامه']];
- for(const tab of ['drive','durability']){
- const plan=tab==='drive'?driveProgram():dayCategoryPlan(),actual=state.mileage[tab]||{},groups={};
- for(const p of plan){const raw=Object.prototype.hasOwnProperty.call(actual,p.day)?num(actual[p.day]):null,real=Number.isFinite(raw)&&raw>=0?raw:null;
- mileage.push([labels[tab],p.day,p.type||p.route,p.route||p.name||'',p.km,real??'',p.cum]);
- const k=routeClassification(p.type||p.route);groups[k]??={days:0,target:0,actual:0};groups[k].days++;groups[k].target+=p.km;groups[k].actual+=real||0;}
- const total=plan.reduce((s,p)=>s+p.km,0),got=Object.values(groups).reduce((s,p)=>s+p.actual,0);
- const add=(name,v)=>mix.push([labels[tab],name,v.days,total?v.target/total:0,v.target,v.actual,got?v.actual/got:0,Math.max(0,v.target-v.actual),v.target?v.actual/v.target:0]);
- Object.entries(groups).forEach(([k,v])=>add(k,v));add('جمع کل',{days:plan.length,target:total,actual:got});
- }
- const config=[['مشخصه','مقدار'],['رده خودرو',conf().vclass],['نوع بدنه',conf().body],['قوای محرکه',conf().power],['گیربکس',conf().gear],['سیستم محرک',conf().driveType],['هدف قابلیت رانندگی (کیلومتر)',num(conf().driveKm)],['هدف دوام (کیلومتر)',num(conf().durKm)],['روزهای دوام',num(conf().durDays)],['کیلومترشمار شروع',num(conf().startOdo)]];
- return [{name:'خلاصه نتایج',rows:summary,widths:[65,18,22]},{name:'جزئیات ارزیابی',rows:details,widths:[24,18,30,40,75,18,75,18]},{name:'پایش مسیرها',rows:mix,widths:[24,35,18,18,25,28,18,25,22],percentCols:[3,6,8]},{name:'پیمایش روزانه',rows:mileage,widths:[24,18,35,60,25,30,28]},{name:'مشخصات خودرو',rows:config,widths:[45,30]}];
+ const specs=[
+  {tab:'drive',name:'قابلیت رانندگی',days:26},
+  {tab:'durability',name:'آزمون دوام',days:Math.max(1,Math.min(150,num(conf().durDays)||90))},
+  {tab:'supplementary',name:'آزمون تکمیلی',days:0}
+ ];
+ return specs.map(({tab,name,days})=>{
+  const eligible=candidates(tab);
+  const headers=['شاخص','زیرشاخص','آزمون',...(days?Array.from({length:days},(_,i)=>'روز '+(i+1)):['نمره']), 'میانگین آزمون','میانگین زیرشاخص','میانگین شاخص'];
+  const testMeans=new Map(),subMeans=new Map(),catMeans=new Map(),rows=[headers];
+  const subKey=t=>t.cat+'\u0001'+t.sub;
+  for(const t of eligible){
+   const scores=[];
+   for(let day=1;day<=(days||1);day++){
+    const rec=state.records[tab+':'+(days?day:'general')+':'+t.id];
+    const score=num(rec?.score);
+    if(score>=1&&score<=10)scores.push(score);
+   }
+   testMeans.set(t.id,avg(scores));
+  }
+  for(const t of eligible){
+   const val=testMeans.get(t.id);
+   if(val==null)continue;
+   const sub=subKey(t);
+   if(!subMeans.has(sub))subMeans.set(sub,[]);
+   subMeans.get(sub).push(val);
+   if(!catMeans.has(t.cat))catMeans.set(t.cat,[]);
+   catMeans.get(t.cat).push(val);
+  }
+  for(const t of eligible){
+   const values=days?Array.from({length:days},(_,i)=>{
+    const v=num(state.records[tab+':'+(i+1)+':'+t.id]?.score);
+    return v>=1&&v<=10?v:'';
+   }):[(()=>{const v=num(state.records[tab+':general:'+t.id]?.score);return v>=1&&v<=10?v:'';})()];
+   const mean=testMeans.get(t.id);
+   rows.push([fa(t.cat),fa(t.sub),fa(t.name),...values,mean??'',avg(subMeans.get(subKey(t))||[])??'',avg(catMeans.get(t.cat)||[])??'']);
+  }
+  const widths=[30,42,75,...Array.from({length:days||1},()=>12),20,22,20];
+  return {name,rows,widths};
+ });
 }
 function buildExcelReport(sheets){
  const xml=s=>String(s??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));

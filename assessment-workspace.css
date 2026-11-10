@@ -303,3 +303,13 @@ html[dir] body .day-card-footer .day-route-label {color:#466b5a;font-size:16px;l
 @media(max-width:700px){.assessment-days-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.assessment-days-grid .assessment-day-tile .day-route-icon {width:44px;height:44px}html[dir] body .day-card-footer .day-route-label {line-height:1.2}}
 .assessment-days-grid .assessment-day-tile .day-route-icon {height:100%;max-height:80px;min-height:0}
 @media(max-width:700px){.assessment-days-grid .assessment-day-tile .day-route-icon {max-height:44px}}
+
+/* Give the illustration the main share of each square card. */
+.assessment-days-grid .assessment-day-tile {grid-template-rows:minmax(0,1fr) auto;padding:24px 14px 14px;gap:4px}
+.assessment-day-tile .day-card-top {position:absolute;top:11px;inset-inline:0;pointer-events:none;z-index:2}
+.assessment-day-tile .day-card-top strong {padding:2px 13px;font-size:21px;background:#fffffff0}
+.assessment-days-grid .assessment-day-tile .day-route-icon {grid-row:1;width:146px;height:100%;max-height:146px;max-width:80%;align-self:center;margin-top:12px}
+.assessment-day-tile .day-card-footer {grid-row:2;gap:5px}
+html[dir] body .day-card-footer .day-route-label {font-size:15px;line-height:1.25}
+.assessment-day-tile .day-card-footer small {font-size:14px;padding:2px 12px}
+@media(max-width:700px){.assessment-days-grid .assessment-day-tile {padding:22px 8px 10px;gap:2px}.assessment-day-tile .day-card-top {top:7px}.assessment-day-tile .day-card-top strong {font-size:19px;padding:1px 10px}.assessment-day-tile .day-word {font-size:14px}.assessment-days-grid .assessment-day-tile .day-route-icon {width:100px;max-height:100px;max-width:82%;margin-top:8px}.assessment-day-tile .day-card-footer {gap:3px}html[dir] body .day-card-footer .day-route-label {font-size:12px;line-height:1.2}.assessment-day-tile .day-card-footer small {font-size:12px;padding:1px 10px}}

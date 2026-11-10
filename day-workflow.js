@@ -35,11 +35,8 @@ function applyScriptFont(field){
 function wireScriptFonts(root){root.querySelectorAll('input:not([type="file"]),textarea').forEach(applyScriptFont)}
 
 function context(){
-  const tab=document.body.dataset.view;
-  if(!['drive','durability'].includes(tab))return null;
-  const raw=document.querySelector('.day-picker-trigger strong')?.textContent?.match(/[0-9۰-۹]+/)?.[0]||'';
-  const day=Number(raw.replace(/[۰-۹]/g,char=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(char))||0);
-  return day?{tab,day,key:tab+':'+day}:null;
+ const c=app.dayContext?.();
+ return c&&['form','scores'].includes(c.section)?c:null;
 }
 
 function normalize(meta={}){
@@ -93,7 +90,7 @@ function formMarkup(c,meta){
     '<div class="bamco-day-block"><div class="bamco-block-heading"><div><h3>سوخت‌گیری</h3><p class="bamco-optional-note">در صورت سوخت‌گیری در این روز، اطلاعات زیر را تکمیل کنید.</p></div></div><div class="bamco-day-fields"><label>نوع بنزین<select name="fuelType"><option value="">انتخاب کنید</option>'+['معمولی','سوپر','یورو ۴','یورو ۵','سایر'].map(item=>'<option '+(meta.fuelType===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label>جایگاه سوخت<input name="fuelStation" value="'+esc(meta.fuelStation)+'" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="fuelLiters" type="number" min="0" step="0.01" value="'+esc(meta.fuelLiters)+'"></label><label>کیلومتر خودرو هنگام سوخت‌گیری<input name="fuelOdometer" type="number" min="0" step="0.1" value="'+esc(meta.fuelOdometer)+'"></label></div></div>'+
     '<div class="bamco-day-block"><label class="bamco-switch bamco-switch-alert"><input name="breakdown" type="checkbox" '+(meta.breakdown?'checked':'')+'><span>در این روز خرابی خودرو رخ داده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="breakdown" '+(meta.breakdown?'':'hidden')+'><label class="bamco-span-2">علت خرابی<textarea name="breakdownCause" rows="3" placeholder="شرح علت یا نشانه خرابی">'+esc(meta.breakdownCause)+'</textarea></label><label class="bamco-span-2">اقدام اصلاحی صورت‌گرفته<textarea name="correctiveAction" rows="3" placeholder="اقدام انجام‌شده یا تصمیم پیگیری">'+esc(meta.correctiveAction)+'</textarea></label><label>ساعت رخداد<input name="breakdownTime" type="text" inputmode="numeric" dir="ltr" value="'+esc(meta.breakdownTime)+'" placeholder="۱۴:۳۰"></label></div></div>'+
     '<div class="bamco-day-block"><label class="bamco-full-label">سایر توضیحات<textarea name="otherNotes" rows="4" placeholder="هر توضیح دیگری که باید در گزارش این روز ثبت شود...">'+esc(meta.otherNotes)+'</textarea></label></div>'+
-    '<div class="bamco-day-actions"><button type="submit" id="bamco-day-start" class="primary">ثبت اطلاعات و نمایش نقشه</button></div><p id="bamco-live-state" role="status"></p></form>';
+    '<div class="bamco-day-actions"><button type="submit" id="bamco-day-start" class="primary">ذخیره فرم روزانه</button></div><p id="bamco-live-state" role="status"></p></form>';
 }
 
 function setConditional(form,name,active){
@@ -117,6 +114,7 @@ function updateDistance(form){
 function paint(){
   const c=context();
   if(!c)return;
+  if(c.section==='scores'){renderFinal(c);return}
   const host=$('schedulePanel');
   if(!host)return;
   if($('bamco-day-workflow')&&lastStamp===c.key){renderFinal(c);return}
@@ -131,12 +129,7 @@ function paint(){
   const form=$('bamco-day-form');
   setConditional(form,'breakdown',meta.breakdown);
   updateDistance(form);
-  const started=Boolean(meta.startedAt||meta.dailyInfoSavedAt);
-  const questions=$('questionsPanel');
-  const route=$('bamco-day-route');
-  if(route)route.classList.toggle('hidden',!started&&!app.isReadOnly());
-  if(questions)questions.classList.toggle('hidden',!started&&!app.isReadOnly());
-  $('bamco-live-state').textContent=started?'اطلاعات این روز در پایگاه داده ثبت شده است؛ نقشه و سپس آزمون‌ها در ادامه نمایش داده می‌شوند.':'پس از ثبت فرم، ابتدا نقشه مسیر و سپس آزمون‌های این روز نمایش داده می‌شوند.';
+  $('bamco-live-state').textContent=meta.dailyInfoSavedAt?'فرم روزانه ذخیره شده است.':'اطلاعات این روز را تکمیل و ذخیره کنید.';
   form.addEventListener('submit',event=>{event.preventDefault();begin(c,form)});
   form.elements.startKm.addEventListener('input',()=>updateDistance(form));
   form.elements.endKm.addEventListener('input',()=>updateDistance(form));
@@ -144,7 +137,6 @@ function paint(){
   wireScriptFonts(section);
   if(app.isReadOnly())form.querySelectorAll('input,select,textarea,button').forEach(element=>element.disabled=true);
   updatePassengerButtons(form);
-  renderFinal(c);
 }
 
 function updatePassengerButtons(form){
@@ -220,11 +212,7 @@ function begin(c,form){
   };
   app.setMission(c.key,data);
   app.setDayMileage(c.tab,c.day,data.distanceKm);
-  $('bamco-day-route')?.classList.remove('hidden');
-  $('questionsPanel')?.classList.remove('hidden');
-  $('bamco-live-state').textContent='گزارش پیمایش روز ذخیره شد. نقشه مسیر نمایش داده شده است و پس از آن می‌توانید امتیازدهی را انجام دهید.';
-  $('bamco-day-route')?.scrollIntoView({behavior:'smooth',block:'start'});
-  renderFinal(c);
+  $('bamco-live-state').textContent='فرم روزانه ذخیره شد.';
 }
 
 function taxonomy(){
@@ -267,7 +255,7 @@ function renderFinal(c){
   document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
   const progress=app.dayProgress?.();
   const meta=normalize(app.mission(c.key));
-  if(!(meta.startedAt||meta.dailyInfoSavedAt))return;
+  if(c.section!=='scores')return;
   const map=taxonomy(),categories=[...map.keys()].sort((a,b)=>a.localeCompare(b,'fa'));
   const tests=customTests(meta);
   const questions=$('questionsPanel');
@@ -365,8 +353,9 @@ document.addEventListener('input',event=>applyScriptFont(event.target));
 const observer=new MutationObserver(()=>{
   const c=context();
   if(!c){lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());return}
-  if(!$('bamco-day-workflow')){lastStamp='';paint()}
+  if(c.section==='form'&&!$('bamco-day-workflow')){lastStamp='';paint()}
 });
 observer.observe($('schedulePanel'),{childList:true});
 paint();
 })();
+

@@ -145,3 +145,39 @@ body[data-view=home] #assessmentHub.assessment-list-page > .welcome-divider {mar
  #assessmentTabActions {width:100%;gap:8px}
  #assessmentName,#assessmentSync {width:100%}
 }
+
+/* Assessment identity and one shared action row. */
+#assessmentEditorBar {flex-direction:column;align-items:stretch}
+html[dir] body #assessmentName {order:-1;display:block;width:100%;margin:0 0 6px;padding:2px 0 14px;border-bottom:1px solid #e3eee9;text-align:center!important;font-size:23px;line-height:1.6;overflow-wrap:anywhere}
+html[lang] body #assessmentName.assessment-name-latin {font-family:"Times New Roman",Times,serif}
+#assessmentPageActions {gap:10px}
+#assessmentPageActions button,#assessmentHub .assessment-action {font-weight:400!important}
+#assessmentPageActions button[hidden] {display:none!important}
+#assessmentGps {width:100%;margin:0;padding:0;border:0}
+#assessmentGpsLabel {display:none}
+#assessmentSync:empty,#assessmentGpsStatus:empty {display:none}
+#assessmentPageActions #assessmentTabActions {display:contents}
+#assessmentTabActions:empty {display:none!important}
+.assessment-single-section {grid-template-columns:minmax(0,1fr)!important}
+#dayNavigation {width:100%;margin:0 0 24px}
+.assessment-days-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:14px}
+.assessment-day-tile {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;aspect-ratio:1;min-height:116px;padding:12px;border:1px solid #cfe1d7;border-radius:18px;background:#fff;color:#285e48;box-shadow:0 6px 20px #244c3d06;font-weight:400}
+.assessment-day-tile strong {font-size:30px;font-weight:400}
+.assessment-day-tile small {color:#6c8477;font-size:14px}
+.assessment-day-tile:hover {background:#edf7f1;border-color:#76b49b;transform:translateY(-2px)}
+.assessment-day-sections {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.assessment-day-card {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:260px;padding:28px 18px;border:1px solid #cfe1d7;border-radius:24px;background:linear-gradient(145deg,#fff,#f7fbf8);color:#285e48;font-weight:400}
+.assessment-day-card:hover {border-color:#78b8a0;box-shadow:0 14px 32px #244c3d10;transform:translateY(-3px)}
+.assessment-day-card strong {font-size:27px;font-weight:400}
+.assessment-day-card small {font-size:17px;color:#6a8175;text-align:center}
+.assessment-day-icon {display:grid;place-items:center;width:78px;height:78px;border-radius:22px;background:#e9f5ef;color:#438a73;font:42px/1 Georgia,serif}
+.assessment-day-card:nth-child(2) .assessment-day-icon {background:#fff4df;color:#ac8b54}
+.assessment-day-card:nth-child(3) .assessment-day-icon {background:#f3edf9;color:#a187bb}
+@media(max-width:600px){
+ .assessment-days-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .assessment-day-tile {min-height:96px;padding:8px;border-radius:14px}
+ .assessment-day-sections {grid-template-columns:1fr;gap:14px}
+ .assessment-day-card {min-height:180px;padding:22px}
+ html[dir] body #assessmentName {font-size:21px}
+}
+html body button,html body button strong {font-weight:400!important}

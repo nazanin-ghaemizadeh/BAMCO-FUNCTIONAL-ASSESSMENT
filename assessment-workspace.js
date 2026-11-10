@@ -42,8 +42,8 @@ const labels = {
   retry:['تلاش دوباره','Retry','重试'],
   saving:['در حال ذخیره…','Saving…','正在保存…'],
   saved:['در دیتابیس ذخیره شد.','Saved to the database.','已保存到数据库。'],
-  unsaved:['تغییرات ذخیره نشد. نسخه پشتیبان بگیرید یا دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
-  conflict:['این ارزیابی در جای دیگری تغییر کرده است. نسخه پشتیبان بگیرید و آن را دوباره باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
+  unsaved:['تغییرات ذخیره نشد. دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
+  conflict:['این ارزیابی در جای دیگری تغییر کرده است. دوباره آن را باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
   share:['اشتراک موقعیت مکانی','Share location','共享位置'],
   stop:['توقف اشتراک موقعیت','Stop sharing','停止共享'],
@@ -214,10 +214,10 @@ function render() {
   document.title = tr('brandName')+' | '+tr('brandTitle');
   $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
   $('assessmentGpsLabel').textContent = tr('locationShareTitle');
-  $('backupBtn').textContent = tr('backup');
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
   $('assessmentStop').textContent = tr('stop');
+  for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
     if (language !== 'fa') $('assessmentSync').append(' ',tr('partial'));
@@ -368,6 +368,7 @@ async function openAssessment(id) {
   pending = null;
   syncState = '';
   $('assessmentName').textContent = data.title;
+  $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
   setGpsStatus('');
   $('assessmentShare').disabled = false;
   $('assessmentStop').disabled = true;

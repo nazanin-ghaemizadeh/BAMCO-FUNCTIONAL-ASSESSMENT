@@ -1,0 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap");
+html[lang="fa"] body, html[lang="fa"] button, html[lang="fa"] input, html[lang="fa"] select, html[lang="fa"] textarea {font-family:"B Nazanin","BNazanin",Tahoma,serif}
+html[lang="en"] body, html[lang="en"] button, html[lang="en"] input, html[lang="en"] select, html[lang="en"] textarea {font-family:"Times New Roman",Times,serif}
+html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea {font-family:"Ma Shan Zheng","KaiTi","STKaiti",serif}
+#assessmentHub form, #assessmentEditorBar, .assessment-row {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+#assessmentHub form {justify-content:center;margin-block:1rem}
+#assessmentHub input, #assessmentGps input {width:min(100%,16rem)}
+.assessment-row, #assessmentEditorBar {background:var(--surface,#fff);border:1px solid #d6e2ec;border-radius:16px;padding:1rem;margin-block:.65rem;text-align:start}
+.assessment-row strong {flex:1;min-width:10rem;overflow-wrap:anywhere}
+#assessmentGps {display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;width:100%}
+#assessmentEditorBar.hidden, #assessmentGps.hidden {display:none!important}
+#assessmentMap {height: min(56vh, 32rem);min-height:240px;border-radius:16px;direction:ltr}
+#assessmentHub [role=status], #assessmentSync, #assessmentGpsStatus {overflow-wrap:anywhere}
+body[data-view="home"] #backupBtn {display:none}
+#assessmentHub {width:min(100%,60rem);min-width:0;text-align:center}
+#assessmentHub .gate-grid {grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));margin-block:1rem}
+body[data-view="home"] {height:auto;min-height:100dvh}
+body[data-view="home"] #landing {grid-template-rows:max-content max-content}
+#assessmentHub .gate-illustration {max-height:90px}
+#assessmentLanguage {min-width:6rem;background:white;color:#153a60}
+.assessment-readonly #editSetupBtn,.assessment-readonly [data-import],.assessment-readonly [data-clear] {display:none}
+body[data-view="home"] .app-header .header-right {display:flex!important}
+html[lang="en"] .app-header .brand b {font-family:"Times New Roman",Times,serif}
+html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}

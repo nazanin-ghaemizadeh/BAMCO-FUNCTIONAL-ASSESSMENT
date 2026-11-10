@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id);
 const app=window.BAMCO_ASSESSMENT;
 const bank=window.BAMCO_DATA||{tests:[]};
-const scoreWords=['','بسیار ضعیف','ضعیف','نامطلوب','کمتر از انتظار','قابل قبول','متوسط','خوب','خیلی خوب','عالی','ممتاز'];
+const scoreWords=['','غیرقابل قبول','بحرانی','بسیار ضعیف','ضعیف','حداقل پذیرش','مرزی','قابل قبول','رضایت‌بخش','بسیار عالی','ممتاز'];
 const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#be304a'],['#fae8e1','#f5b49d','#c84c33'],['#fff0df','#f5c09a','#cf752a'],['#fff4df','#f5ce8f','#cb8a1d'],['#fff7dd','#e9d075','#b79817'],['#eff6df','#bdd889','#619825'],['#e4f4e8','#9fd5ad','#22834e'],['#def1eb','#93ceb6','#167d55'],['#dcefe8','#85c1aa','#0e7451']];
 let lastStamp='';
 

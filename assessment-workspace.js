@@ -202,6 +202,7 @@ function formatDate(value) {
 function render() {
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+  window.BAMCO_I18N?.setLanguage(language);
   translateInterface();
   $('assessmentLanguages').setAttribute('aria-label',tr('language'));
   for (const control of languageButtons) control.setAttribute('aria-pressed',String(control.dataset.language === language));
@@ -217,7 +218,6 @@ function render() {
   for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
-    if (language !== 'fa') $('assessmentSync').append(' ',tr('partial'));
     if (pending && !saving && syncState === 'unsaved') $('assessmentSync').append(' ',button('retry',flush));
     return;
   }

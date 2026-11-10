@@ -268,3 +268,17 @@ html[dir] body .day-route-label {font-size:14px;line-height:1.5;min-height:0;dis
 @media(max-width:700px){.assessment-days-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.assessment-day-tile {aspect-ratio:1 / 1;min-height:0;padding:10px 8px;gap:4px}.assessment-day-tile .day-route-icon {width:44px;height:44px;flex-basis:44px}.assessment-day-tile strong {font-size:24px}}
 .assessment-days-grid {grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 @media(max-width:700px){.assessment-days-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.assessment-day-tile {padding:8px;gap:3px}.assessment-day-tile .day-route-icon {width:40px;height:40px;flex-basis:40px}html[dir] body .day-route-label {font-size:13px}}
+
+/* English and Simplified Chinese use a left-to-right layout throughout. */
+html[dir=ltr] body {direction:ltr}
+html[dir=ltr] body :is(h1,h2,h3,h4,p,label,dt,dd,li,caption,summary,button,input,textarea,select,span,strong,b,td,th) {text-align:left!important;text-justify:auto!important}
+html[dir=ltr] body :is(.welcome-title,#pageTitle,#assessmentName,.assessment-row-title,.assessment-day-card,.assessment-day-card strong,.assessment-day-card small,.assessment-day-tile,.assessment-day-tile span,.assessment-day-tile strong,.assessment-day-tile small,.score,.score strong,.score small) {text-align:center!important}
+html[dir=ltr] .vehicle-dropdown-trigger {direction:ltr}
+html[dir=ltr] .map-grid {direction:ltr}
+html[dir=ltr] body :is(#durabilityCaps label,#durabilityCaps input,.planner-metric span,.planner-metric strong,.planner-metric small,#durabilityPreview th,#durabilityPreview td) {text-align:center!important}
+html[lang=zh] .gate-card strong {font-size:26px}
+html[dir=ltr] .test-hierarchy,html[dir=ltr] .test-conditions {direction:ltr}
+
+html[lang=zh] body #vehicleForm .english-dropdown :is(select,option,.vehicle-dropdown-trigger,.vehicle-dropdown-option,.vehicle-dropdown-trigger span) {font-family:"Ma Shan Zheng","KaiTi","STKaiti",serif!important}
+html[lang=zh] .assessment-day-tile strong::after {content:"天"}
+html[lang=en] body {font-family:"Times New Roman",Times,serif}

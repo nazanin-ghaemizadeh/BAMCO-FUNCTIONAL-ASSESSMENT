@@ -271,7 +271,7 @@ function renderFinal(c){
   if(progress?.complete){
     const finalPanel=document.createElement('section');
     finalPanel.className='surface panel bamco-day-final';
-    finalPanel.innerHTML='<div class="bamco-final-heading"><div><span class="bamco-final-check">✓</span><div><h2>جمع‌بندی روز '+number(c.day)+'</h2><p>تمام '+number(progress.total)+' آزمون برنامه این روز پاسخ داده شده‌اند.</p></div></div><span class="chip">تکمیل آزمون‌ها</span></div><div class="bamco-summary-grid">'+summaryItems(meta).map(([label,value])=>'<div class="bamco-summary-item"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>').join('')+'</div>';
+    finalPanel.innerHTML='<div class="bamco-final-heading"><div><span class="bamco-final-check">✓</span><div><h2>جمع‌بندی روز '+number(c.day)+'</h2><p>تمام '+number(progress.total)+' آزمون برنامه این روز پاسخ داده شده‌اند.</p></div></div><span class="chip">تکمیل آزمون‌ها</span></div><div class="bamco-summary-grid">'+summaryItems(meta).map(([label,value])=>'<div class="bamco-summary-item"><span>'+esc(label)+'</span><strong'+(['تاریخ','ساعت پیمایش','کیلومتر شروع','کیلومتر پایان','مسافت طی‌شده','دمای هوا','نوع آب‌وهوا'].includes(label)?' data-i18n-static="true"':'')+'>'+esc(value)+'</strong></div>').join('')+'</div>';
     questions.insertAdjacentElement('afterend',finalPanel);
     anchor=finalPanel;
   }

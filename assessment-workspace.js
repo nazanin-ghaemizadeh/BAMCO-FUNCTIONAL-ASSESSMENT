@@ -5,11 +5,24 @@ const $ = id => document.getElementById(id);
 const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
 const app = window.BAMCO_ASSESSMENT;
-const client = window.supabase?.createClient(
+const createClient = () => window.supabase.createClient(
   'https://cwpfzvcwuiawjtvsnpkq.supabase.co',
   'sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM',
   {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}
 );
+let client=window.supabase?createClient():null,clientPending;
+const externalScripts=new Map();
+function loadExternal(url){
+ if(externalScripts.has(url))return externalScripts.get(url);
+ const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
+ externalScripts.set(url,pending);return pending;
+}
+async function ensureClient(){
+ if(client)return client;
+ if(!clientPending)clientPending=(async()=>{if(!window.supabase)await loadExternal('https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js');client=createClient();return client})().catch(error=>{clientPending=null;throw error});
+ return clientPending;
+}
+
 
 const labels = {
   brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
@@ -138,9 +151,9 @@ function randomKey() {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
-function ownerRequest(operation,args = {}) {
-  if (!client) return Promise.resolve({error:new Error('Database client is unavailable')});
-  return client.rpc('bamco_assessment',{operation,args});
+async function ownerRequest(operation,args = {}) {
+ try {const connection=await ensureClient();return await connection.rpc('bamco_assessment',{operation,args})}
+ catch(error){return {error}}
 }
 
 function node(tag, text, className) {
@@ -265,6 +278,9 @@ async function navigate(next) {
   if (['active','history'].includes(next)) notice = 'load';
   render();
   if (next === 'observer') {
+    try{await Promise.all([ensureClient(),window.L?Promise.resolve():loadExternal('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')])}catch(error){if(generation===syncGeneration)report(error);return}
+    if(generation!==syncGeneration)return;
+    render();
     await refreshMap();
     if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
     return;
@@ -527,7 +543,7 @@ function renderMap() {
   status.id = 'assessmentMapStatus';
   status.setAttribute('role','status');
   hub.append(panel,status);
-  if (!window.L) {status.textContent = tr('error');return}
+  if (!window.L) return;
   map = L.map(panel).setView([32,53],5);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19,
@@ -576,6 +592,7 @@ window.addEventListener('beforeunload',event => {
   if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}
 });
 
-navigate(location.search === '?observer' ? 'observer' : 'home');
+window.BAMCO_WORKSPACE_READY=true;
+navigate(window.BAMCO_BOOT_SCREEN || (location.search === '?observer' ? 'observer' : 'home'));
 })();
 

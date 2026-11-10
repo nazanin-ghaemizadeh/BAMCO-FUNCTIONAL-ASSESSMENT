@@ -201,9 +201,9 @@ function report(error) {
 }
 
 function render() {
-  translateInterface();
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+  translateInterface();
   $('assessmentLanguages').setAttribute('aria-label',tr('language'));
   for (const b of languageButtons) b.setAttribute('aria-pressed',String(b.dataset.language === language));
   $('brandName').textContent = tr('brandName');

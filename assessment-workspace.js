@@ -332,7 +332,7 @@ function renderRows() {
     },'assessment-action assessment-secondary-action'));
     actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
     actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
-    item.append(top,heading,actions);
+    item.append(heading,top,actions);
     grid.append(item);
   }
   hub.append(list);

@@ -10,7 +10,7 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 #assessmentHub [role=status], #assessmentSync, #assessmentGpsStatus {overflow-wrap:anywhere}
 body[data-view="home"] #backupBtn {display:none}
 #assessmentHub {width:min(100%,60rem);min-width:0;text-align:center}
-#assessmentHub.assessment-list-page {width:min(100%,72rem);position:relative;padding-top:.25rem}
+#assessmentHub.assessment-list-page {width:100%;max-width:none;position:relative;padding-top:.25rem}
 #assessmentHub .gate-grid {
   width:min(100%,46rem);
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -75,12 +75,12 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
 #assessmentHub .assessment-card-grid.is-single .assessment-row-title {font-size:23px}
 #assessmentHub .assessment-row {display:flex;flex-direction:column;min-height:225px;margin:0;padding:20px;border:1px solid #dce9e2;border-radius:18px;background:#fff;text-align:start;box-shadow:0 9px 26px #244c3d09;transition:border-color .18s,box-shadow .18s,transform .18s}
 #assessmentHub .assessment-row:hover {border-color:#a9cfbd;box-shadow:0 15px 34px #244c3d12;transform:translateY(-2px)}
-#assessmentHub .assessment-row-top {display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid #ebf1ed}
+#assessmentHub .assessment-row-top {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 2px 16px}
 #assessmentHub .assessment-status {display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;font-size:13px;white-space:nowrap}
 #assessmentHub .assessment-status:before {content:'';width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px currentColor;opacity:.65}
 #assessmentHub .assessment-status.is-active {background:#e7f5ec;color:#237256}
 #assessmentHub .assessment-status.is-completed {background:#edf1f4;color:#5c6f7b}
-#assessmentHub .assessment-row-heading {display:flex;align-items:center;justify-content:center;flex:1;min-width:0;padding:18px 2px 16px}
+#assessmentHub .assessment-row-heading {display:flex;align-items:center;justify-content:center;min-width:0;padding:1px 2px 17px;border-bottom:1px solid #ebf1ed}
 #assessmentHub .assessment-row-title {width:100%;font-family:"Times New Roman",Times,serif;font-size:21px;line-height:1.55;font-weight:700;color:#203f36;overflow-wrap:anywhere;text-align:center!important}
 #assessmentHub .assessment-row-meta {color:#71887e;font-size:13px;overflow-wrap:anywhere;text-align:start}
 #assessmentHub .assessment-row-actions {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:auto}

@@ -2,10 +2,47 @@ begin;
 
 -- Assessments are system-wide records. Browser, device and contact identifiers no longer
 -- determine which active or completed assessments are visible.
+drop function if exists public.bamco_start_site_monitoring(text,uuid,text,text);
+drop function if exists public.bamco_site_monitoring_locations(text);
+drop function if exists public.bamco_observer_location(text);
+drop function if exists public.bamco_browser_assessment(text,text,jsonb);
+
+drop policy if exists assessment_owner on public.bamco_assessments;
+drop policy if exists gps_owner_read on public.bamco_assessment_gps;
+drop policy if exists gps_observer_read on public.bamco_assessment_gps;
+drop policy if exists gps_owner_insert on public.bamco_assessment_gps;
+drop policy if exists gps_owner_update on public.bamco_assessment_gps;
+
+revoke all on public.bamco_assessments, public.bamco_assessment_gps
+  from public, anon, authenticated;
+
+drop policy if exists bamco_assessments_no_direct_access on public.bamco_assessments;
+create policy bamco_assessments_no_direct_access on public.bamco_assessments
+  for all to anon, authenticated using (false) with check (false);
+
+drop policy if exists bamco_gps_no_direct_access on public.bamco_assessment_gps;
+create policy bamco_gps_no_direct_access on public.bamco_assessment_gps
+  for all to anon, authenticated using (false) with check (false);
+
+drop index if exists public.bamco_assessments_browser_idx;
+drop index if exists public.bamco_assessments_owner_id_status_created_at_idx;
+drop index if exists public.bamco_assessment_gps_observer_email_idx;
+drop index if exists public.bamco_assessment_monitoring_idx;
+
 alter table public.bamco_assessments
   drop constraint if exists bamco_assessment_owner_kind;
 
+alter table public.bamco_assessment_gps
+  drop constraint if exists bamco_assessment_gps_owner_id_fkey,
+  drop column if exists owner_id,
+  drop column if exists observer_email,
+  drop column if exists monitoring_hash,
+  drop column if exists monitoring_viewer_hash;
+
 alter table public.bamco_assessments
+  drop constraint if exists bamco_assessments_owner_id_fkey,
+  drop column if exists owner_id,
+  drop column if exists browser_hash,
   add column if not exists updated_at timestamptz not null default now();
 
 create index if not exists bamco_assessments_global_status_idx
@@ -80,9 +117,9 @@ begin
       raise exception 'Invalid assessment snapshot' using errcode = '22023';
     end if;
     insert into public.bamco_assessments as a
-      (owner_id, browser_hash, title, snapshot, updated_at)
+      (title, snapshot, updated_at)
     values
-      (null, null, clean_title, coalesce(args->'snapshot','{}'::jsonb), now())
+      (clean_title, coalesce(args->'snapshot','{}'::jsonb), now())
     returning jsonb_build_object('id', a.id) into result;
 
   elsif operation = 'open' then
@@ -156,22 +193,17 @@ begin
       return null;
     end if;
     insert into public.bamco_assessment_gps as g
-      (assessment_id, owner_id, observer_email, sharing, latitude, longitude,
-       accuracy_m, recorded_at, viewer_hash, monitoring_hash, monitoring_viewer_hash)
+      (assessment_id, sharing, latitude, longitude, accuracy_m, recorded_at, viewer_hash)
     values
-      (assessment_uuid, null, null, true, null, null,
-       null, null, sha256(convert_to(location_session,'UTF8')), null, null)
+      (assessment_uuid, true, null, null, null, null,
+       sha256(convert_to(location_session,'UTF8')))
     on conflict (assessment_id) do update
-    set owner_id = null,
-        observer_email = null,
-        sharing = true,
+    set sharing = true,
         latitude = null,
         longitude = null,
         accuracy_m = null,
         recorded_at = null,
-        viewer_hash = excluded.viewer_hash,
-        monitoring_hash = null,
-        monitoring_viewer_hash = null
+        viewer_hash = excluded.viewer_hash
     returning 'true'::jsonb into result;
 
   elsif operation = 'gps_point' then
@@ -211,9 +243,7 @@ begin
         longitude = null,
         accuracy_m = null,
         recorded_at = null,
-        viewer_hash = null,
-        monitoring_hash = null,
-        monitoring_viewer_hash = null
+        viewer_hash = null
     where g.assessment_id = assessment_uuid
       and g.viewer_hash = sha256(convert_to(location_session,'UTF8'))
     returning 'true'::jsonb into result;
@@ -292,18 +322,10 @@ begin
       longitude = null,
       accuracy_m = null,
       recorded_at = null,
-      viewer_hash = null,
-      monitoring_hash = null,
-      monitoring_viewer_hash = null
+      viewer_hash = null
   where assessment_id = new.id;
   return new;
 end;
 $$;
-
--- Retire the browser-, device- and pairing-code RPC surface after the global API exists.
-drop function if exists public.bamco_start_site_monitoring(text,uuid,text,text);
-drop function if exists public.bamco_site_monitoring_locations(text);
-drop function if exists public.bamco_observer_location(text);
-drop function if exists public.bamco_browser_assessment(text,text,jsonb);
 
 commit;

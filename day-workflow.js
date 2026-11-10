@@ -8,9 +8,9 @@ const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#b
 let lastStamp='';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const number=value=>Number(value||0).toLocaleString('fa-IR',{maximumFractionDigits:2});
+const number=value=>Number(value||0).toLocaleString(window.BAMCO_I18N?.language==='fa'||!window.BAMCO_I18N?'fa-IR':'en-US',{maximumFractionDigits:2});
 const faDigits='۰۱۲۳۴۵۶۷۸۹';
-const toFaDigits=value=>String(value??'').replace(/\d/g,digit=>faDigits[Number(digit)]);
+const toFaDigits=value=>window.BAMCO_I18N?.formatDigits(value)??String(value??'').replace(/\d/g,digit=>faDigits[Number(digit)]);
 const toLatinDigits=value=>String(value??'').replace(/[۰-۹]/g,digit=>String(faDigits.indexOf(digit)));
 const persianTime=value=>toFaDigits(String(value??'').trim().replace(/[٫.]/g,':'));
 function persianDate(value){

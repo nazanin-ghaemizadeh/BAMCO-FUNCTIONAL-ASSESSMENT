@@ -22,7 +22,7 @@ const categories=[...new Set(DB.tests.map(x=>x.cat))];
 const testById=new Map(DB.tests.map(x=>[x.id,x]));
 const byId=id=>document.getElementById(id);
 const num=v=>Number(typeof v==='string'?v.replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٬,]/g,'').replace('٫','.'):v);
-const number=n=>num(n||0).toLocaleString('fa-IR',{maximumFractionDigits:1}).replace(/٫/g,'.').replace(/٬/g,',');
+const number=n=>num(n||0).toLocaleString(window.BAMCO_I18N?.language==='fa'||!window.BAMCO_I18N?'fa-IR':'en-US',{maximumFractionDigits:1}).replace(/٫/g,'.').replace(/٬/g,',');
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fa=s=>String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ة/g,'ه');
 let cloudSave, readOnly = false, dayScreen = 'days';
@@ -105,7 +105,7 @@ function updatePlannerPreview(){
  }catch(error){byId('durDays').value='—';byId('durabilityPreview').textContent=error.message;return null}
 }
 function renderSetup(){
- for(const key of setupKeys){const el=byId(key),value=conf()[key];el.value=el.dataset.numeric?String(value).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]):value}
+ for(const key of setupKeys){const el=byId(key),value=conf()[key];el.value=el.dataset.numeric?(window.BAMCO_I18N?.formatDigits(String(value))??String(value).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])):value}
  byId('durabilityCaps').innerHTML=planner.routes.map(route=>'<div class="field"><label for="cap-'+route.id+'">'+esc(route.name)+' (کیلومتر در روز)</label><input id="cap-'+route.id+'" type="text" inputmode="numeric" data-numeric="true" required value="'+number(conf().routeCaps?.[route.id]??route.cap)+'"></div>').join('');
  updatePlannerPreview();
  document.querySelectorAll('#vehicleForm select').forEach(el=>el.dispatchEvent(new Event('change')));

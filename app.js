@@ -208,7 +208,7 @@ function renderGate(){
  const main=state.tab==='home'||state.tab==='modules';
  landing.classList.toggle('hidden',state.tab!=='home');
  modules.classList.toggle('hidden',state.tab!=='modules');
- byId('innerHero').classList.toggle('hidden',main);
+ byId('innerHero').classList.toggle('hidden',state.tab==='home');
  byId('legacySteps').classList.add('hidden');
  byId('backModulesBtn').classList.toggle('hidden',main||state.tab==='setup');
  if(state.tab==='home'&&!document.getElementById('assessmentHub'))landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
@@ -264,7 +264,7 @@ html+=routeMixHtml('drive')+routeMixHtml('durability');byId('resultsPanel').inne
 function render(){
 document.body.dataset.view=state.tab;
 renderGate();
-const titles={home:['',''],modules:['',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],supplementary:['پرسشنامه تکمیلی','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['نتایج و میانگین‌ها','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
+const titles={home:['',''],modules:['بخش‌های ارزیابی',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],supplementary:['پرسشنامه تکمیلی','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['نتایج و میانگین‌ها','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
 byId('pageTitle').textContent=titles[state.tab][0];byId('pageSub').textContent=titles[state.tab][1];
 byId('headerVehicle').textContent=conf().vclass+' · '+conf().body+' · '+conf().power+' · '+conf().driveType;
 document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===state.tab));
@@ -275,6 +275,16 @@ byId('editSetupBtn').classList.toggle('hidden',['setup','home','modules'].includ
 if(state.tab==='setup')renderSetup();else if(state.tab==='results')renderResults();else if(['home','modules'].includes(state.tab)){}else{const items=dayItems();renderKpis(items);renderSchedule();renderQuestions();document.dispatchEvent(new CustomEvent('bamco:day-render'));}
 document.body.classList.toggle('assessment-readonly',readOnly);
 if(readOnly)document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select,[data-score],[data-note],[data-photo],[data-import],[data-clear]').forEach(el=>el.disabled=true);
+const actions=byId('assessmentTabActions');
+actions.replaceChildren();
+const resultActions=byId('resultsPanel').querySelector('.toolbar');
+if(state.tab==='results'&&resultActions){actions.append(...resultActions.children);resultActions.remove()}
+if(state.tab==='modules'){
+ const edit=byId('moduleLanding').querySelector('.gate-edit');
+ if(edit)actions.append(edit);
+}
+const backup=byId('backupBtn');
+byId('assessmentPageActions').append(backup);
 document.dispatchEvent(new Event('bamco:render'));
 }
 function changeTab(tab){if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}const needsDaySelection=['drive','durability'].includes(tab);daySelectionRequired=needsDaySelection;state.tab=tab;state.category='همه';state.query='';state.page=0;render();if(needsDaySelection)requestAnimationFrame(()=>showDayPicker(true));window.scrollTo({top:0,behavior:'smooth'})}
@@ -390,3 +400,4 @@ window.BAMCO_ASSESSMENT={
 };
 load();state.tab='home';render();
 })();
+

@@ -55,6 +55,7 @@ const labels = {
 };
 
 const interfaceText = [
+  ['#pageTitle','بخش‌های ارزیابی','Assessment modules','评估模块'],
   ['#pageTitle','تنظیم مشخصات خودرو و برنامه آزمون','Vehicle and test plan setup','车辆与试验计划设置'],
   ['#pageTitle','آزمون قابلیت رانندگی','Drivability testing','驾驶性能试验'],
   ['#pageTitle','آزمون دوام عملکردی','Functional durability testing','功能耐久试验'],
@@ -70,7 +71,7 @@ const interfaceText = [
   ['#moduleLanding [data-open="supplementary"] strong','پرسشنامه تکمیلی','Supplementary questionnaire','补充问卷'],
   ['#moduleLanding [data-open="results"] strong','گزارش و نتایج','Reports and results','报告与结果'],
   ['#moduleLanding .gate-cta','ورود به بخش ←','Open module →','进入模块 →'],
-  ['#moduleLanding .gate-edit','ویرایش مشخصات خودرو و برنامه','Edit vehicle and test plan','编辑车辆与试验计划'],
+  ['#assessmentTabActions .gate-edit','ویرایش مشخصات خودرو و برنامه','Edit vehicle and test plan','编辑车辆与试验计划'],
   ['#editSetupBtn','ویرایش مشخصات خودرو','Edit vehicle details','编辑车辆信息'],
   ['label[for="vclass"]','رده خودرو','Vehicle class','车辆类别'],
   ['label[for="body"]','نوع بدنه','Body type','车身类型'],
@@ -242,7 +243,7 @@ function render() {
     const backButton = button('back',()=>navigate('home'),'assessment-action assessment-back-action');
     backButton.setAttribute('aria-label',tr('back'));
     toolbar.append(backButton);
-    hub.prepend(toolbar);
+    divider.after(toolbar);
   }
   if (screen === 'home') {
     cards(
@@ -579,3 +580,4 @@ window.addEventListener('beforeunload',event => {
 
 navigate(location.search === '?observer' ? 'observer' : 'home');
 })();
+

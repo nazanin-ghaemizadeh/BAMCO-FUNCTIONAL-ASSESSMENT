@@ -46,7 +46,7 @@ const labels = {
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. دوباره آن را باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
   share:['اشتراک موقعیت مکانی','Share location','共享位置'],
-  stop:['توقف اشتراک موقعیت','Stop sharing','停止共享'],
+  stop:['توقف موقعیت مکانی','Stop sharing','停止共享'],
   gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
   gpsError:['GPS در دسترس نیست. مجوز موقعیت و اتصال را بررسی کنید.','GPS is unavailable. Check location permissions and your connection.','定位不可用。请检查定位权限和网络。'],
   position:['آخرین موقعیت','Latest location','最新位置'],
@@ -94,7 +94,7 @@ function translateInterface() {
       if (values.includes(element.textContent)) element.textContent = values[index-1];
     }
   }
-  $('backModulesBtn').textContent = ['بازگشت به بخش‌ها','Back to modules','返回模块'][index-1];
+  $('backModulesBtn').textContent = ['بازگشت به بخش‌های ارزیابی','Back to assessment modules','返回评估模块'][index-1];
   const setupInfo = $('setupInfo');
   const average = setupInfo.dataset.average;
   if (average) {

@@ -258,7 +258,8 @@ function renderGate(){
  modules.classList.toggle('hidden',state.tab!=='modules');
  byId('innerHero').classList.toggle('hidden',state.tab==='home');
  byId('legacySteps').classList.add('hidden');
- byId('backModulesBtn').classList.toggle('hidden',main||state.tab==='setup');
+ byId('backModulesBtn').classList.toggle('hidden',main||Boolean(dayContext()&&dayScreen!=='days'));
+ byId('assessmentBack').classList.toggle('hidden',state.tab!=='modules');
  if(state.tab==='home'&&!document.getElementById('assessmentHub'))landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
  if(state.tab==='modules')modules.innerHTML='<div class="gate-grid">'+[
  ['setup','۰۱','ویرایش مشخصات','ویرایش مشخصات خودرو و برنامه آزمون','◇'],
@@ -266,7 +267,7 @@ function renderGate(){
  ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],
  ['supplementary','۰۳','پرسشنامه تکمیلی','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
  ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗']
- ].map(x=>'<button type="button" class="gate-card" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
+ ].map(x=>'<button type="button" class="gate-card" data-gate-icon="'+(x[0]==='setup'?'editSetup':x[0])+'" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -322,7 +323,7 @@ document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e
 byId('setupPanel').classList.toggle('hidden',state.tab!=='setup');
 byId('workPanel').classList.toggle('hidden',!['drive','durability','supplementary'].includes(state.tab));
 byId('resultsPanel').classList.toggle('hidden',state.tab!=='results');
-byId('editSetupBtn').classList.toggle('hidden',['setup','home','modules'].includes(state.tab));
+byId('editSetupBtn').classList.add('hidden');
 document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(el=>el.remove());
 renderDayNavigation();
 const workspace=byId('workPanel').querySelector('.workspace');
@@ -351,7 +352,7 @@ const resultActions=byId('resultsPanel').querySelector('.toolbar');
 if(state.tab==='results'&&resultActions){actions.append(...resultActions.children);resultActions.remove()}
 if(daily&&dayScreen!=='days'){
  const back=document.createElement('button');back.type='button';back.className='secondary';
- back.textContent=dayScreen==='menu'?'بازگشت به روزها':'بازگشت به بخش‌های روز';
+ back.textContent=dayScreen==='menu'?'بازگشت به تقویم روزانه':'بازگشت به بخش‌های روز';
  back.addEventListener('click',()=>navigateDay(dayScreen==='menu'?'days':'menu'));
  actions.prepend(back);
 }

@@ -12,6 +12,10 @@ const client = window.supabase?.createClient(
 );
 
 const labels = {
+  brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
+  brandTitle:['ارزیابی عملکرد و دوام خودرو','Vehicle Performance and Durability Assessment','整车性能与耐久性评估'],
+  brandAlt:['نشان خودروسازان بم','Bam Automobile Company logo','巴姆汽车公司标志'],
+  language:['انتخاب زبان','Choose language','选择语言'],
   welcomeBefore:['کیفیت از ','Quality starts with ','品质源于'],
   welcomeAccent:['ارزیابی دقیق','precise assessment','精准评估'],
   welcomeAfter:[' آغاز می‌شود.','.','。'],
@@ -98,6 +102,16 @@ function translateInterface() {
     }
   }
   $('backModulesBtn').textContent = ['بازگشت به بخش‌ها','Back to modules','返回模块'][index-1];
+  const setupInfo = $('setupInfo');
+  const average = setupInfo.dataset.average;
+  if (average) {
+    const km = Number(average).toLocaleString(language === 'fa' ? 'fa-IR' : language);
+    setupInfo.textContent = [
+      'میانگین لازم: '+km+' کیلومتر در روز. مسافت هدف هر نوع مسیر و روزهای کنترل، بعد از شروع برنامه محاسبه می‌شوند.',
+      'Required average: '+km+' km/day. Route targets and inspection days are calculated when the program starts.',
+      '每日平均需行驶 '+km+' 公里。启动计划后将计算各类路线的目标里程和检查日期。'
+    ][index-1];
+  }
   for (const option of $('durDays').options) {
     option.textContent = language === 'fa' ? Number(option.value).toLocaleString('fa-IR')+' روز' :
       option.value+(language === 'en'?' days':' 天');
@@ -111,6 +125,8 @@ try {
   if (['fa','en','zh'].includes(stored)) language = stored;
 } catch {}
 const tr = key => labels[key][['fa','en','zh'].indexOf(language)] || labels[key][0];
+const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-language]')];
+let gpsStatus = '';
 let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
 let map, markers, poll, watch = null, gpsGeneration = 0, gpsViewer = '', gpsWrite = Promise.resolve(), heartbeat;
 
@@ -145,7 +161,7 @@ function node(tag, text, className) {
   return element;
 }
 
-function button(key, action, className = 'secondary') {
+function button(key, action, className = 'assessment-action') {
   const b = node('button', tr(key), className);
   b.type = 'button';
   b.onclick = action;
@@ -180,7 +196,7 @@ function cards(...items) {
 
 function report(error) {
   console.error(error);
-  notice = tr('error');
+  notice = 'error';
   render();
 }
 
@@ -188,7 +204,13 @@ function render() {
   translateInterface();
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
-  $('assessmentLanguage').value = language;
+  $('assessmentLanguages').setAttribute('aria-label',tr('language'));
+  for (const b of languageButtons) b.setAttribute('aria-pressed',String(b.dataset.language === language));
+  $('brandName').textContent = tr('brandName');
+  $('brandTitle').textContent = tr('brandTitle');
+  document.querySelector('.brand-logo').alt = tr('brandAlt');
+  document.title = tr('brandName')+' | '+tr('brandTitle');
+  $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
   $('backupBtn').textContent = tr('backup');
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
@@ -209,7 +231,7 @@ function render() {
   divider.append(node('i'),node('i'),node('i'));
   hub.replaceChildren(title,divider);
   if (notice) {
-    const status = node('p',notice);
+    const status = node('p',tr(notice));
     status.setAttribute('role','status');
     hub.append(status);
   }
@@ -225,7 +247,7 @@ function render() {
       const form = node('form');
       const input = field('text','enterLink');
       input.autocomplete = 'off';
-      form.append(input,node('button',tr('open')));
+      form.append(input,node('button',tr('open'),'assessment-action'));
       form.onsubmit = event => {
         event.preventDefault();
         let key;
@@ -233,7 +255,7 @@ function render() {
           const link = new URL(input.value.trim(),location.href);
           if (link.origin === location.origin) key = viewerFromHash(link.hash);
         } catch {}
-        if (!key) {notice = tr('invalidLink');render();return}
+        if (!key) {notice = 'invalidLink';render();return}
         observerKey = key;
         history.replaceState(null,'','#observer='+key);
         navigate('observer');
@@ -251,7 +273,7 @@ async function navigate(next) {
     observerKey = null;
     if (viewerFromHash(location.hash)) history.replaceState(null,'',location.pathname);
   }
-  if (['evaluator','history'].includes(next)) notice = tr('load');
+  if (['evaluator','history'].includes(next)) notice = 'load';
   render();
   if (next === 'observer' && observerKey) {
     await refreshMap();
@@ -270,7 +292,7 @@ function renderRows() {
     const form = node('form');
     const title = field('text','name');
     title.maxLength = 120;
-    form.append(title,node('button',tr('create')));
+    form.append(title,node('button',tr('create'),'assessment-action'));
     form.onsubmit = async event => {
       event.preventDefault();
       await create(title.value,{},form.querySelector('button'));
@@ -282,7 +304,7 @@ function renderRows() {
   if (!rows.length && !notice) hub.append(node('p',tr('empty')));
   for (const row of rows) {
     const item = node('div','','surface assessment-row');
-    item.append(node('strong',row.title),button('open',()=>openAssessment(row.id)));
+    item.append(node('bdi',row.title,'assessment-row-title'),button('open',()=>openAssessment(row.id)));
     item.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
@@ -322,7 +344,7 @@ async function openAssessment(id) {
   current = data;
   pending = null; syncState = '';
   $('assessmentName').textContent = data.title;
-  $('assessmentGpsStatus').textContent = '';
+  setGpsStatus('');
   $('assessmentObserverLink').value = '';
   $('assessmentObserverLink').closest('label').hidden = true;
   $('assessmentCopyLink').hidden = true;
@@ -377,6 +399,11 @@ $('assessmentBack').onclick = async () => {
   await navigate(next);
 };
 
+function setGpsStatus(key) {
+  gpsStatus = key;
+  $('assessmentGpsStatus').textContent = key ? tr(key) : '';
+}
+
 function gpsUpdate(operation,values = {}) {
   const id = current.id, viewer = gpsViewer;
   gpsWrite = gpsWrite.then(async () => {
@@ -389,7 +416,7 @@ function gpsUpdate(operation,values = {}) {
 $('assessmentGps').onsubmit = async event => {
   event.preventDefault();
   if (!current || watch !== null || gpsViewer) return;
-  if (!navigator.geolocation) {$('assessmentGpsStatus').textContent = tr('gpsError');return}
+  if (!navigator.geolocation) {setGpsStatus('gpsError');return}
   const row = current;
   const viewer = randomKey();
   gpsViewer = viewer;
@@ -401,7 +428,7 @@ $('assessmentGps').onsubmit = async event => {
   if (error || !data) {
     gpsViewer = '';
     $('assessmentShare').disabled = false;
-    $('assessmentGpsStatus').textContent = tr('error');
+    setGpsStatus('error');
     return;
   }
   if (current !== row || generation !== gpsGeneration) return;
@@ -412,16 +439,16 @@ $('assessmentGps').onsubmit = async event => {
   link.value = url.href;
   link.closest('label').hidden = false;
   $('assessmentCopyLink').hidden = false;
-  $('assessmentGpsStatus').textContent = tr('keepOpen');
+  setGpsStatus('keepOpen');
   let last = 0, writing = false;
   const publish = async ({coords}) => {
     if (generation !== gpsGeneration || writing || Date.now()-last < 4000) return;
     writing = true; last = Date.now();
     const ok = await gpsUpdate('gps_point',{latitude:coords.latitude,longitude:coords.longitude});
     writing = false;
-    if (generation === gpsGeneration) $('assessmentGpsStatus').textContent = tr(ok?'keepOpen':'gpsError');
+    if (generation === gpsGeneration) setGpsStatus(ok?'keepOpen':'gpsError');
   };
-  const onLocationError = () => {if(generation === gpsGeneration)$('assessmentGpsStatus').textContent = tr('gpsError')};
+  const onLocationError = () => {if(generation === gpsGeneration)setGpsStatus('gpsError')};
   const options = {enableHighAccuracy:true,maximumAge:5000,timeout:20000};
   watch = navigator.geolocation.watchPosition(publish,onLocationError,options);
   heartbeat = setInterval(()=>navigator.geolocation.getCurrentPosition(publish,onLocationError,options),30000);
@@ -434,7 +461,7 @@ async function stopGps() {
   watch = null;
   if (!gpsViewer) return true;
   const ok = await gpsUpdate('gps_stop');
-  $('assessmentGpsStatus').textContent = ok ? '' : tr('error');
+  setGpsStatus(ok ? '' : 'error');
   if (!ok) return false;
   gpsViewer = '';
   $('assessmentShare').disabled = false; $('assessmentStop').disabled = true;
@@ -448,7 +475,7 @@ $('assessmentCopyLink').onclick = async () => {
   const link = $('assessmentObserverLink');
   try {
     await navigator.clipboard.writeText(link.value);
-    $('assessmentGpsStatus').textContent = tr('copied');
+    setGpsStatus('copied');
   } catch {
     link.focus();
     link.select();
@@ -490,8 +517,8 @@ async function refreshMap() {
   if (first && data.length) map.fitBounds(markers.getBounds(),{maxZoom:15});
 }
 
-$('assessmentLanguage').onchange = event => {
-  language = event.target.value;
+for (const control of languageButtons) control.onclick = () => {
+  language = control.dataset.language;
   try {localStorage.setItem('bamco-assessment-language',language)} catch {}
   render();
   if (screen === 'observer') refreshMap();

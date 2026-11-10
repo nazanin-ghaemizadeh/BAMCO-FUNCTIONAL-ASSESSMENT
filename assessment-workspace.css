@@ -6,7 +6,6 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 #assessmentHub form {justify-content:center;margin-block:1rem}
 #assessmentHub input, #assessmentGps input {width:min(100%,16rem)}
 .assessment-row, #assessmentEditorBar {background:#fff;border:1px solid #dceae3;border-radius:20px;padding:1rem;margin-block:.65rem;text-align:start}
-.assessment-row strong {flex:1;min-width:10rem;overflow-wrap:anywhere}
 #assessmentGps {display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;width:100%}
 #assessmentEditorBar.hidden, #assessmentGps.hidden {display:none!important}
 #assessmentMap {height: min(56vh, 32rem);min-height:240px;border-radius:16px;direction:ltr}
@@ -31,7 +30,6 @@ body[data-view="home"] #assessmentHub .gate-card strong {text-align:center}
 }
 body[data-view="home"] {height:auto;min-height:100dvh}
 body[data-view="home"] #landing {grid-template-rows:max-content max-content}
-#assessmentLanguage {min-width:6rem;background:white;color:#153a60}
 .assessment-readonly #editSetupBtn,.assessment-readonly [data-import],.assessment-readonly [data-clear] {display:none}
 body[data-view="home"] .app-header .header-right {display:flex!important}
 html[lang="en"] .app-header .brand b {font-family:"Times New Roman",Times,serif}
@@ -39,3 +37,29 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
 #assessmentGps label {flex:1 1 100%}
 #assessmentGps label[hidden] {display:none}
 #assessmentGps #assessmentObserverLink {display:block;width:min(100%,36rem)}
+#assessmentLanguages {display:inline-flex;direction:ltr;align-items:center;gap:4px}
+#assessmentLanguages button {
+  display:grid;place-items:center;min-width:0;width:32px;height:32px;padding:0;
+  background:transparent;border:1px solid transparent;border-radius:8px;box-shadow:none;
+}
+#assessmentLanguages button[aria-pressed="true"] {background:#ffffff24;border-color:#ffffffa0}
+#assessmentLanguages button:hover {background:#ffffff30;transform:none}
+#assessmentLanguages button:focus-visible {outline:2px solid #fff;outline-offset:2px}
+#assessmentLanguages svg {display:block;width:22px;height:15px;border-radius:2px;overflow:hidden}
+#assessmentHub .assessment-action, #assessmentEditorBar .assessment-action {
+  min-height:44px;min-width:8rem;padding:.45rem .8rem;
+  border:1px solid #b9d7cb;border-radius:12px;background:#f4faf7;color:#254c3e;
+  box-shadow:none;text-align:center;line-height:1.35;font-weight:600;white-space:normal;
+}
+#assessmentHub .assessment-action:hover:not(:disabled), #assessmentEditorBar .assessment-action:hover:not(:disabled) {
+  border-color:#80b6a3;background:#e8f5ee;transform:none;
+}
+#assessmentHub .assessment-row {display:grid;grid-template-columns:minmax(10rem,1.25fr) repeat(4,minmax(0,1fr));align-items:stretch}
+#assessmentHub .assessment-row-title {align-self:center;font-weight:700;overflow-wrap:anywhere}
+#assessmentHub .assessment-row .assessment-action {width:100%;min-width:0}
+#assessmentEditorBar .assessment-action[hidden] {display:none}
+#assessmentHub .gate-card {grid-template-rows:minmax(0,1fr) minmax(2.4rem,auto) minmax(2.25rem,auto)}
+@media (max-width:800px) {
+  #assessmentHub .assessment-row {grid-template-columns:repeat(2,minmax(0,1fr))}
+  #assessmentHub .assessment-row-title {grid-column:1/-1}
+}

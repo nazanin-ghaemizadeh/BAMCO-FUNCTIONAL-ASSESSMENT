@@ -99,8 +99,8 @@ function updatePlannerPreview(){
  try{
   const config=readSetup(),plan=planner.calculate({target:config.durKm,twoDiff:config.twoDiff,caps:config.routeCaps,startOdo:config.startOdo});
   byId('durDays').value=number(plan.days);
-  byId('durabilityPreview').innerHTML='<div class="planner-summary"><span>هدف دوام: '+number(plan.target)+' کیلومتر</span><span>تعداد روزها: '+number(plan.days)+'</span></div><div class="route-table-scroll"><table class="result-table"><thead><tr><th>نوع مسیر</th><th>سهم مسیر</th><th>کیلومتر تخصیصی</th><th>سقف روزانه</th><th>تعداد روزها</th><th>پیمایش روز آخر</th></tr></thead><tbody>'+plan.rows.map(row=>'<tr><th scope="row">'+esc(row.name)+'</th><td>'+number(row.weight)+'٪</td><td>'+number(row.km)+'</td><td>'+number(row.cap)+'</td><td>'+number(row.days)+'</td><td>'+number(row.lastKm)+'</td></tr>').join('')+'</tbody><tfoot><tr><th>جمع</th><td>۱۰۰٪</td><td>'+number(plan.target)+'</td><td>—</td><td>'+number(plan.days)+'</td><td>—</td></tr></tfoot></table></div>';
-  byId('setupInfo').textContent='تعداد روزها بر اساس هدف دوام، سهم هر مسیر و سقف روزانه محاسبه می‌شود. روز آخر هر مسیر فقط به اندازهٔ کیلومتر باقی‌مانده است.';
+  byId('durabilityPreview').innerHTML='<div class="planner-summary"><div class="planner-metric"><span>هدف پیمایش دوام</span><strong>'+number(plan.target)+' <small>کیلومتر</small></strong></div><div class="planner-metric"><span>مدت برنامه دوام</span><strong>'+number(plan.days)+' <small>روز</small></strong></div></div><div class="route-table-scroll"><table class="result-table"><thead><tr><th>نوع مسیر</th><th>سهم مسیر</th><th>کیلومتر تخصیصی</th><th>سقف روزانه</th><th>تعداد روزها</th><th>پیمایش روز آخر</th></tr></thead><tbody>'+plan.rows.map(row=>'<tr><th scope="row">'+esc(row.name)+'</th><td>'+number(row.weight)+'٪</td><td>'+number(row.km)+'</td><td>'+number(row.cap)+'</td><td>'+number(row.days)+'</td><td>'+number(row.lastKm)+'</td></tr>').join('')+'</tbody><tfoot><tr><th>جمع</th><td>۱۰۰٪</td><td>'+number(plan.target)+'</td><td>—</td><td>'+number(plan.days)+'</td><td>—</td></tr></tfoot></table></div>';
+  byId('setupInfo').textContent='تعداد روزها بر اساس هدف دوام، سهم هر مسیر و سقف روزانه محاسبه می‌شود. روز آخر هر مسیر فقط به اندازه کیلومتر باقی‌مانده است.';
   return {config,plan};
  }catch(error){byId('durDays').value='—';byId('durabilityPreview').textContent=error.message;return null}
 }
@@ -434,7 +434,7 @@ byId('vehicleForm').addEventListener('submit',e=>{
  const {config,plan}=result;
  if(!Number.isInteger(config.driveKm)||config.driveKm<1||config.driveKm>20000){toast('هدف قابلیت رانندگی باید عدد صحیح بین ۱ تا ۲۰٬۰۰۰ باشد.');return}
  if(!['yes','no'].includes(config.twoDiff)){toast('وضعیت دو دیفرانسیل را انتخاب کنید.');return}
- config.durDays=plan.days;state.config=config;state.setupComplete=true;save();changeTab('modules');toast('مشخصات خودرو ثبت و برنامهٔ دوام محاسبه شد.');
+ config.durDays=plan.days;state.config=config;state.setupComplete=true;save();changeTab('modules');toast('مشخصات خودرو ثبت و برنامه دوام محاسبه شد.');
 });
 document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
 if(el.id==='editSetupBtn'){changeTab('setup');return}

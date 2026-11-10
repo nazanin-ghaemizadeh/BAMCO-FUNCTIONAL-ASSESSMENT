@@ -17,7 +17,7 @@ function calculate({target,twoDiff=false,caps={},startOdo=0}){
  let weightBefore=0,days=0;
  const rows=routes.map(route=>{
   const weight=route.weights[dual?1:0],cap=Number(caps[route.id]??route.cap);
-  if(!Number.isSafeInteger(cap)||cap<1||cap>200000)throw new Error('سقف روزانهٔ '+route.name+' باید عدد صحیح مثبت باشد.');
+  if(!Number.isSafeInteger(cap)||cap<1||cap>200000)throw new Error('سقف روزانه '+route.name+' باید عدد صحیح مثبت باشد.');
   const round=weight=>Math.floor((2*target*weight+totalWeight)/(2*totalWeight));
   const km=round(weightBefore+weight)-round(weightBefore);weightBefore+=weight;
   const count=km?Math.ceil(km/cap):0;days+=count;

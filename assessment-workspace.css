@@ -202,3 +202,30 @@ html body button,html body button strong {font-weight:400!important}
 .planner-summary {display:flex;flex-wrap:wrap;gap:12px 28px;margin-bottom:14px;color:#226c54}
 #durDays {background:#edf7f1;color:#226c54}
 #vehicleForm #setupInfo {display:block!important}
+
+/* Centered durability inputs, summary cards, and a lighter calculation table. */
+.durability-planner-setup {padding:24px;border:1px solid #dce9e3;border-radius:22px;background:linear-gradient(140deg,#f5faf7,#fff);margin-top:28px}
+html[dir] body .durability-planner-setup h2 {text-align:center!important;margin:0 0 24px;font-size:26px;line-height:1.6}
+#durabilityCaps {gap:14px}
+#durabilityCaps .field {padding:16px 12px;border:1px solid #dfebe4;border-radius:16px;background:#fff;justify-content:space-between;box-shadow:0 4px 14px #25443b04}
+html[dir] body #durabilityCaps label {text-align:center!important;line-height:1.7;font-weight:400;min-height:48px;display:flex;align-items:center;justify-content:center}
+html[dir] body #durabilityCaps input {text-align:center!important;font-size:22px;background:#f8fcfa;border:1px solid #cee2d7;border-radius:12px;width:100%}
+#durabilityPreview {margin-top:24px}
+.planner-summary {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:0 0 22px}
+.planner-metric {padding:18px 20px;border:1px solid #d9e8e0;border-radius:16px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:8px}
+.planner-metric:nth-child(2) {background:#edf6f1;border-color:#c7dfd1}
+html[dir] body .planner-metric :is(span,strong,small) {text-align:center!important}
+.planner-metric > span {font-size:16px;color:#627e70}
+.planner-metric > strong {font-size:30px;font-weight:400;color:#24644e}
+.planner-metric small {font-size:17px;font-weight:400}
+#durabilityPreview .route-table-scroll {border:1px solid #d7e6de;border-radius:16px;background:#fff;overflow:auto}
+#durabilityPreview table {width:100%;min-width:650px;margin:0;border-collapse:separate;border-spacing:0}
+html[dir] body #durabilityPreview table :is(th,td) {text-align:center!important;vertical-align:middle;padding:15px 12px;font-size:17px;line-height:1.6;border:0;border-bottom:1px solid #e3ece7}
+#durabilityPreview table thead th {background:#22644f;color:#fff;font-weight:400;white-space:nowrap}
+#durabilityPreview table tbody th {background:transparent;color:#2e5948;font-weight:400}
+#durabilityPreview table tbody tr {background:#fff}
+#durabilityPreview table tbody tr:nth-child(even) {background:#f5f9f7}
+#durabilityPreview table tbody tr:hover {background:#edf5f0}
+#durabilityPreview table tfoot :is(th,td) {background:#e2f0e8;color:#235d47;font-weight:700;border-bottom:0;border-top:1px solid #c7dfd1}
+@media(max-width:700px){.durability-planner-setup {padding:18px 12px}.planner-summary {gap:10px}.planner-metric {padding:14px 10px}.planner-metric > strong {font-size:25px}#durabilityCaps {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:400px){#durabilityCaps {grid-template-columns:1fr}}

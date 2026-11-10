@@ -46,11 +46,13 @@ const labels = {
   unsaved:['تغییرات ذخیره نشد. نسخه پشتیبان بگیرید یا دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. نسخه پشتیبان بگیرید و آن را دوباره باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
-  copyLink:['کپی لینک','Copy link','复制链接'],
-  copied:['لینک کپی شد.','Link copied.','链接已复制。'],
-  observerLink:['لینک اختصاصی ناظر','Private observer link','专用观察链接'],
-  enterLink:['لینک ناظر را وارد کنید','Paste the observer link','粘贴观察链接'],
-  invalidLink:['لینک ناظر معتبر نیست.','The observer link is invalid.','观察链接无效。'],
+  copyCode:['کپی کد','Copy code','复制代码'],
+  copied:['کد کپی شد.','Code copied.','代码已复制。'],
+  monitoringCode:['کد دسترسی نظارت این دستگاه','This device’s monitoring access code','此设备的监控访问代码'],
+  enterCode:['کد دسترسی نظارت','Monitoring access code','监控访问代码'],
+  codeHint:['کد را یک‌بار از ارزیاب بگیرید و در این مرورگر ثبت کنید.','Get the code from the evaluator and save it once in this browser.','向评估员获取代码，并在此浏览器中保存一次。'],
+  forgetCode:['حذف کد از این مرورگر','Forget code on this browser','从此浏览器移除代码'],
+  invalidCode:['کد دسترسی کامل را وارد کنید.','Enter the full access code.','请输入完整的访问代码。'],
   browserScope:['ارزیابی‌های این مرورگر','Assessments for this browser','此浏览器的评估'],
   share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
   stop:['توقف ارسال GPS','Stop GPS sharing','停止共享定位'],
@@ -131,19 +133,28 @@ let screen = 'home', rows = [], current, notice = '', pending = null, saving, sy
 let map, markers, poll, watch = null, gpsGeneration = 0, gpsViewer = '', gpsWrite = Promise.resolve(), heartbeat;
 
 let observerKey = null;
+const savedMonitoringCode = 'bamco-saved-monitoring-code';
+
+function readSavedCode() {
+  try {return localStorage.getItem(savedMonitoringCode)} catch {return null}
+}
 
 function randomKey() {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
+function deviceKey(storageKey) {
+  let key = localStorage.getItem(storageKey);
+  if (!/^[0-9a-f]{64}$/.test(key || '')) {
+    key = randomKey();
+    localStorage.setItem(storageKey,key);
+  }
+  return key;
+}
+
 function ownerRequest(operation,args = {}) {
   try {
-    const storageKey = 'bamco-assessment-browser-key';
-    let browser_key = localStorage.getItem(storageKey);
-    if (!/^[0-9a-f]{64}$/.test(browser_key || '')) {
-      browser_key = randomKey();
-      localStorage.setItem(storageKey,browser_key);
-    }
+    const browser_key = deviceKey('bamco-assessment-browser-key');
     return client.rpc('bamco_browser_assessment',{browser_key,operation,args});
   } catch (error) {
     return Promise.resolve({error});
@@ -215,8 +226,8 @@ function render() {
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
   $('assessmentStop').textContent = tr('stop');
-  $('assessmentCopyLink').textContent = tr('copyLink');
-  $('assessmentObserverLinkLabel').textContent = tr('observerLink');
+  $('assessmentCopyLink').textContent = tr('copyCode');
+  $('assessmentObserverLinkLabel').textContent = tr('monitoringCode');
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
     if (language !== 'fa') $('assessmentSync').append(' ',tr('partial'));
@@ -242,22 +253,25 @@ function render() {
   if (screen === 'roles') cards(card('evaluator','supplementary',()=>navigate('evaluator')),card('observer','observer',()=>navigate('observer')));
   if (screen === 'evaluator' || screen === 'history') renderRows();
   if (screen === 'observer') {
-    if (observerKey) renderMap();
+    if (observerKey || readSavedCode()) {
+      if (!observerKey) hub.append(button('forgetCode',()=>{
+        try {localStorage.removeItem(savedMonitoringCode)} catch {report('Storage unavailable');return}
+        navigate('observer');
+      }));
+      renderMap();
+    }
     else {
       const form = node('form');
-      const input = field('text','enterLink');
+      hub.append(node('p',tr('codeHint')));
+      const input = field('password','enterCode');
+      input.spellcheck = false;
       input.autocomplete = 'off';
       form.append(input,node('button',tr('open'),'assessment-action'));
       form.onsubmit = event => {
         event.preventDefault();
-        let key;
-        try {
-          const link = new URL(input.value.trim(),location.href);
-          if (link.origin === location.origin) key = viewerFromHash(link.hash);
-        } catch {}
-        if (!key) {notice = 'invalidLink';render();return}
-        observerKey = key;
-        history.replaceState(null,'','#observer='+key);
+        const key = input.value.trim().toLowerCase();
+        if (!/^[0-9a-f]{64}$/.test(key)) {notice = 'invalidCode';render();return}
+        try {localStorage.setItem(savedMonitoringCode,key)} catch {report('Storage unavailable');return}
         navigate('observer');
       };
       hub.append(form);
@@ -275,7 +289,7 @@ async function navigate(next) {
   }
   if (['evaluator','history'].includes(next)) notice = 'load';
   render();
-  if (next === 'observer' && observerKey) {
+  if (next === 'observer' && (observerKey || readSavedCode())) {
     await refreshMap();
     if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
   }
@@ -423,7 +437,15 @@ $('assessmentGps').onsubmit = async event => {
   const generation = ++gpsGeneration;
   $('assessmentBack').disabled = true;
   $('assessmentShare').disabled = true;
-  const {data,error} = await ownerRequest('gps_start',{id:row.id,viewer});
+  let result, monitoringKey;
+  try {
+    monitoringKey = deviceKey('bamco-device-monitoring-code');
+    result = await client.rpc('bamco_start_site_monitoring',{
+      browser_key:deviceKey('bamco-assessment-browser-key'),
+      assessment_id:row.id,viewer_key:viewer,monitoring_key:monitoringKey
+    });
+  } catch (error) {result = {error}}
+  const {data,error} = result;
   $('assessmentBack').disabled = false;
   if (error || !data) {
     gpsViewer = '';
@@ -433,10 +455,8 @@ $('assessmentGps').onsubmit = async event => {
   }
   if (current !== row || generation !== gpsGeneration) return;
   $('assessmentStop').disabled = false;
-  const url = new URL(location.href);
-  url.hash = 'observer='+viewer;
   const link = $('assessmentObserverLink');
-  link.value = url.href;
+  link.value = monitoringKey;
   link.closest('label').hidden = false;
   $('assessmentCopyLink').hidden = false;
   setGpsStatus('keepOpen');
@@ -501,9 +521,11 @@ async function refreshMap() {
   if (!map || refreshing) return;
   const generation = syncGeneration;
   refreshing = true;
-  const result = client ? await client.rpc('bamco_observer_location',{viewer_key:observerKey}) : {error:true};
+  const result = !client ? {error:true} : observerKey
+    ? await client.rpc('bamco_observer_location',{viewer_key:observerKey})
+    : await client.rpc('bamco_site_monitoring_locations',{monitoring_key:readSavedCode()});
   const {error} = result;
-  const data = result.data ? [result.data] : [];
+  const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
   refreshing = false;
   if (generation !== syncGeneration || !map) return;
   const first = !markers.getLayers().length;

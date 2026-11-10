@@ -82,9 +82,25 @@
   border: 1px solid #c8ddd1;
   border-radius: 12px;
   color: #173f35;
-  font: inherit;
+  font-family: 'B Nazanin', 'BNazanin', serif;
+  font-size: inherit;
+  font-weight: 400;
   padding: 12px;
   width: 100%;
+}
+
+.bamco-font-fa {
+  font-family: 'B Nazanin', 'BNazanin', serif !important;
+  font-weight: 400 !important;
+}
+
+.bamco-font-en {
+  font-family: 'Times New Roman', Times, serif !important;
+  font-weight: 400 !important;
+}
+
+.bamco-day-fields input[dir="ltr"] {
+  text-align: center;
 }
 
 .bamco-day-fields input:focus,
@@ -102,6 +118,13 @@
   background: #edf7f1;
   color: #176a50;
   font-weight: 800;
+}
+
+.bamco-optional-note {
+  color: #6a7f77;
+  font-size: .84rem;
+  font-weight: 400;
+  margin: 3px 0 14px;
 }
 
 .bamco-passenger-grid {
@@ -167,7 +190,8 @@
   margin: 0;
 }
 
-.bamco-day-final {
+.bamco-day-final,
+.bamco-day-extra {
   border: 1px solid #cfe5d8;
   margin-top: 22px;
   overflow: hidden;
@@ -225,12 +249,13 @@
 }
 
 .bamco-extra-intro {
-  border-top: 1px solid #e0ebe5;
-  margin-top: 20px;
-  padding-top: 20px;
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
 }
 
-.bamco-extra-intro h3,
+.bamco-extra-intro h2,
 .bamco-extra-intro p {
   margin: 0;
 }
@@ -277,8 +302,22 @@
 }
 
 .assessment-readonly .bamco-day-workflow,
-.assessment-readonly .bamco-day-final {
+.assessment-readonly .bamco-day-final,
+.assessment-readonly .bamco-day-extra {
   background: #f8faf9;
+}
+
+.bamco-day-route .route-info,
+.bamco-day-route .route-info p,
+.bamco-day-route .route-estimate {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.day-picker-heading p {
+  color: #617a70;
+  font-size: .88rem;
+  margin: 4px 0 0;
 }
 
 @media (max-width: 900px) {
@@ -318,6 +357,11 @@
 
   .bamco-block-heading,
   .bamco-final-heading {
+    flex-direction: column;
+  }
+
+  .bamco-extra-intro {
+    align-items: flex-start;
     flex-direction: column;
   }
 

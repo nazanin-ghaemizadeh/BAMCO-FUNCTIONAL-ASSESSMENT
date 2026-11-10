@@ -9,7 +9,30 @@ let lastStamp='';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const number=value=>Number(value||0).toLocaleString('fa-IR',{maximumFractionDigits:2});
-const today=()=>{const now=new Date(),offset=now.getTimezoneOffset();return new Date(now.getTime()-offset*60000).toISOString().slice(0,10)};
+const faDigits='۰۱۲۳۴۵۶۷۸۹';
+const toFaDigits=value=>String(value??'').replace(/\d/g,digit=>faDigits[Number(digit)]);
+const toLatinDigits=value=>String(value??'').replace(/[۰-۹]/g,digit=>String(faDigits.indexOf(digit)));
+const persianTime=value=>toFaDigits(String(value??'').trim().replace(/[٫.]/g,':'));
+function persianDate(value){
+  const raw=String(value??'').trim();
+  if(raw&&/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(toLatinDigits(raw))&&!raw.includes('-'))return toFaDigits(toLatinDigits(raw));
+  let date=new Date();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))date=new Date(raw+'T12:00:00');
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date).filter(part=>part.type!=='literal').map(part=>[part.type,part.value]));
+  return parts.year+'/'+parts.month+'/'+parts.day;
+}
+function validPersianDate(value){
+  const match=toLatinDigits(value).match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  return Boolean(match&&Number(match[2])>=1&&Number(match[2])<=12&&Number(match[3])>=1&&Number(match[3])<=31);
+}
+function validTime(value){return /^([01]?\d|2[0-3]):[0-5]\d$/.test(toLatinDigits(value))}
+function applyScriptFont(field){
+  if(!field?.matches?.('input:not([type="file"]),textarea'))return;
+  const value=field.value||'';
+  field.classList.toggle('bamco-font-fa',/[\u0600-\u06ff]/.test(value));
+  field.classList.toggle('bamco-font-en',!/[\u0600-\u06ff]/.test(value)&&/[A-Za-z]/.test(value));
+}
+function wireScriptFonts(root){root.querySelectorAll('input:not([type="file"]),textarea').forEach(applyScriptFont)}
 
 function context(){
   const tab=document.body.dataset.view;
@@ -26,9 +49,9 @@ function normalize(meta={}){
   passengers=passengers.map(value=>String(value).trim()).filter(Boolean).slice(0,4);
   return {
     ...meta,
-    date:meta.date||today(),
-    startTime:meta.startTime||'',
-    endTime:meta.endTime||'',
+    date:persianDate(meta.date),
+    startTime:persianTime(meta.startTime),
+    endTime:persianTime(meta.endTime),
     startKm:meta.startKm??'',
     endKm:meta.endKm??'',
     distanceKm:meta.distanceKm??'',
@@ -44,7 +67,7 @@ function normalize(meta={}){
     breakdown:Boolean(meta.breakdown||meta.breakdownCause||meta.correctiveAction||meta.breakdownTime),
     breakdownCause:meta.breakdownCause||'',
     correctiveAction:meta.correctiveAction||'',
-    breakdownTime:meta.breakdownTime||'',
+    breakdownTime:persianTime(meta.breakdownTime),
     otherNotes:meta.otherNotes||''
   };
 }
@@ -58,19 +81,19 @@ function formMarkup(c,meta){
   const passengerCount=Math.max(1,meta.passengers.length);
   return '<div class="section-heading"><div><h2>گزارش پیمایش روز '+number(c.day)+'</h2><p>اطلاعات پیمایش، شرایط روز و رخدادهای خودرو را ثبت کنید.</p></div><span class="chip">فرم روزانه</span></div>'+
     '<form id="bamco-day-form" novalidate><div class="bamco-day-block"><h3>زمان و پیمایش</h3><div class="bamco-day-fields">'+
-    '<label>تاریخ<input name="date" type="date" required value="'+esc(meta.date)+'"></label>'+
-    '<label>ساعت شروع پیمایش<input name="startTime" type="time" required value="'+esc(meta.startTime)+'"></label>'+
-    '<label>ساعت پایان پیمایش<input name="endTime" type="time" required value="'+esc(meta.endTime)+'"></label>'+
+    '<label>تاریخ شمسی<input name="date" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.date)+'" placeholder="۱۴۰۵/۰۸/۱۹" aria-label="تاریخ شمسی"></label>'+
+    '<label>ساعت شروع پیمایش<input name="startTime" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.startTime)+'" placeholder="۰۸:۳۰"></label>'+
+    '<label>ساعت پایان پیمایش<input name="endTime" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.endTime)+'" placeholder="۱۷:۳۰"></label>'+
     '<label>کیلومتر شروع پیمایش<input name="startKm" type="number" min="0" step="0.1" required value="'+esc(meta.startKm)+'"></label>'+
     '<label>کیلومتر پایان پیمایش<input name="endKm" type="number" min="0" step="0.1" required value="'+esc(meta.endKm)+'"></label>'+
     '<label class="bamco-distance-field">کیلومتر طی‌شده<input name="distanceKm" type="number" readonly tabindex="-1" value="'+esc(meta.distanceKm)+'" placeholder="محاسبه خودکار"></label>'+
     '</div></div>'+
     '<div class="bamco-day-block"><div class="bamco-block-heading"><h3>افراد حاضر در خودرو</h3><div class="bamco-inline-actions"><button type="button" class="secondary" data-add-passenger="1">+ افزودن سرنشین</button><button type="button" class="secondary" data-remove-passenger="1">حذف آخرین سرنشین</button></div></div><div class="bamco-day-fields"><label>نام و نام خانوادگی راننده<input name="driver" required autocomplete="name" value="'+esc(meta.driver)+'"></label><div id="bamco-passenger-fields" class="bamco-passenger-grid">'+Array.from({length:passengerCount},(_,index)=>passengerField(index,meta.passengers[index])).join('')+'</div></div></div>'+
     '<div class="bamco-day-block"><h3>شرایط محیطی</h3><div class="bamco-day-fields"><label>دمای هوا (°C)<input name="temperature" type="number" step="0.1" required value="'+esc(meta.temperature)+'"></label><label>نوع آب‌وهوا<select name="weather" required><option value="">انتخاب کنید</option>'+['آفتابی','نیمه‌ابری','ابری','بارانی','برفی','مه‌آلود','باد شدید','گرد و غبار'].map(item=>'<option '+(meta.weather===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label></div></div>'+
-    '<div class="bamco-day-block"><label class="bamco-switch"><input name="refueled" type="checkbox" '+(meta.refueled?'checked':'')+'><span>در این روز باک خودرو پر شده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="refueled" '+(meta.refueled?'':'hidden')+'><label>نوع بنزین<select name="fuelType"><option value="">انتخاب کنید</option>'+['معمولی','سوپر','یورو ۴','یورو ۵','سایر'].map(item=>'<option '+(meta.fuelType===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label>جایگاه سوخت<input name="fuelStation" value="'+esc(meta.fuelStation)+'" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="fuelLiters" type="number" min="0" step="0.01" value="'+esc(meta.fuelLiters)+'"></label><label>کیلومتر خودرو هنگام سوخت‌گیری<input name="fuelOdometer" type="number" min="0" step="0.1" value="'+esc(meta.fuelOdometer)+'"></label></div></div>'+
-    '<div class="bamco-day-block"><label class="bamco-switch bamco-switch-alert"><input name="breakdown" type="checkbox" '+(meta.breakdown?'checked':'')+'><span>در این روز خرابی خودرو رخ داده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="breakdown" '+(meta.breakdown?'':'hidden')+'><label class="bamco-span-2">علت خرابی<textarea name="breakdownCause" rows="3" placeholder="شرح علت یا نشانه خرابی">'+esc(meta.breakdownCause)+'</textarea></label><label class="bamco-span-2">اقدام اصلاحی صورت‌گرفته<textarea name="correctiveAction" rows="3" placeholder="اقدام انجام‌شده یا تصمیم پیگیری">'+esc(meta.correctiveAction)+'</textarea></label><label>ساعت رخداد<input name="breakdownTime" type="time" value="'+esc(meta.breakdownTime)+'"></label></div></div>'+
+    '<div class="bamco-day-block"><div class="bamco-block-heading"><div><h3>سوخت‌گیری</h3><p class="bamco-optional-note">در صورت سوخت‌گیری در این روز، اطلاعات زیر را تکمیل کنید.</p></div></div><div class="bamco-day-fields"><label>نوع بنزین<select name="fuelType"><option value="">انتخاب کنید</option>'+['معمولی','سوپر','یورو ۴','یورو ۵','سایر'].map(item=>'<option '+(meta.fuelType===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label>جایگاه سوخت<input name="fuelStation" value="'+esc(meta.fuelStation)+'" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="fuelLiters" type="number" min="0" step="0.01" value="'+esc(meta.fuelLiters)+'"></label><label>کیلومتر خودرو هنگام سوخت‌گیری<input name="fuelOdometer" type="number" min="0" step="0.1" value="'+esc(meta.fuelOdometer)+'"></label></div></div>'+
+    '<div class="bamco-day-block"><label class="bamco-switch bamco-switch-alert"><input name="breakdown" type="checkbox" '+(meta.breakdown?'checked':'')+'><span>در این روز خرابی خودرو رخ داده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="breakdown" '+(meta.breakdown?'':'hidden')+'><label class="bamco-span-2">علت خرابی<textarea name="breakdownCause" rows="3" placeholder="شرح علت یا نشانه خرابی">'+esc(meta.breakdownCause)+'</textarea></label><label class="bamco-span-2">اقدام اصلاحی صورت‌گرفته<textarea name="correctiveAction" rows="3" placeholder="اقدام انجام‌شده یا تصمیم پیگیری">'+esc(meta.correctiveAction)+'</textarea></label><label>ساعت رخداد<input name="breakdownTime" type="text" inputmode="numeric" dir="ltr" value="'+esc(meta.breakdownTime)+'" placeholder="۱۴:۳۰"></label></div></div>'+
     '<div class="bamco-day-block"><label class="bamco-full-label">سایر توضیحات<textarea name="otherNotes" rows="4" placeholder="هر توضیح دیگری که باید در گزارش این روز ثبت شود...">'+esc(meta.otherNotes)+'</textarea></label></div>'+
-    '<div class="bamco-day-actions"><button type="submit" id="bamco-day-start" class="primary">ثبت اطلاعات و ورود به آزمون‌های روز</button></div><p id="bamco-live-state" role="status"></p></form>';
+    '<div class="bamco-day-actions"><button type="submit" id="bamco-day-start" class="primary">ثبت اطلاعات و نمایش نقشه</button></div><p id="bamco-live-state" role="status"></p></form>';
 }
 
 function setConditional(form,name,active){
@@ -98,7 +121,7 @@ function paint(){
   if(!host)return;
   if($('bamco-day-workflow')&&lastStamp===c.key){renderFinal(c);return}
   lastStamp=c.key;
-  document.querySelectorAll('#bamco-day-workflow,.bamco-day-final').forEach(node=>node.remove());
+  document.querySelectorAll('#bamco-day-workflow,.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
   const meta=normalize(app.mission(c.key));
   const section=document.createElement('section');
   section.id='bamco-day-workflow';
@@ -106,16 +129,19 @@ function paint(){
   section.innerHTML=formMarkup(c,meta);
   host.insertAdjacentElement('afterbegin',section);
   const form=$('bamco-day-form');
-  setConditional(form,'refueled',meta.refueled);
   setConditional(form,'breakdown',meta.breakdown);
   updateDistance(form);
   const started=Boolean(meta.startedAt||meta.dailyInfoSavedAt);
   const questions=$('questionsPanel');
+  const route=$('bamco-day-route');
+  if(route)route.classList.toggle('hidden',!started&&!app.isReadOnly());
   if(questions)questions.classList.toggle('hidden',!started&&!app.isReadOnly());
-  $('bamco-live-state').textContent=started?'اطلاعات این روز در پایگاه داده ثبت شده است. در صورت تغییر، فرم را دوباره ذخیره کنید.':'پس از ثبت این فرم، آزمون‌های این روز نمایش داده می‌شوند.';
+  $('bamco-live-state').textContent=started?'اطلاعات این روز در پایگاه داده ثبت شده است؛ نقشه و سپس آزمون‌ها در ادامه نمایش داده می‌شوند.':'پس از ثبت فرم، ابتدا نقشه مسیر و سپس آزمون‌های این روز نمایش داده می‌شوند.';
   form.addEventListener('submit',event=>{event.preventDefault();begin(c,form)});
   form.elements.startKm.addEventListener('input',()=>updateDistance(form));
   form.elements.endKm.addEventListener('input',()=>updateDistance(form));
+  for(const name of ['date','startTime','endTime','breakdownTime'])form.elements[name]?.addEventListener('input',event=>{event.target.value=toFaDigits(event.target.value);event.target.setCustomValidity('')});
+  wireScriptFonts(section);
   if(app.isReadOnly())form.querySelectorAll('input,select,textarea,button').forEach(element=>element.disabled=true);
   updatePassengerButtons(form);
   renderFinal(c);
@@ -151,10 +177,19 @@ function begin(c,form){
   if(app.isReadOnly())return;
   updateDistance(form);
   if(!form.reportValidity())return;
+  form.elements.date.value=toFaDigits(form.elements.date.value.trim());
+  form.elements.startTime.value=persianTime(form.elements.startTime.value);
+  form.elements.endTime.value=persianTime(form.elements.endTime.value);
+  if(!validPersianDate(form.elements.date.value)){form.elements.date.setCustomValidity('تاریخ شمسی را به‌صورت ۱۴۰۵/۰۸/۱۹ وارد کنید.');form.elements.date.reportValidity();return}
+  if(!validTime(form.elements.startTime.value)){form.elements.startTime.setCustomValidity('ساعت را به‌صورت ۰۸:۳۰ وارد کنید.');form.elements.startTime.reportValidity();return}
+  if(!validTime(form.elements.endTime.value)){form.elements.endTime.setCustomValidity('ساعت را به‌صورت ۱۷:۳۰ وارد کنید.');form.elements.endTime.reportValidity();return}
   const startKm=Number(form.elements.startKm.value),endKm=Number(form.elements.endKm.value);
   if(endKm<startKm){form.elements.endKm.setCustomValidity('کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.');form.elements.endKm.reportValidity();return}
   form.elements.endKm.setCustomValidity('');
-  const refueled=form.elements.refueled.checked,breakdown=form.elements.breakdown.checked;
+  const breakdown=form.elements.breakdown.checked;
+  if(breakdown){form.elements.breakdownTime.value=persianTime(form.elements.breakdownTime.value);if(!validTime(form.elements.breakdownTime.value)){form.elements.breakdownTime.setCustomValidity('ساعت رخداد را به‌صورت ۱۴:۳۰ وارد کنید.');form.elements.breakdownTime.reportValidity();return}}
+  const fuelType=form.elements.fuelType.value,fuelStation=form.elements.fuelStation.value.trim(),fuelLitersRaw=form.elements.fuelLiters.value,fuelOdometerRaw=form.elements.fuelOdometer.value;
+  const refueled=Boolean(fuelType||fuelStation||fuelLitersRaw||fuelOdometerRaw);
   const passengers=[...form.querySelectorAll('[name^="passenger"]')].map(field=>field.value.trim()).filter(Boolean).slice(0,4);
   const previous=app.mission(c.key);
   const data={
@@ -170,10 +205,10 @@ function begin(c,form){
     temperature:Number(form.elements.temperature.value),
     weather:form.elements.weather.value,
     refueled,
-    fuelType:refueled?form.elements.fuelType.value:'',
-    fuelStation:refueled?form.elements.fuelStation.value.trim():'',
-    fuelLiters:refueled?Number(form.elements.fuelLiters.value):'',
-    fuelOdometer:refueled?Number(form.elements.fuelOdometer.value):'',
+    fuelType,
+    fuelStation,
+    fuelLiters:fuelLitersRaw!==''?Number(fuelLitersRaw):'',
+    fuelOdometer:fuelOdometerRaw!==''?Number(fuelOdometerRaw):'',
     breakdown,
     breakdownCause:breakdown?form.elements.breakdownCause.value.trim():'',
     correctiveAction:breakdown?form.elements.correctiveAction.value.trim():'',
@@ -185,9 +220,10 @@ function begin(c,form){
   };
   app.setMission(c.key,data);
   app.setDayMileage(c.tab,c.day,data.distanceKm);
+  $('bamco-day-route')?.classList.remove('hidden');
   $('questionsPanel')?.classList.remove('hidden');
-  $('bamco-live-state').textContent='گزارش پیمایش روز در پایگاه داده ذخیره شد. اکنون آزمون‌های این روز را پاسخ دهید.';
-  $('questionsPanel')?.scrollIntoView({behavior:'smooth',block:'start'});
+  $('bamco-live-state').textContent='گزارش پیمایش روز ذخیره شد. نقشه مسیر نمایش داده شده است و پس از آن می‌توانید امتیازدهی را انجام دهید.';
+  $('bamco-day-route')?.scrollIntoView({behavior:'smooth',block:'start'});
   renderFinal(c);
 }
 
@@ -228,24 +264,32 @@ function customCard(test){
 }
 
 function renderFinal(c){
-  document.querySelectorAll('.bamco-day-final').forEach(node=>node.remove());
+  document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
   const progress=app.dayProgress?.();
   const meta=normalize(app.mission(c.key));
-  if(!(meta.startedAt||meta.dailyInfoSavedAt)||!progress?.complete)return;
+  if(!(meta.startedAt||meta.dailyInfoSavedAt))return;
   const map=taxonomy(),categories=[...map.keys()].sort((a,b)=>a.localeCompare(b,'fa'));
   const tests=customTests(meta);
+  const questions=$('questionsPanel');
+  if(!questions)return;
+  let anchor=questions;
+  if(progress?.complete){
+    const finalPanel=document.createElement('section');
+    finalPanel.className='surface panel bamco-day-final';
+    finalPanel.innerHTML='<div class="bamco-final-heading"><div><span class="bamco-final-check">✓</span><div><h2>جمع‌بندی روز '+number(c.day)+'</h2><p>تمام '+number(progress.total)+' آزمون برنامه این روز پاسخ داده شده‌اند.</p></div></div><span class="chip">تکمیل آزمون‌ها</span></div><div class="bamco-summary-grid">'+summaryItems(meta).map(([label,value])=>'<div class="bamco-summary-item"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>').join('')+'</div>';
+    questions.insertAdjacentElement('afterend',finalPanel);
+    anchor=finalPanel;
+  }
   const panel=document.createElement('section');
-  panel.className='surface panel bamco-day-final';
-  panel.innerHTML='<div class="bamco-final-heading"><div><span class="bamco-final-check">✓</span><div><h2>فرم نهایی روز '+number(c.day)+'</h2><p>تمام '+number(progress.total)+' آزمون برنامه این روز پاسخ داده شده‌اند. گزارش را مرور کنید.</p></div></div><span class="chip">تکمیل آزمون‌ها</span></div>'+
-    '<div class="bamco-summary-grid">'+summaryItems(meta).map(([label,value])=>'<div class="bamco-summary-item"><span>'+esc(label)+'</span><strong>'+esc(value)+'</strong></div>').join('')+'</div>'+
-    '<div class="bamco-extra-intro"><h3>آیا مورد دیگری علاوه بر موارد فوق می‌خواهید اضافه کنید؟</h3><p>در صورت نیاز یک آزمون تکمیلی بسازید؛ قالب نمره، کامنت و تصویر دقیقاً مشابه سایر آزمون‌هاست.</p></div>'+
+  panel.className='surface panel bamco-day-extra';
+  panel.innerHTML='<div class="bamco-extra-intro"><div><h2>آزمون تکمیلی روز '+number(c.day)+'</h2><p>این بخش مستقل است؛ حتی اگر همه آزمون‌های برنامه پاسخ داده نشده باشند، می‌توانید آزمون جدید اضافه کنید.</p></div><span class="chip">افزودن آزمون جدید</span></div>'+
     '<form id="bamco-custom-builder" class="bamco-custom-builder"><label>موضوع مربوط به چه شاخصی است؟<select name="category" required><option value="">انتخاب شاخص</option>'+categories.map(cat=>'<option value="'+esc(cat)+'">'+esc(cat)+'</option>').join('')+'</select></label><label>زیرشاخص<select name="subcategory" required disabled><option value="">ابتدا شاخص را انتخاب کنید</option></select></label><label class="bamco-span-2">عنوان آزمون<input name="name" required placeholder="عنوان آزمون تکمیلی را وارد کنید"></label><label class="bamco-span-2">شرایط آزمون<textarea name="profile" required rows="3" placeholder="شرایط و روش اجرای آزمون را بنویسید"></textarea></label><div class="bamco-builder-action"><button type="submit" class="primary">+ افزودن آزمون تکمیلی</button></div></form>'+
     '<div class="bamco-custom-list">'+(tests.length?tests.map(customCard).join(''):'<div class="empty bamco-no-custom">آزمون تکمیلی دیگری برای این روز ثبت نشده است.</div>')+'</div>';
-  const questions=$('questionsPanel');
-  if(questions)questions.insertAdjacentElement('afterend',panel);
+  anchor.insertAdjacentElement('afterend',panel);
   const builder=$('bamco-custom-builder');
   builder?.elements.category.addEventListener('change',()=>fillSubcategories(builder,map));
   builder?.addEventListener('submit',event=>{event.preventDefault();addCustom(c,builder)});
+  wireScriptFonts(panel);
   if(app.isReadOnly())panel.querySelectorAll('input,select,textarea,button').forEach(element=>element.disabled=true);
 }
 
@@ -268,7 +312,7 @@ function addCustom(c,form){
   });
   app.setMission(c.key,{...meta,customTests:tests,updatedAt:new Date().toISOString()});
   renderFinal(c);
-  document.querySelector('.bamco-custom-list .question:last-child')?.scrollIntoView({behavior:'smooth',block:'center'});
+  document.querySelector('.bamco-day-extra .bamco-custom-list .question:last-child')?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function updateCustom(c,id,patch){
@@ -283,7 +327,7 @@ function uploadPicture(c,id,file){
   reader.readAsDataURL(file);
 }
 
-document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final').forEach(node=>node.remove())});
+document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
 document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');
@@ -308,7 +352,7 @@ document.addEventListener('click',event=>{
 
 document.addEventListener('change',event=>{
   const field=event.target;
-  if(field.matches('#bamco-day-form [name="refueled"],#bamco-day-form [name="breakdown"]'))setConditional($('bamco-day-form'),field.name,field.checked);
+  if(field.matches('#bamco-day-form [name="breakdown"]'))setConditional($('bamco-day-form'),field.name,field.checked);
   if(field.dataset.customNote&&!app.isReadOnly()){
     const c=context();if(c)updateCustom(c,field.dataset.customNote,{note:field.value.trim()});
   }
@@ -316,10 +360,11 @@ document.addEventListener('change',event=>{
     const c=context();if(c)uploadPicture(c,field.dataset.customPhoto,field.files?.[0]);
   }
 });
+document.addEventListener('input',event=>applyScriptFont(event.target));
 
 const observer=new MutationObserver(()=>{
   const c=context();
-  if(!c){lastStamp='';document.querySelectorAll('.bamco-day-final').forEach(node=>node.remove());return}
+  if(!c){lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());return}
   if(!$('bamco-day-workflow')){lastStamp='';paint()}
 });
 observer.observe($('schedulePanel'),{childList:true});

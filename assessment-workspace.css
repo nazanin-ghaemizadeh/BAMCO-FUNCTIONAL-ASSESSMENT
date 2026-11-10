@@ -269,8 +269,8 @@ html[dir] body .day-route-label {font-size:14px;line-height:1.5;min-height:0;dis
 @media(max-width:700px){.assessment-days-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.assessment-day-tile {padding:8px;gap:3px}.assessment-day-tile .day-route-icon {width:40px;height:40px;flex-basis:40px}html[dir] body .day-route-label {font-size:13px}}
 
 /* English and Simplified Chinese use a left-to-right layout throughout. */
-html[dir=ltr] body {direction:ltr}
-html[dir=ltr] body :is(h1,h2,h3,h4,p,label,dt,dd,li,caption,summary,button,input,textarea,select,span,strong,b,td,th) {text-align:left!important;text-justify:auto!important}
+html[dir=ltr] body {direction:ltr;text-align:left}
+html[dir=ltr] body :is(h1,h2,h3,h4,p,label,dt,dd,li,caption,summary,button,input,textarea,select,span,strong,b,td,th) {text-justify:auto!important}
 html[dir=ltr] body :is(.welcome-title,#pageTitle,#assessmentName,.assessment-row-title,.assessment-day-card,.assessment-day-card strong,.assessment-day-card small,.assessment-day-tile,.assessment-day-tile span,.assessment-day-tile strong,.assessment-day-tile small,.score,.score strong,.score small) {text-align:center!important}
 html[dir=ltr] .vehicle-dropdown-trigger {direction:ltr}
 html[dir=ltr] .map-grid {direction:ltr}
@@ -313,3 +313,13 @@ html[dir] body .day-card-footer .day-route-label {color:#466b5a;font-size:16px;l
 html[dir] body .day-card-footer .day-route-label {font-size:15px;line-height:1.25}
 .assessment-day-tile .day-card-footer small {font-size:14px;padding:2px 12px}
 @media(max-width:700px){.assessment-days-grid .assessment-day-tile {padding:22px 8px 10px;gap:2px}.assessment-day-tile .day-card-top {top:7px}.assessment-day-tile .day-card-top strong {font-size:19px;padding:1px 10px}.assessment-day-tile .day-word {font-size:14px}.assessment-days-grid .assessment-day-tile .day-route-icon {width:100px;max-height:100px;max-width:82%;margin-top:8px}.assessment-day-tile .day-card-footer {gap:3px}html[dir] body .day-card-footer .day-route-label {font-size:12px;line-height:1.2}.assessment-day-tile .day-card-footer small {font-size:12px;padding:1px 10px}}
+
+/* One heading with compact, centered context badges in every language. */
+#innerHero > div:first-child {width:100%}
+.page-context {display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;margin:12px auto 0;max-width:100%}
+html[dir] body .page-context > span {display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:5px 17px;min-height:36px;border-radius:999px;line-height:1.5;text-align:center!important;font-size:18px;font-weight:400}
+.page-day-chip {background:#f0f6f3;border:1px solid #d5e6dc;color:#3d6c56}
+.page-section-chip {background:#f4eff9;border:1px solid #e2d7ee;color:#846b9c}
+.page-section-chip::before {content:'';width:6px;height:6px;border-radius:50%;background:#b29ac9}
+html[dir] body :is(#moduleLanding .gate-card strong,#moduleLanding .gate-cta,.day-card-footer .day-route-label,.assessment-day-card strong,.assessment-day-card small,.route-progress-table td,.day-picker-trigger small,.day-picker-paging span,.attachment-plus) {text-align:center!important}
+@media(max-width:600px){html[dir] body .page-context > span {font-size:16px;min-height:32px;padding:4px 14px}.page-context {margin-top:10px;gap:8px}}

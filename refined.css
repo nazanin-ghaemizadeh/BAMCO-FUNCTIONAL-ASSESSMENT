@@ -130,7 +130,7 @@ html[dir=ltr] #vehicleForm select{background-position:right 14px center}
 .route-table-note{font-size:15px;color:#647d72;line-height:1.8;margin:10px 0 0}
 
 /* Reference-style assessment rows and justified site text. */
-body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,input,textarea,select,span,strong,b){text-align:justify;text-justify:inter-word}
+html[dir=rtl] body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,input,textarea,select,span,strong,b){text-align:justify;text-justify:inter-word}
 #landing .gate-card strong,#moduleLanding .gate-card strong,.gate-title,.welcome-title{ text-align:justify }
 .question{padding:20px 0 24px;border:0;border-bottom:1px dashed #d3e3ee;border-radius:0;background:#fff;box-shadow:none}
 .question-head{margin-bottom:12px}
@@ -154,7 +154,6 @@ body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,inpu
 @media(max-width:700px){.test-conditions>div{display:block}.test-conditions dt{margin-bottom:2px}.test-conditions dd{margin-bottom:8px}.question .scores{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
 html[dir=rtl] body :where(h1,h2,h3,h4,p,dt,dd,li,caption,summary),html[dir=rtl] .question :is(.test-hierarchy span,.note-wrap textarea){text-align:justify!important;text-justify:inter-word}
-html[dir=ltr] body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,input,textarea,select,span,strong,b),html[dir=ltr] .gate-card strong{text-align:start}
 html[dir=ltr] :is(#landing,#moduleLanding) .gate-card :is(strong,.gate-cta),html[dir=ltr] :is(.score strong,.score small){text-align:center}
 
 /* Unified green assessment details and native Persian image picker. */
@@ -210,3 +209,4 @@ body[data-view=home] #innerHero,body[data-view=home] #legacySteps,body[data-view
 body[data-view=home] .app-header{width:100%;max-width:1920px;min-height:138px;height:auto;margin:0 auto 28px;padding:28px 36px;flex:0 0 auto}
 body[data-view=home] .brand-logo.original-brand-logo{height:72px}
 @media(max-width:700px){body[data-view=home] .app-header{min-height:120px;padding:22px 18px;margin:0 auto 28px;flex-wrap:wrap}body[data-view=home] .brand-logo.original-brand-logo{height:56px}}
+

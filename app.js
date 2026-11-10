@@ -329,7 +329,16 @@ renderGate();
 const titles={home:['',''],modules:['بخش‌های ارزیابی',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],supplementary:['پرسشنامه تکمیلی','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['نتایج و میانگین‌ها','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
 const daily=dayContext();
 const sectionNames={menu:'',form:'فرم روزانه',route:'مسیر پیمایش',scores:'امتیازدهی'};
-byId('pageTitle').textContent=titles[state.tab][0]+(daily&&dayScreen!=='days'?' — روز '+number(daily.day)+(sectionNames[dayScreen]?' — '+sectionNames[dayScreen]:''):'');byId('pageSub').textContent=titles[state.tab][1];
+byId('pageTitle').textContent=titles[state.tab][0];
+let pageContext=byId('pageContext');
+if(!pageContext){pageContext=document.createElement('div');pageContext.id='pageContext';pageContext.className='page-context';byId('pageTitle').insertAdjacentElement('afterend',pageContext)}
+pageContext.replaceChildren();
+pageContext.classList.toggle('hidden',!daily||dayScreen==='days');
+if(daily&&dayScreen!=='days'){
+ const day=document.createElement('span');day.className='page-day-chip';day.textContent='روز '+number(daily.day);pageContext.append(day);
+ if(sectionNames[dayScreen]){const section=document.createElement('span');section.className='page-section-chip';section.textContent=sectionNames[dayScreen];pageContext.append(section)}
+}
+byId('pageSub').textContent=titles[state.tab][1];
 byId('headerVehicle').textContent=conf().vclass+' · '+conf().body+' · '+conf().power+' · '+conf().driveType;
 document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===state.tab));
 byId('setupPanel').classList.toggle('hidden',state.tab!=='setup');

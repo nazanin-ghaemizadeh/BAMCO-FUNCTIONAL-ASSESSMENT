@@ -5,7 +5,7 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 #assessmentHub form, #assessmentEditorBar, .assessment-row {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
 #assessmentHub form {justify-content:center;margin-block:1rem}
 #assessmentHub input, #assessmentGps input {width:min(100%,16rem)}
-.assessment-row, #assessmentEditorBar {background:var(--surface,#fff);border:1px solid #d6e2ec;border-radius:16px;padding:1rem;margin-block:.65rem;text-align:start}
+.assessment-row, #assessmentEditorBar {background:#fff;border:1px solid #dceae3;border-radius:20px;padding:1rem;margin-block:.65rem;text-align:start}
 .assessment-row strong {flex:1;min-width:10rem;overflow-wrap:anywhere}
 #assessmentGps {display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;width:100%}
 #assessmentEditorBar.hidden, #assessmentGps.hidden {display:none!important}
@@ -13,10 +13,24 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 #assessmentHub [role=status], #assessmentSync, #assessmentGpsStatus {overflow-wrap:anywhere}
 body[data-view="home"] #backupBtn {display:none}
 #assessmentHub {width:min(100%,60rem);min-width:0;text-align:center}
-#assessmentHub .gate-grid {grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));margin-block:1rem}
+#assessmentHub .gate-grid {
+  width:min(100%,46rem);
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:clamp(14px,3vw,26px);
+  margin:1rem auto;
+}
+body[data-view="home"] #assessmentHub .gate-card {
+  height:clamp(220px,35vh,300px);
+}
+body[data-view="home"] #assessmentHub .gate-card strong {text-align:center}
+#landing #assessmentHub .welcome-title {text-align:center!important;white-space:normal}
+#assessmentHub > .toolbar {justify-content:center}
+@media (max-width:580px) {
+  #assessmentHub .gate-grid {grid-template-columns:minmax(0,1fr);width:min(100%,22rem)}
+  body[data-view="home"] #assessmentHub .gate-card {height:230px}
+}
 body[data-view="home"] {height:auto;min-height:100dvh}
 body[data-view="home"] #landing {grid-template-rows:max-content max-content}
-#assessmentHub .gate-illustration {max-height:90px}
 #assessmentLanguage {min-width:6rem;background:white;color:#153a60}
 .assessment-readonly #editSetupBtn,.assessment-readonly [data-import],.assessment-readonly [data-clear] {display:none}
 body[data-view="home"] .app-header .header-right {display:flex!important}

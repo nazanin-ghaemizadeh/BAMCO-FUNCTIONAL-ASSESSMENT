@@ -12,7 +12,13 @@ const client = window.supabase?.createClient(
 );
 
 const labels = {
-  title:['ارزیابی عملکرد خودرو','Vehicle Performance Assessment','整车性能评估'],
+  welcomeBefore:['کیفیت از ','Quality starts with ','品质源于'],
+  welcomeAccent:['ارزیابی دقیق','precise assessment','精准评估'],
+  welcomeAfter:[' آغاز می‌شود.','.','。'],
+  activeCta:['ورود به ارزیابی‌ها','View active assessments','查看进行中的评估'],
+  historyCta:['مشاهده نتایج ثبت‌شده','Browse completed assessments','查看已完成的评估'],
+  evaluatorCta:['ثبت و مدیریت ارزیابی','Record and manage assessments','记录和管理评估'],
+  observerCta:['مشاهده موقعیت خودرو','View vehicle location','查看车辆位置'],
   active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
@@ -158,7 +164,11 @@ function field(type, key, value = '') {
 
 function card(key, icon, action) {
   const b = button(key, action, 'gate-card');
-  b.replaceChildren(node('span',icon,'gate-illustration'),node('strong',tr(key)));
+  b.dataset.gateIcon = icon;
+  b.setAttribute('aria-label',tr(key));
+  const illustration = node('span','','gate-illustration');
+  illustration.setAttribute('aria-hidden','true');
+  b.replaceChildren(illustration,node('strong',tr(key)),node('span',tr(key+'Cta'),'gate-cta'));
   return b;
 }
 
@@ -192,7 +202,12 @@ function render() {
     return;
   }
   if (map) {map.remove();map = null}
-  hub.replaceChildren(node('h1',tr(screen === 'home' ? 'title' : screen === 'roles' ? 'active' : screen),'gate-title welcome-title'));
+  const title = node('h1',screen === 'home' ? '' : tr(screen === 'roles' ? 'active' : screen),'gate-title welcome-title');
+  if (screen === 'home') title.append(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
+  const divider = node('div','','welcome-divider');
+  divider.setAttribute('aria-hidden','true');
+  divider.append(node('i'),node('i'),node('i'));
+  hub.replaceChildren(title,divider);
   if (notice) {
     const status = node('p',notice);
     status.setAttribute('role','status');
@@ -200,9 +215,9 @@ function render() {
   }
   const toolbar = node('div','','toolbar');
   if (screen !== 'home') toolbar.append(button('back',()=>navigate(['evaluator','observer'].includes(screen) ? 'roles' : 'home')));
-  hub.append(toolbar);
-  if (screen === 'home') cards(card('active','◇',()=>navigate('roles')),card('history','◷',()=>navigate('history')));
-  if (screen === 'roles') cards(card('evaluator','◇',()=>navigate('evaluator')),card('observer','⌖',()=>navigate('observer')));
+  if (toolbar.childElementCount) hub.append(toolbar);
+  if (screen === 'home') cards(card('active','setup',()=>navigate('roles')),card('history','results',()=>navigate('history')));
+  if (screen === 'roles') cards(card('evaluator','supplementary',()=>navigate('evaluator')),card('observer','observer',()=>navigate('observer')));
   if (screen === 'evaluator' || screen === 'history') renderRows();
   if (screen === 'observer') {
     if (observerKey) renderMap();
@@ -266,7 +281,7 @@ function renderRows() {
   }
   if (!rows.length && !notice) hub.append(node('p',tr('empty')));
   for (const row of rows) {
-    const item = node('div','','assessment-row');
+    const item = node('div','','surface assessment-row');
     item.append(node('strong',row.title),button('open',()=>openAssessment(row.id)));
     item.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();

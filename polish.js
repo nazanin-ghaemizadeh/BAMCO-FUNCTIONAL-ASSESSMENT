@@ -15,7 +15,7 @@ icons.observer='<svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" c
 function polish(root){if(root.nodeType===3){if(root.parentElement&&!root.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName'))root.nodeValue=digits(root.nodeValue);return;}if(root.nodeType!==1&&root!==document.body)return;root.querySelectorAll?.('.gate-card').forEach(c=>{const i=c.querySelector('.gate-illustration');if(i&&!i.querySelector('svg'))i.innerHTML=icons[c.dataset.gateIcon || c.dataset.open]||car;});const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walk.nextNode())if(!n.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName'))n.nodeValue=digits(n.nodeValue);}
 const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if(m.type==='characterData')polish(m.target);else m.addedNodes.forEach(polish)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});polish(document.body);
 window.BAMCO_DROPDOWNS=function(root=document){
- const selects=[...root.querySelectorAll('#vehicleForm select,select[name="temperature"]')];
+ const selects=[...root.querySelectorAll('#vehicleForm select,select[name="temperature"],select[name="weather"]')];
  const closeAll=(except)=>document.querySelectorAll('.vehicle-dropdown-list').forEach(l=>{if(l!==except){l.hidden=true;l.previousElementSibling?.setAttribute('aria-expanded','false')}});
  selects.forEach(select=>{
   if(select.dataset.customDropdown)return;

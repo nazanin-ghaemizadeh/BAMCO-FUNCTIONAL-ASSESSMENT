@@ -199,8 +199,14 @@ function dayContext(){
 function dayRouteAppearance(p){
  const text=p.type||p.route||'';
  const kind=p.routeId||(/گرم|سرد/.test(text)?'hot':/خاکی|خارج.?جاده|ناهموار/.test(text)?'offroad':/کوهستان|شیب/.test(text)?'mountain':/شهری/.test(text)&&!/برون/.test(text)?'urban':'rural');
- const paths={hot:'<circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/>',urban:'<path d="M3 21V7h8v14m0-10h10v10M6 10h2m-2 4h2m-2 4h2m6-3h3m-3 3h3M1 21h22"/>',rural:'<path d="M7 2 2 22M17 2l5 20M12 3v4m0 3v4m0 3v4"/>',mountain:'<path d="m1 21 8-17 6 11 3-6 5 12H1m5-10 3 2 3-3"/>',offroad:'<path d="m2 20 4-4 4 2 4-5 4 2 4-4M3 8l3-3 3 3m4-1 3-3 4 4"/>'};
- return {kind,icon:'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(paths[kind]||paths.rural)+'</svg>',label:text};
+ const icons={
+ hot:'<circle cx="32" cy="32" r="22" fill="#ffefd4"/><g stroke="#dfa24c" stroke-width="3" stroke-linecap="round"><path d="M32 5v6m0 42v6M5 32h6m42 0h6M13 13l4 4m30 30 4 4M13 51l4-4m30-30 4-4"/></g><circle cx="32" cy="32" r="14" fill="#f7ce7d" stroke="#cf9741" stroke-width="2"/><path d="M24 30h1m14 0h1" stroke="#a87a38" stroke-width="3" stroke-linecap="round"/><path d="M27 37q5 5 10 0" fill="none" stroke="#a87a38" stroke-width="2" stroke-linecap="round"/>',
+ urban:'<circle cx="32" cy="32" r="28" fill="#e2f2e9"/><rect x="12" y="23" width="19" height="29" rx="4" fill="#b8dbc8" stroke="#6f9f88" stroke-width="2"/><rect x="30" y="12" width="22" height="40" rx="5" fill="#d0e1ee" stroke="#7e9db5" stroke-width="2"/><path d="M18 31h6m-6 8h6m13-18h8m-8 9h8m-8 9h8" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M9 53h46" stroke="#88b09b" stroke-width="2" stroke-linecap="round"/>',
+ rural:'<circle cx="32" cy="32" r="28" fill="#e5eff9"/><path d="M22 12h20l13 42H9z" fill="#a5bfd4" stroke="#6e92b0" stroke-width="2" stroke-linejoin="round"/><path d="M32 17v6m0 8v7m0 8v7" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="m19 24-4 17m30-17 4 17" stroke="#eaf3fb" stroke-width="2" stroke-linecap="round"/>',
+ mountain:'<circle cx="32" cy="32" r="28" fill="#eee7f7"/><path d="m6 51 21-36 20 36z" fill="#b6a2cf" stroke="#8b72a8" stroke-width="2" stroke-linejoin="round"/><path d="m28 51 13-25 18 25z" fill="#d0c2e0" stroke="#9d86b5" stroke-width="2" stroke-linejoin="round"/><path d="m20 27 7-12 7 13-7-4z" fill="#fff"/><circle cx="48" cy="14" r="5" fill="#ecd2a0"/>',
+ offroad:'<circle cx="32" cy="32" r="28" fill="#f4eadb"/><path d="M6 45q11-14 24-4t28-2v14H6z" fill="#dfcba8"/><path d="M26 8q-17 16 0 25t6 23" fill="none" stroke="#b39770" stroke-width="10"/><path d="M26 8q-17 16 0 25t6 23" fill="none" stroke="#f9f3e8" stroke-width="2" stroke-dasharray="4 5"/><circle cx="45" cy="25" r="4" fill="#c1ab8b"/><circle cx="14" cy="48" r="3" fill="#b9a17c"/>'
+ };
+ return {kind,icon:'<svg viewBox="0 0 64 64" aria-hidden="true">'+(icons[kind]||icons.rural)+'</svg>',label:text};
 }
 function renderDayNavigation(){
  const c=dayContext(),host=byId('dayNavigation');
@@ -208,7 +214,7 @@ function renderDayNavigation(){
  if(!c){host.replaceChildren();return}
  if(dayScreen==='days'){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan();
-  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-route-icon">'+theme.icon+'</span><span>روز</span><strong>'+number(p.day)+'</strong><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small></button>'}).join('')+'</div>';
+  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-route-icon">'+theme.icon+'</span><strong><span class="day-word">روز </span>'+number(p.day)+'</strong><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small></button>'}).join('')+'</div>';
  }else if(dayScreen==='menu'){
   host.innerHTML='<div class="assessment-day-sections">'+[
    ['form','فرم روزانه','ثبت اطلاعات پیمایش و شرایط روز','▤'],

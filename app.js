@@ -206,7 +206,14 @@ function dayRouteAppearance(p){
  mountain:'<circle cx="32" cy="32" r="28" fill="#eee7f7"/><path d="m6 51 21-36 20 36z" fill="#b6a2cf" stroke="#8b72a8" stroke-width="2" stroke-linejoin="round"/><path d="m28 51 13-25 18 25z" fill="#d0c2e0" stroke="#9d86b5" stroke-width="2" stroke-linejoin="round"/><path d="m20 27 7-12 7 13-7-4z" fill="#fff"/><circle cx="48" cy="14" r="5" fill="#ecd2a0"/>',
  offroad:'<circle cx="32" cy="32" r="28" fill="#f4eadb"/><path d="M6 45q11-14 24-4t28-2v14H6z" fill="#dfcba8"/><path d="M26 8q-17 16 0 25t6 23" fill="none" stroke="#b39770" stroke-width="10"/><path d="M26 8q-17 16 0 25t6 23" fill="none" stroke="#f9f3e8" stroke-width="2" stroke-dasharray="4 5"/><circle cx="45" cy="25" r="4" fill="#c1ab8b"/><circle cx="14" cy="48" r="3" fill="#b9a17c"/>'
  };
- return {kind,icon:'<svg viewBox="0 0 64 64" aria-hidden="true">'+(icons[kind]||icons.rural)+'</svg>',label:text};
+ const smiles={
+ hot:'<ellipse cx="22" cy="36" rx="3" ry="1.8" fill="#efa99d" opacity=".7"/><ellipse cx="42" cy="36" rx="3" ry="1.8" fill="#efa99d" opacity=".7"/>',
+ urban:'<path d="M37 44h.1m8 0h.1" stroke="#6b88a3" stroke-width="2.5" stroke-linecap="round"/><path d="M39 47q2 3 4 0" fill="none" stroke="#6b88a3" stroke-width="1.4" stroke-linecap="round"/>',
+ mountain:'<path d="M22 39h.1m9 0h.1" stroke="#7d6398" stroke-width="2.6" stroke-linecap="round"/><path d="M24 43q3 3 5 0" fill="none" stroke="#7d6398" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="19" cy="42" rx="2" ry="1.2" fill="#e8b8c8"/><ellipse cx="34" cy="42" rx="2" ry="1.2" fill="#e8b8c8"/>',
+ rural:'<path d="m26 32 2-5h8l2 5" fill="#d7ede4" stroke="#5c9883" stroke-width="1.4"/><rect x="23" y="32" width="18" height="12" rx="4" fill="#b8ddcc" stroke="#5c9883" stroke-width="1.4"/><circle cx="27" cy="36" r="1.5" fill="#fff"/><circle cx="37" cy="36" r="1.5" fill="#fff"/><path d="M29 39q3 3 6 0" stroke="#5c9883" stroke-width="1.2" fill="none" stroke-linecap="round"/>',
+ offroad:'<path d="m34 33 2-5h8l2 5" fill="#fff3db" stroke="#aa8857" stroke-width="1.4"/><rect x="31" y="33" width="18" height="12" rx="4" fill="#edcfa1" stroke="#aa8857" stroke-width="1.4"/><circle cx="35" cy="37" r="1.5" fill="#fff"/><circle cx="45" cy="37" r="1.5" fill="#fff"/><path d="M37 40q3 3 6 0" stroke="#aa8857" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+ };
+ return {kind,icon:'<svg viewBox="0 0 64 64" aria-hidden="true">'+(icons[kind]||icons.rural)+(smiles[kind]||smiles.rural)+'</svg>',label:text};
 }
 function renderDayNavigation(){
  const c=dayContext(),host=byId('dayNavigation');
@@ -214,7 +221,7 @@ function renderDayNavigation(){
  if(!c){host.replaceChildren();return}
  if(dayScreen==='days'){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan();
-  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-route-icon">'+theme.icon+'</span><strong><span class="day-word">روز </span>'+number(p.day)+'</strong><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small></button>'}).join('')+'</div>';
+  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span><span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer"><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small></span></button>'}).join('')+'</div>';
  }else if(dayScreen==='menu'){
   host.innerHTML='<div class="assessment-day-sections">'+[
    ['form','فرم روزانه','ثبت اطلاعات پیمایش و شرایط روز','▤'],

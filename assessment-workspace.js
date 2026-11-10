@@ -52,6 +52,12 @@ const labels = {
   codeHint:['ارزیاب این کد را یک‌بار روی گوشی خود وارد می‌کند.','The evaluator enters this code once on their phone.','评估员在手机上输入此代码一次。'],
   pairing:['اتصال اولیه به گوشی ارزیاب','Pair the evaluator’s phone','配对评估员手机'],
   invalidCode:['کد دسترسی کامل را وارد کنید.','Enter the full access code.','请输入完整的访问代码。'],
+  accessDevices:['دسترسی از دستگاه دیگر','Access from another device','跨设备访问'],
+  accessHint:['کد ارزیاب را از دستگاهی که فهرست را دارد کپی کنید و در دستگاه جدید وارد کنید. این کد اجازه مشاهده، ویرایش و حذف ارزیابی‌ها را می‌دهد.','Copy the evaluator code from the device that has the list and enter it on the new device. This code grants access to view, edit, and delete assessments.','从已有评估列表的设备复制评估员代码，并在新设备上输入。此代码允许查看、编辑及删除评估。'],
+  showAccessCode:['نمایش کد ارزیاب','Show evaluator code','显示评估员代码'],
+  evaluatorCode:['کد ارزیاب','Evaluator code','评估员代码'],
+  useAccessCode:['اتصال به فهرست','Connect to assessment list','连接评估列表'],
+  restoreDeviceAccess:['بازگشت به دسترسی اولیه این دستگاه','Restore this device’s original access','恢复此设备的原有访问权限'],
   databaseScope:['ارزیابی‌های ثبت‌شده در سامانه','Assessments saved in the system','系统中已保存的评估'],
   share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
   stop:['توقف ارسال GPS','Stop GPS sharing','停止共享定位'],
@@ -151,9 +157,20 @@ function deviceKey(storageKey) {
   return key;
 }
 
+const sharedAccessStorage = 'bamco-shared-assessment-key';
+let sharedAccessKey;
+try {
+  const stored = localStorage.getItem(sharedAccessStorage);
+  if (/^[0-9a-f]{64}$/.test(stored || '')) sharedAccessKey = stored;
+} catch {}
+
+function assessmentKey() {
+  return sharedAccessKey || deviceKey('bamco-assessment-browser-key');
+}
+
 function ownerRequest(operation,args = {}) {
   try {
-    const browser_key = deviceKey('bamco-assessment-browser-key');
+    const browser_key = assessmentKey();
     return client.rpc('bamco_browser_assessment',{browser_key,operation,args});
   } catch (error) {
     return Promise.resolve({error});
@@ -295,8 +312,51 @@ async function navigate(next) {
   rows = data; notice = ''; render();
 }
 
+function renderDeviceAccess() {
+  const details = node('details','','monitoring-pairing');
+  details.append(node('summary',tr('accessDevices')),node('p',tr('accessHint')));
+  const reveal = button('showAccessCode',()=>{
+    let key;
+    try {key = assessmentKey()} catch {report('Storage unavailable');return}
+    const input = field('text','evaluatorCode',key);
+    input.readOnly = true;
+    input.dir = 'ltr';
+    input.onclick = () => input.select();
+    reveal.replaceWith(input,button('copyCode',async event=>{
+      const copy = event.currentTarget;
+      try {await navigator.clipboard.writeText(key);copy.textContent = tr('copied')}
+      catch {input.focus();input.select()}
+    }));
+  });
+  const form = node('form');
+  const input = field('password','evaluatorCode');
+  input.maxLength = 64;
+  input.dir = 'ltr';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  const status = node('p');
+  status.setAttribute('role','status');
+  form.append(input,node('button',tr('useAccessCode'),'assessment-action'));
+  form.onsubmit = event=>{
+    event.preventDefault();
+    const key = input.value.trim().toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(key)) {status.textContent = tr('invalidCode');return}
+    try {localStorage.setItem(sharedAccessStorage,key)} catch {status.textContent = tr('error');return}
+    sharedAccessKey = key;
+    navigate(screen);
+  };
+  details.append(reveal,form,status);
+  if (sharedAccessKey) details.append(button('restoreDeviceAccess',()=>{
+    try {localStorage.removeItem(sharedAccessStorage)} catch {report('Storage unavailable');return}
+    sharedAccessKey = undefined;
+    navigate(screen);
+  }));
+  hub.append(details);
+}
+
 function renderRows() {
   hub.append(node('p',tr('databaseScope')));
+  if (notice !== 'load') renderDeviceAccess();
   if (screen === 'evaluator') {
     const form = node('form');
     const title = field('text','name');
@@ -440,7 +500,7 @@ $('assessmentGps').onsubmit = async event => {
   try {
     localStorage.setItem('bamco-device-monitoring-code',monitoringKey);
     result = await client.rpc('bamco_start_site_monitoring',{
-      browser_key:deviceKey('bamco-assessment-browser-key'),
+      browser_key:assessmentKey(),
       assessment_id:row.id,viewer_key:viewer,monitoring_key:monitoringKey
     });
   } catch (error) {result = {error}}

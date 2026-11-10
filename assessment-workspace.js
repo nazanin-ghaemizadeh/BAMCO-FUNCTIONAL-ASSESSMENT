@@ -52,7 +52,7 @@ const labels = {
   codeHint:['ارزیاب این کد را یک‌بار روی گوشی خود وارد می‌کند.','The evaluator enters this code once on their phone.','评估员在手机上输入此代码一次。'],
   pairing:['اتصال اولیه به گوشی ارزیاب','Pair the evaluator’s phone','配对评估员手机'],
   invalidCode:['کد دسترسی کامل را وارد کنید.','Enter the full access code.','请输入完整的访问代码。'],
-  browserScope:['ارزیابی‌های این مرورگر','Assessments for this browser','此浏览器的评估'],
+  databaseScope:['ارزیابی‌های ثبت‌شده در سامانه','Assessments saved in the system','系统中已保存的评估'],
   share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
   stop:['توقف ارسال GPS','Stop GPS sharing','停止共享定位'],
   gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
@@ -296,7 +296,7 @@ async function navigate(next) {
 }
 
 function renderRows() {
-  hub.append(node('p',tr('browserScope')));
+  hub.append(node('p',tr('databaseScope')));
   if (screen === 'evaluator') {
     const form = node('form');
     const title = field('text','name');

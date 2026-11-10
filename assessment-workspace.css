@@ -70,6 +70,9 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
 #assessmentHub .assessment-list-heading h2 {margin:0;font-size:24px;color:#294e42;text-align:start}
 #assessmentHub .assessment-count {display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:3px 13px;border-radius:999px;background:#edf5f0;color:#557267;font-size:14px;white-space:nowrap;text-align:center}
 #assessmentHub .assessment-card-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#assessmentHub .assessment-card-grid.is-single {grid-template-columns:1fr}
+#assessmentHub .assessment-card-grid.is-single .assessment-row {min-height:205px}
+#assessmentHub .assessment-card-grid.is-single .assessment-row-title {font-size:23px}
 #assessmentHub .assessment-row {display:flex;flex-direction:column;min-height:225px;margin:0;padding:20px;border:1px solid #dce9e2;border-radius:18px;background:#fff;text-align:start;box-shadow:0 9px 26px #244c3d09;transition:border-color .18s,box-shadow .18s,transform .18s}
 #assessmentHub .assessment-row:hover {border-color:#a9cfbd;box-shadow:0 15px 34px #244c3d12;transform:translateY(-2px)}
 #assessmentHub .assessment-row-top {display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid #ebf1ed}

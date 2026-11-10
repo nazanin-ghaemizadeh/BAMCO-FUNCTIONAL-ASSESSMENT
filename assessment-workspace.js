@@ -307,6 +307,7 @@ function renderRows() {
   );
   list.append(listHeading);
   const grid = node('div','','assessment-card-grid');
+  if (rows.length === 1) grid.classList.add('is-single');
   list.append(grid);
   if (!rows.length && !notice) {
     const empty = node('div','','assessment-empty-state');

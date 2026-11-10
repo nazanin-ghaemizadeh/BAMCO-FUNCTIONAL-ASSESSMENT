@@ -26,7 +26,7 @@ const labels = {
   active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
-  observer:['ناظر GPS','GPS observer','定位观察员'],
+  observer:['نظارت بر موقعیت مکانی','Location Monitoring','位置监控'],
   back:['بازگشت','Back','返回'],
   create:['ارزیابی جدید','New assessment','新建评估'],
   name:['عنوان ارزیابی','Assessment title','评估名称'],

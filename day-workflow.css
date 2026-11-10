@@ -1,2 +1,327 @@
+.bamco-day-workflow {
+  background: linear-gradient(125deg, #f5fbf8, #fff);
+  border: 1px solid #d3e9dc;
+  border-radius: 20px;
+  padding: 22px;
+  margin: 0 0 22px;
+}
 
-.bamco-day-workflow{background:linear-gradient(125deg,#f5fbf8,#fff);border:1px solid #d3e9dc;border-radius:20px;padding:22px;margin:0 0 22px}.bamco-day-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.bamco-day-fields label{display:flex;flex-direction:column;gap:7px;font-weight:600}.bamco-day-fields input,.bamco-day-fields select{width:100%;border-radius:12px;border:1px solid #c8ddd1;padding:12px;background:#fff}.bamco-day-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.bamco-day-actions button{padding:12px 20px;border-radius:12px}#bamco-live-state{color:#2a7158;font-weight:600;margin:12px 0}
+.bamco-day-workflow form {
+  display: grid;
+  gap: 14px;
+}
+
+.bamco-day-block {
+  background: rgba(255, 255, 255, .82);
+  border: 1px solid #deebe4;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.bamco-day-block h3 {
+  color: #173f35;
+  font-size: 1rem;
+  margin: 0 0 14px;
+}
+
+.bamco-block-heading,
+.bamco-final-heading,
+.bamco-final-heading > div,
+.bamco-inline-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.bamco-block-heading,
+.bamco-final-heading {
+  justify-content: space-between;
+}
+
+.bamco-block-heading h3,
+.bamco-final-heading h2,
+.bamco-final-heading p {
+  margin: 0;
+}
+
+.bamco-inline-actions {
+  flex-wrap: wrap;
+}
+
+.bamco-inline-actions button {
+  font-size: .82rem;
+  min-height: 36px;
+  padding: 7px 12px;
+}
+
+.bamco-day-fields,
+.bamco-custom-builder {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.bamco-day-fields label,
+.bamco-custom-builder label,
+.bamco-full-label {
+  color: #26463e;
+  display: flex;
+  flex-direction: column;
+  font-weight: 650;
+  gap: 7px;
+}
+
+.bamco-day-fields input,
+.bamco-day-fields select,
+.bamco-day-fields textarea,
+.bamco-custom-builder input,
+.bamco-custom-builder select,
+.bamco-custom-builder textarea,
+.bamco-full-label textarea {
+  background: #fff;
+  border: 1px solid #c8ddd1;
+  border-radius: 12px;
+  color: #173f35;
+  font: inherit;
+  padding: 12px;
+  width: 100%;
+}
+
+.bamco-day-fields input:focus,
+.bamco-day-fields select:focus,
+.bamco-day-fields textarea:focus,
+.bamco-custom-builder input:focus,
+.bamco-custom-builder select:focus,
+.bamco-custom-builder textarea:focus {
+  border-color: #2d8065;
+  box-shadow: 0 0 0 3px rgba(45, 128, 101, .12);
+  outline: 0;
+}
+
+.bamco-distance-field input {
+  background: #edf7f1;
+  color: #176a50;
+  font-weight: 800;
+}
+
+.bamco-passenger-grid {
+  display: grid;
+  gap: 14px;
+  grid-column: span 1;
+}
+
+.bamco-passenger-grid label {
+  width: 100%;
+}
+
+.bamco-span-2,
+.bamco-full-label,
+.bamco-builder-action {
+  grid-column: 1 / -1;
+}
+
+.bamco-switch {
+  align-items: center;
+  color: #245244;
+  cursor: pointer;
+  display: flex;
+  font-weight: 750;
+  gap: 10px;
+}
+
+.bamco-switch input {
+  accent-color: #28775d;
+  height: 19px;
+  width: 19px;
+}
+
+.bamco-switch-alert input {
+  accent-color: #b44b42;
+}
+
+.bamco-conditional {
+  border-top: 1px dashed #cbded4;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.bamco-conditional[hidden] {
+  display: none;
+}
+
+.bamco-day-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.bamco-day-actions button {
+  border-radius: 12px;
+  padding: 12px 20px;
+}
+
+#bamco-live-state {
+  color: #2a7158;
+  font-weight: 650;
+  margin: 0;
+}
+
+.bamco-day-final {
+  border: 1px solid #cfe5d8;
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.bamco-final-heading {
+  background: linear-gradient(120deg, #edf8f2, #fff);
+  border-bottom: 1px solid #dcebe3;
+  margin: -22px -22px 20px;
+  padding: 20px 22px;
+}
+
+.bamco-final-heading p {
+  color: #547067;
+  margin-top: 3px;
+}
+
+.bamco-final-check {
+  align-items: center;
+  background: #24785d;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 42px;
+  font-size: 1.25rem;
+  height: 42px;
+  justify-content: center;
+}
+
+.bamco-summary-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bamco-summary-item {
+  background: #f7faf8;
+  border: 1px solid #e0ebe5;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.bamco-summary-item span {
+  color: #6b8179;
+  font-size: .78rem;
+}
+
+.bamco-summary-item strong {
+  color: #214a3e;
+  overflow-wrap: anywhere;
+}
+
+.bamco-extra-intro {
+  border-top: 1px solid #e0ebe5;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.bamco-extra-intro h3,
+.bamco-extra-intro p {
+  margin: 0;
+}
+
+.bamco-extra-intro p {
+  color: #627970;
+  margin-top: 5px;
+}
+
+.bamco-custom-builder {
+  background: #f7fbf9;
+  border: 1px solid #dbe9e1;
+  border-radius: 16px;
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.bamco-builder-action {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.bamco-custom-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.bamco-custom-list .question {
+  margin: 0;
+}
+
+.bamco-custom-delete {
+  background: #fff4f3;
+  border: 1px solid #efc8c4;
+  border-radius: 10px;
+  color: #a43f37;
+  min-height: 38px;
+  padding: 8px 14px;
+}
+
+.bamco-no-custom {
+  margin: 0;
+}
+
+.assessment-readonly .bamco-day-workflow,
+.assessment-readonly .bamco-day-final {
+  background: #f8faf9;
+}
+
+@media (max-width: 900px) {
+  .bamco-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .bamco-day-workflow {
+    border-radius: 15px;
+    padding: 14px;
+  }
+
+  .bamco-day-block {
+    padding: 14px;
+  }
+
+  .bamco-day-fields,
+  .bamco-custom-builder,
+  .bamco-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bamco-passenger-grid,
+  .bamco-span-2,
+  .bamco-full-label,
+  .bamco-builder-action {
+    grid-column: auto;
+  }
+
+  .bamco-block-heading,
+  .bamco-final-heading,
+  .bamco-final-heading > div {
+    align-items: flex-start;
+  }
+
+  .bamco-block-heading,
+  .bamco-final-heading {
+    flex-direction: column;
+  }
+
+  .bamco-final-heading {
+    margin: -22px -22px 16px;
+  }
+}

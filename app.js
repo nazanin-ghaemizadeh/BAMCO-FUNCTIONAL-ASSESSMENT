@@ -176,8 +176,7 @@ const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),d=state.tab==='d
 if(!p){s.innerHTML='<div class="empty">برنامه روزانه پیدا نشد.</div>';return}
 const indexText=state.tab==='drive'?'برنامه ۲۶ روزه قابلیت رانندگی':'برنامه انعطاف‌پذیر دوام';
 
-const mVal=num((state.mileage[state.tab]||{})[d])||0;
-s.innerHTML='<div class="section-heading"><div><h2>'+indexText+'</h2></div><button type="button" class="day-picker-trigger" data-opendays="1" aria-haspopup="dialog" aria-controls="dayPickerDialog"><span>انتخاب روز برنامه</span><strong>روز '+number(d)+' از '+number(plan.length)+'</strong><small>'+number(p.km)+' کیلومتر</small></button></div><div class="day-meta"><span class="meta-tag">هدف روز: '+number(p.km)+' km</span><span class="meta-tag">هدف تجمعی: '+number(p.cum)+' km</span>'+(state.tab==='durability'?'<span class="meta-tag">کیلومترشمار هدف: '+number(p.odo)+' km</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)).join('، ')+' km</span>':'')+'</div>'+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'<hr class="separator"><div class="day-status"><b>پیمایش واقعی روز '+number(d)+':</b> <input aria-label="کیلومتر واقعی پیموده‌شده" id="actualKm" type="number" min="0" step="0.1" value="'+mVal+'"> <span>کیلومتر</span> <button class="secondary" data-savekm="1">ثبت کیلومتر</button></div>'
+s.innerHTML='<div class="section-heading"><div><h2>'+indexText+'</h2></div><button type="button" class="day-picker-trigger" data-opendays="1" aria-haspopup="dialog" aria-controls="dayPickerDialog"><span>انتخاب روز برنامه</span><strong>روز '+number(d)+' از '+number(plan.length)+'</strong><small>'+number(p.km)+' کیلومتر</small></button></div><div class="day-meta"><span class="meta-tag">هدف روز: '+number(p.km)+' km</span><span class="meta-tag">هدف تجمعی: '+number(p.cum)+' km</span>'+(state.tab==='durability'?'<span class="meta-tag">کیلومترشمار هدف: '+number(p.odo)+' km</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)).join('، ')+' km</span>':'')+'</div>'+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)
 }
 const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#be304a'],['#fae8e1','#f5b49d','#c84c33'],['#fff0df','#f5c09a','#cf752a'],['#fff4df','#f5ce8f','#cb8a1d'],['#fff7dd','#e9d075','#b79817'],['#eff6df','#bdd889','#619825'],['#e4f4e8','#9fd5ad','#22834e'],['#def1eb','#93ceb6','#167d55'],['#dcefe8','#85c1aa','#0e7451']];
 function renderQuestions(){
@@ -274,7 +273,7 @@ byId('resultsPanel').classList.toggle('hidden',state.tab!=='results');
 byId('editSetupBtn').classList.toggle('hidden',['setup','home','modules'].includes(state.tab));
 if(state.tab==='setup')renderSetup();else if(state.tab==='results')renderResults();else if(['home','modules'].includes(state.tab)){}else{const items=dayItems();renderKpis(items);renderSchedule();renderQuestions();document.dispatchEvent(new CustomEvent('bamco:day-render'));}
 document.body.classList.toggle('assessment-readonly',readOnly);
-if(readOnly)document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select,[data-score],[data-note],[data-photo],[data-savekm],[data-import],[data-clear],#actualKm').forEach(el=>el.disabled=true);
+if(readOnly)document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select,[data-score],[data-note],[data-photo],[data-import],[data-clear]').forEach(el=>el.disabled=true);
 document.dispatchEvent(new Event('bamco:render'));
 }
 function changeTab(tab){if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}state.tab=tab;state.category='همه';state.query='';state.page=0;render();window.scrollTo({top:0,behavior:'smooth'})}
@@ -356,7 +355,6 @@ if(el.dataset.day){byId('dayPickerDialog')?.close();const v=num(el.dataset.day);
 if(el.dataset.category){state.category=el.dataset.category;state.page=0;render();return}
 if(el.dataset.score){if(!readOnly)updateRating(el);return}
 if(el.dataset.pagejump){state.page=num(el.dataset.pagejump);renderQuestions();byId('questionsPanel').scrollIntoView({behavior:'smooth',block:'start'});return}
-if(el.dataset.savekm){if(readOnly)return;const n=num(byId('actualKm')?.value||0);if(n<0||!Number.isFinite(n)){toast('کیلومتر واردشده معتبر نیست.');return}const tab=state.tab;state.mileage[tab]=state.mileage[tab]||{};state.mileage[tab][currentDay()]=n;save();toast('پیمایش واقعی این روز ثبت شد.');return}
 if(el.dataset.exportcsv){exportCSV();return}
 if(el.dataset.import){if(readOnly)return;byId('importBackup').click();return}
 if(el.dataset.clear){if(readOnly)return;if(confirm('تمام نمره‌ها و یادداشت‌های ثبت‌شده پاک شوند؟')){state.records={};save();render();toast('نتایج پاک شدند.')}return}
@@ -379,6 +377,8 @@ window.BAMCO_ASSESSMENT={
   },
   mission(key){return state.missions?.[key]||{}},
   setMission(key,mission){if(!cloudSave||readOnly)return;state.missions[key]=mission;save()},
+  setDayMileage(tab,day,value){if(!cloudSave||readOnly||!['drive','durability'].includes(tab))return;const n=num(value);if(!Number.isFinite(n)||n<0)return;state.mileage[tab]=state.mileage[tab]||{};state.mileage[tab][day]=n;save()},
+  dayProgress(){const items=dayItems(),scored=items.filter(t=>num(record(t).score)>=1&&num(record(t).score)<=10).length;return {total:items.length,scored,remaining:Math.max(0,items.length-scored),complete:items.length===0||scored===items.length}},
   isReadOnly(){return readOnly},
   home(){document.dispatchEvent(new Event('bamco:assessment-close'));cloudSave=null;readOnly=false;state.tab='home';render()},
   legacy(){try{

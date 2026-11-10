@@ -121,7 +121,6 @@ const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-lan
 
 labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
 labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
-labels.monitoringHint=['تمام موقعیت‌هایی که ارزیابان اجازه داده‌اند، بدون کد و به‌صورت خودکار در این نقشه نمایش داده می‌شوند.','Every location explicitly shared by an evaluator appears here automatically, with no code or link.','评估员明确授权共享的位置会自动显示在此地图上，无需代码或链接。'];
 labels.activeHint=['همه ارزیابی‌های تکمیل‌نشده مستقیماً از پایگاه داده نمایش داده می‌شوند.','All unfinished assessments are loaded directly from the database.','所有未完成的评估均直接从数据库加载。'];
 labels.historyHint=['ارزیابی‌های خاتمه‌یافته را برای مرور نتایج انتخاب کنید.','Select a completed assessment to review its results.','选择已完成的评估以查看结果。'];
 labels.created=['ایجاد','Created','创建时间'];
@@ -246,7 +245,6 @@ function render() {
   }
   if (screen === 'active' || screen === 'history') renderRows();
   if (screen === 'observer') {
-    hub.append(node('p',tr('monitoringHint'),'assessment-screen-hint'));
     renderMap();
   }
 }

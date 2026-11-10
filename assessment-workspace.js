@@ -121,11 +121,16 @@ const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-lan
 
 labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
 labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
-labels.activeHint=['همه ارزیابی‌های تکمیل‌نشده مستقیماً از پایگاه داده نمایش داده می‌شوند.','All unfinished assessments are loaded directly from the database.','所有未完成的评估均直接从数据库加载。'];
 labels.historyHint=['ارزیابی‌های خاتمه‌یافته را برای مرور نتایج انتخاب کنید.','Select a completed assessment to review its results.','选择已完成的评估以查看结果。'];
 labels.created=['ایجاد','Created','创建时间'];
 labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
+labels.newAssessmentTitle=['ایجاد ارزیابی جدید','Create a new assessment','创建新评估'];
+labels.activeListTitle=['ارزیابی‌های در حال اجرا','Assessments in progress','进行中的评估'];
+labels.historyListTitle=['ارزیابی‌های خاتمه‌یافته','Completed assessments','已完成的评估'];
+labels.activeStatus=['در حال ارزیابی','In progress','进行中'];
+labels.completedStatus=['خاتمه‌یافته','Completed','已完成'];
+labels.assessmentCount=['ارزیابی','assessment','项评估'];
 
 let gpsStatus = '';
 let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
@@ -220,6 +225,7 @@ function render() {
   }
 
   if (map) {map.remove();map = null}
+  hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
   const title = node('h1',screen === 'home' ? '' : tr(screen),'gate-title welcome-title');
   if (screen === 'home') title.append(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
   const divider = node('div','','welcome-divider');
@@ -232,9 +238,11 @@ function render() {
     hub.append(status);
   }
   if (screen !== 'home') {
-    const toolbar = node('div','','toolbar');
-    toolbar.append(button('back',()=>navigate('home')));
-    hub.append(toolbar);
+    const toolbar = node('div','','assessment-page-toolbar');
+    const backButton = button('back',()=>navigate('home'),'assessment-action assessment-back-action');
+    backButton.setAttribute('aria-label',tr('back'));
+    toolbar.append(backButton);
+    hub.prepend(toolbar);
   }
   if (screen === 'home') {
     cards(
@@ -273,36 +281,60 @@ async function navigate(next) {
 }
 
 function renderRows() {
-  hub.append(node('p',tr(screen === 'active' ? 'activeHint' : 'historyHint'),'assessment-screen-hint'));
   if (screen === 'active') {
-    const form = node('form');
+    const createPanel = node('section','','assessment-create-panel');
+    const createHeading = node('div','','assessment-create-heading');
+    createHeading.append(node('span','+','assessment-create-icon'),node('h2',tr('newAssessmentTitle')));
+    const form = node('form','','assessment-create-form');
     const title = field('text','name');
     title.maxLength = 120;
-    const createButton = node('button',tr('create'),'assessment-action');
+    const createButton = node('button',tr('create'),'assessment-action assessment-create-action');
     form.append(title,createButton);
     form.onsubmit = async event => {
       event.preventDefault();
       await create(title.value,{},createButton);
     };
-    hub.append(form);
+    createPanel.append(createHeading,form);
+    hub.append(createPanel);
   }
-  if (!rows.length && !notice) hub.append(node('p',tr('empty')));
+  if (screen === 'history') hub.append(node('p',tr('historyHint'),'assessment-screen-hint'));
+
+  const list = node('section','','assessment-list-section');
+  const listHeading = node('div','','assessment-list-heading');
+  listHeading.append(
+    node('h2',tr(screen === 'active' ? 'activeListTitle' : 'historyListTitle')),
+    node('span',rows.length.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count')
+  );
+  list.append(listHeading);
+  const grid = node('div','','assessment-card-grid');
+  list.append(grid);
+  if (!rows.length && !notice) {
+    const empty = node('div','','assessment-empty-state');
+    empty.append(node('span','✓','assessment-empty-icon'),node('p',tr('empty')));
+    grid.append(empty);
+  }
   for (const row of rows) {
-    const item = node('div','','surface assessment-row');
+    const item = node('article','','surface assessment-row');
+    const top = node('div','','assessment-row-top');
+    const active = row.status === 'active';
+    top.append(
+      node('span',tr(active ? 'activeStatus' : 'completedStatus'),'assessment-status '+(active ? 'is-active' : 'is-completed')),
+      node('small',tr('created')+': '+formatDate(row.created_at),'assessment-row-meta')
+    );
     const heading = node('div','','assessment-row-heading');
     heading.append(node('bdi',row.title,'assessment-row-title'));
-    const meta = node('small',tr('created')+': '+formatDate(row.created_at),'assessment-row-meta');
-    heading.append(meta);
-    item.append(heading,button('open',()=>openAssessment(row.id)));
-    item.append(button('rename',()=>{
+    const actions = node('div','','assessment-row-actions');
+    actions.append(button('open',()=>openAssessment(row.id),'assessment-action assessment-open-action'));
+    actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
-    }));
-    const active = row.status === 'active';
-    item.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'})));
-    item.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)}));
-    hub.append(item);
+    },'assessment-action assessment-secondary-action'));
+    actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
+    actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
+    item.append(top,heading,actions);
+    grid.append(item);
   }
+  hub.append(list);
 }
 
 async function create(title,snapshot,control) {

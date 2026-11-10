@@ -2,16 +2,15 @@
 html[lang="fa"] body, html[lang="fa"] button, html[lang="fa"] input, html[lang="fa"] select, html[lang="fa"] textarea {font-family:"B Nazanin","BNazanin",Tahoma,serif}
 html[lang="en"] body, html[lang="en"] button, html[lang="en"] input, html[lang="en"] select, html[lang="en"] textarea {font-family:"Times New Roman",Times,serif}
 html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea {font-family:"Ma Shan Zheng","KaiTi","STKaiti",serif}
-#assessmentHub form, #assessmentEditorBar, .assessment-row {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
-#assessmentHub form {justify-content:center;margin-block:1rem}
-#assessmentHub input {width:min(100%,16rem)}
-.assessment-row, #assessmentEditorBar {background:#fff;border:1px solid #dceae3;border-radius:20px;padding:1rem;margin-block:.65rem;text-align:start}
+#assessmentEditorBar {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
+#assessmentEditorBar {background:#fff;border:1px solid #dceae3;border-radius:20px;padding:1rem;margin-block:.65rem;text-align:start}
 #assessmentGps {display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;width:100%}
 #assessmentEditorBar.hidden, #assessmentGps.hidden {display:none!important}
 #assessmentMap {height: min(56vh, 32rem);min-height:240px;border-radius:16px;direction:ltr}
 #assessmentHub [role=status], #assessmentSync, #assessmentGpsStatus {overflow-wrap:anywhere}
 body[data-view="home"] #backupBtn {display:none}
 #assessmentHub {width:min(100%,60rem);min-width:0;text-align:center}
+#assessmentHub.assessment-list-page {width:min(100%,72rem);position:relative;padding-top:.25rem}
 #assessmentHub .gate-grid {
   width:min(100%,46rem);
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -55,16 +54,47 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
 #assessmentHub .assessment-action:hover:not(:disabled), #assessmentEditorBar .assessment-action:hover:not(:disabled) {
   border-color:#80b6a3;background:#e8f5ee;transform:none;
 }
-#assessmentHub .assessment-row {display:grid;grid-template-columns:minmax(10rem,1.25fr) repeat(4,minmax(0,1fr));align-items:stretch}
-#assessmentHub .assessment-row-heading {align-self:center;display:grid;gap:.2rem;min-width:0}
-#assessmentHub .assessment-row-title {align-self:center;font-weight:700;overflow-wrap:anywhere}
-#assessmentHub .assessment-row-meta {color:#688277;overflow-wrap:anywhere}
-#assessmentHub .assessment-row .assessment-action {width:100%;min-width:0}
+#assessmentHub .assessment-list-page-title {text-align:center}
+#assessmentHub .assessment-page-toolbar {display:flex;justify-content:flex-start;margin:0 0 -2.75rem;position:relative;z-index:2}
+#assessmentHub .assessment-back-action {min-width:0;width:auto;padding-inline:1.15rem;background:#fff}
+#assessmentHub .assessment-create-panel {display:grid;grid-template-columns:minmax(12rem,.75fr) minmax(20rem,1.25fr);align-items:center;gap:clamp(18px,4vw,55px);margin:1.35rem 0 2rem;padding:24px 28px;border:1px solid #d8e8df;border-radius:20px;background:linear-gradient(120deg,#f4faf6,#fff);box-shadow:0 12px 35px #274c3c0a;text-align:start}
+#assessmentHub .assessment-create-heading {display:flex;align-items:center;gap:13px;color:#234d3f}
+#assessmentHub .assessment-create-heading h2 {margin:0;font-size:24px;text-align:start}
+#assessmentHub .assessment-create-icon {display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;background:#dff1e7;color:#26765b;font:28px/1 Arial,sans-serif;text-align:center}
+#assessmentHub .assessment-create-form {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin:0}
+#assessmentHub .assessment-create-form input {width:100%;min-height:48px;border:1px solid #cfe1d7;border-radius:12px;background:#fff;padding-inline:16px}
+#assessmentHub .assessment-create-action {min-width:9rem;background:#226c54;color:#fff;border-color:#226c54}
+#assessmentHub .assessment-create-action:hover:not(:disabled) {background:#195840;border-color:#195840;color:#fff}
+#assessmentHub .assessment-list-section {margin-top:1.2rem;text-align:start}
+#assessmentHub .assessment-list-heading {display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 14px;padding:0 4px}
+#assessmentHub .assessment-list-heading h2 {margin:0;font-size:24px;color:#294e42;text-align:start}
+#assessmentHub .assessment-count {display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:3px 13px;border-radius:999px;background:#edf5f0;color:#557267;font-size:14px;white-space:nowrap;text-align:center}
+#assessmentHub .assessment-card-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#assessmentHub .assessment-row {display:flex;flex-direction:column;min-height:225px;margin:0;padding:20px;border:1px solid #dce9e2;border-radius:18px;background:#fff;text-align:start;box-shadow:0 9px 26px #244c3d09;transition:border-color .18s,box-shadow .18s,transform .18s}
+#assessmentHub .assessment-row:hover {border-color:#a9cfbd;box-shadow:0 15px 34px #244c3d12;transform:translateY(-2px)}
+#assessmentHub .assessment-row-top {display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid #ebf1ed}
+#assessmentHub .assessment-status {display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;font-size:13px;white-space:nowrap}
+#assessmentHub .assessment-status:before {content:'';width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px currentColor;opacity:.65}
+#assessmentHub .assessment-status.is-active {background:#e7f5ec;color:#237256}
+#assessmentHub .assessment-status.is-completed {background:#edf1f4;color:#5c6f7b}
+#assessmentHub .assessment-row-heading {display:flex;align-items:center;flex:1;min-width:0;padding:18px 2px 16px}
+#assessmentHub .assessment-row-title {font-size:21px;line-height:1.55;font-weight:700;color:#203f36;overflow-wrap:anywhere;text-align:start}
+#assessmentHub .assessment-row-meta {color:#71887e;font-size:13px;overflow-wrap:anywhere;text-align:start}
+#assessmentHub .assessment-row-actions {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:auto}
+#assessmentHub .assessment-row .assessment-action {width:100%;min-width:0;min-height:42px;padding:.45rem .55rem;border-radius:10px;font-size:15px}
+#assessmentHub .assessment-row .assessment-open-action {grid-column:1/-1;background:#226c54;color:#fff;border-color:#226c54}
+#assessmentHub .assessment-row .assessment-open-action:hover:not(:disabled) {background:#195840;border-color:#195840;color:#fff}
+#assessmentHub .assessment-row .assessment-secondary-action {background:#f7faf8}
+#assessmentHub .assessment-row .assessment-delete-action {background:#fff8f7;border-color:#ead5d2;color:#9b4a43}
+#assessmentHub .assessment-row .assessment-delete-action:hover:not(:disabled) {background:#fff0ee;border-color:#d9aaa4;color:#843b35}
+#assessmentHub .assessment-empty-state {grid-column:1/-1;display:grid;place-items:center;gap:10px;min-height:180px;padding:30px;border:1px dashed #c9ddd2;border-radius:18px;background:#fbfdfc;color:#627d71;text-align:center}
+#assessmentHub .assessment-empty-state p {margin:0;text-align:center}
+#assessmentHub .assessment-empty-icon {display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#e6f3eb;color:#2b7a5e;font:22px/1 Arial,sans-serif;text-align:center}
 #assessmentEditorBar .assessment-action[hidden] {display:none}
 #assessmentHub .gate-card {grid-template-rows:minmax(0,1fr) minmax(2.4rem,auto) minmax(2.25rem,auto)}
 @media (max-width:800px) {
-  #assessmentHub .assessment-row {grid-template-columns:repeat(2,minmax(0,1fr))}
-  #assessmentHub .assessment-row-heading {grid-column:1/-1}
+  #assessmentHub .assessment-create-panel {grid-template-columns:1fr;gap:16px}
+  #assessmentHub .assessment-card-grid {grid-template-columns:1fr}
   #assessmentHub .gate-grid.three {grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,46rem)}
 }
 .assessment-screen-hint {max-width:48rem;margin:0 auto 1rem;color:#526f64;line-height:1.9}
@@ -74,4 +104,17 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
   #assessmentHub .gate-grid.three {grid-template-columns:minmax(0,1fr)}
   #assessmentGps .assessment-action {flex:1 1 8rem}
   #assessmentGpsLabel,#assessmentGpsStatus {flex:1 1 100%}
+  #assessmentHub.assessment-list-page {padding-top:0}
+  #assessmentHub .assessment-page-toolbar {margin:0 0 12px}
+  #assessmentHub.assessment-list-page .gate-title {margin-top:6px}
+  #assessmentHub .assessment-create-panel {padding:18px 15px;border-radius:16px}
+  #assessmentHub .assessment-create-form {grid-template-columns:1fr}
+  #assessmentHub .assessment-create-action {width:100%}
+  #assessmentHub .assessment-list-heading {align-items:flex-start}
+  #assessmentHub .assessment-list-heading h2 {font-size:21px}
+  #assessmentHub .assessment-row {min-height:0;padding:16px}
+  #assessmentHub .assessment-row-top {align-items:flex-start;flex-direction:column}
+  #assessmentHub .assessment-row-actions {grid-template-columns:1fr 1fr}
+  #assessmentHub .assessment-row .assessment-open-action {grid-column:1/-1}
+  #assessmentHub .assessment-row .assessment-delete-action {grid-column:1/-1}
 }

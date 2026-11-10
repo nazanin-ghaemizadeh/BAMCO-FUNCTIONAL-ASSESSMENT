@@ -229,8 +229,9 @@ function renderGate(){
  ['drive','۰۱','قابلیت رانندگی','برنامه ۲۶ روزه، مسیرهای پیشنهادی و نمره‌دهی روزانه','↗'],
  ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],
  ['supplementary','۰۳','پرسشنامه تکمیلی','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
- ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗']
- ].map(x=>'<button type="button" class="gate-card" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div><button class="gate-edit" data-open="setup">ویرایش مشخصات خودرو و برنامه</button>';
+ ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗'],
+ ['setup','۰۵','ویرایش مشخصات','ویرایش مشخصات خودرو و برنامه آزمون','◇']
+ ].map(x=>'<button type="button" class="gate-card" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -313,10 +314,6 @@ const actions=byId('assessmentTabActions');
 actions.replaceChildren();
 const resultActions=byId('resultsPanel').querySelector('.toolbar');
 if(state.tab==='results'&&resultActions){actions.append(...resultActions.children);resultActions.remove()}
-if(state.tab==='modules'){
- const edit=byId('moduleLanding').querySelector('.gate-edit');
- if(edit)actions.append(edit);
-}
 if(daily&&dayScreen!=='days'){
  const back=document.createElement('button');back.type='button';back.className='secondary';
  back.textContent=dayScreen==='menu'?'بازگشت به روزها':'بازگشت به بخش‌های روز';

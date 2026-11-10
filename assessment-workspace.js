@@ -71,7 +71,7 @@ const interfaceText = [
   ['#moduleLanding [data-open="supplementary"] strong','پرسشنامه تکمیلی','Supplementary questionnaire','补充问卷'],
   ['#moduleLanding [data-open="results"] strong','گزارش و نتایج','Reports and results','报告与结果'],
   ['#moduleLanding .gate-cta','ورود به بخش ←','Open module →','进入模块 →'],
-  ['#assessmentTabActions .gate-edit','ویرایش مشخصات خودرو و برنامه','Edit vehicle and test plan','编辑车辆与试验计划'],
+  ['#moduleLanding [data-open="setup"] strong','ویرایش مشخصات','Edit specifications','编辑车辆信息'],
   ['#editSetupBtn','ویرایش مشخصات خودرو','Edit vehicle details','编辑车辆信息'],
   ['label[for="vclass"]','رده خودرو','Vehicle class','车辆类别'],
   ['label[for="body"]','نوع بدنه','Body type','车身类型'],

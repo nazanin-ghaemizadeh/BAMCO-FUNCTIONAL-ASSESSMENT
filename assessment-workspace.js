@@ -80,7 +80,7 @@ const interfaceText = [
   ['label[for="driveType"]','سیستم محرک','Drivetrain','驱动形式'],
   ['label[for="driveKm"]','هدف قابلیت رانندگی (کیلومتر)','Drivability distance target (km)','驾驶性能目标里程（公里）'],
   ['label[for="durKm"]','هدف پیمایش دوام (کیلومتر)','Durability distance target (km)','耐久目标里程（公里）'],
-  ['label[for="durDays"]','روزهای برنامه دوام','Durability program duration','耐久计划天数'],
+  ['label[for="durDays"]','تعداد روزهای دوام (محاسبه خودکار)','Durability days (calculated)','耐久天数（自动计算）'],
   ['label[for="startOdo"]','کیلومترشمار شروع دوام','Initial durability odometer reading','耐久试验起始里程表读数'],
   ['#vehicleForm button[type="submit"]','تأیید و ورود به ارزیابی ←','Confirm and open assessment →','确认并进入评估 →'],
   ['#vehicleForm .toolbar .tiny','مقادیر و نمره‌ها در دیتابیس این ارزیابی ذخیره می‌شوند.','Values and scores are stored with this assessment.','数值及评分保存在本评估的数据库中。'],
@@ -105,10 +105,7 @@ function translateInterface() {
       '每日平均需行驶 '+km+' 公里。启动计划后将计算各类路线的目标里程和检查日期。'
     ][index-1];
   }
-  for (const option of $('durDays').options) {
-    option.textContent = language === 'fa' ? Number(option.value).toLocaleString('fa-IR')+' روز' :
-      option.value+(language === 'en'?' days':' 天');
-  }
+
 }
 document.addEventListener('bamco:render',translateInterface);
 

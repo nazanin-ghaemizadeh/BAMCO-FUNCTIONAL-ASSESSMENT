@@ -193,3 +193,12 @@ html body button,html body button strong {font-weight:400!important}
 #workPanel .assessment-single-section #schedulePanel,
 #workPanel .assessment-single-section #bamco-day-workflow,
 #workPanel .assessment-single-section #bamco-day-route {width:100%;min-width:0;max-width:none}
+
+.durability-planner-setup {margin-top:26px;padding-top:20px;border-top:1px solid #dce9e1}
+.durability-planner-setup h2 {margin:0 0 10px;font-size:24px;color:#25443b}
+.durability-planner-setup p {margin:0 0 18px;color:#607b6d}
+#durabilityCaps {grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+#durabilityPreview {margin-top:20px;min-width:0}
+.planner-summary {display:flex;flex-wrap:wrap;gap:12px 28px;margin-bottom:14px;color:#226c54}
+#durDays {background:#edf7f1;color:#226c54}
+#vehicleForm #setupInfo {display:block!important}

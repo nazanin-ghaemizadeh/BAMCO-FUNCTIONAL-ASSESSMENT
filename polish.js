@@ -25,6 +25,7 @@ const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if
   const list=document.createElement('div');list.className='vehicle-dropdown-list';list.setAttribute('role','listbox');list.hidden=true;
   const refresh=()=>{title.textContent=select.selectedOptions[0]?.textContent||'';list.querySelectorAll('[data-value]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.value===select.value)))};
   [...select.options].forEach(opt=>{const item=document.createElement('button');item.type='button';item.className='vehicle-dropdown-option';item.setAttribute('role','option');item.dataset.value=opt.value;item.textContent=opt.textContent;item.addEventListener('click',()=>{select.value=opt.value;select.dispatchEvent(new Event('change',{bubbles:true}));refresh();closeAll();trigger.focus()});list.append(item)});
+  select.addEventListener('change',refresh);
   select.insertAdjacentElement('afterend',trigger);trigger.insertAdjacentElement('afterend',list);refresh();
   trigger.addEventListener('click',()=>{const opening=list.hidden;closeAll();refresh();list.hidden=!opening;trigger.setAttribute('aria-expanded',String(opening))});
   trigger.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();return}if(['ArrowDown','Enter',' '].includes(e.key)&&list.hidden){e.preventDefault();trigger.click();list.querySelector('[aria-selected=true]')?.focus()}});

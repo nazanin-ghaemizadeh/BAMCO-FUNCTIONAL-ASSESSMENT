@@ -63,3 +63,6 @@ html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
   #assessmentHub .assessment-row {grid-template-columns:repeat(2,minmax(0,1fr))}
   #assessmentHub .assessment-row-title {grid-column:1/-1}
 }
+.monitoring-pairing {margin-block:1rem;text-align:start}
+.monitoring-pairing summary {cursor:pointer;color:#254c3e}
+#assessmentHub .monitoring-pairing input {width:min(100%,35rem);margin-inline-end:.5rem}

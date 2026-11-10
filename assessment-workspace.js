@@ -48,10 +48,9 @@ const labels = {
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
   copyCode:['کپی کد','Copy code','复制代码'],
   copied:['کد کپی شد.','Code copied.','代码已复制。'],
-  monitoringCode:['کد دسترسی نظارت این دستگاه','This device’s monitoring access code','此设备的监控访问代码'],
-  enterCode:['کد دسترسی نظارت','Monitoring access code','监控访问代码'],
-  codeHint:['کد را یک‌بار از ارزیاب بگیرید و در این مرورگر ثبت کنید.','Get the code from the evaluator and save it once in this browser.','向评估员获取代码，并在此浏览器中保存一次。'],
-  forgetCode:['حذف کد از این مرورگر','Forget code on this browser','从此浏览器移除代码'],
+  monitoringCode:['کد اتصال مرورگر مدیر','Manager browser pairing code','主管浏览器配对码'],
+  codeHint:['ارزیاب این کد را یک‌بار روی گوشی خود وارد می‌کند.','The evaluator enters this code once on their phone.','评估员在手机上输入此代码一次。'],
+  pairing:['اتصال اولیه به گوشی ارزیاب','Pair the evaluator’s phone','配对评估员手机'],
   invalidCode:['کد دسترسی کامل را وارد کنید.','Enter the full access code.','请输入完整的访问代码。'],
   browserScope:['ارزیابی‌های این مرورگر','Assessments for this browser','此浏览器的评估'],
   share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
@@ -226,7 +225,6 @@ function render() {
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
   $('assessmentStop').textContent = tr('stop');
-  $('assessmentCopyLink').textContent = tr('copyCode');
   $('assessmentObserverLinkLabel').textContent = tr('monitoringCode');
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
@@ -253,28 +251,22 @@ function render() {
   if (screen === 'roles') cards(card('evaluator','supplementary',()=>navigate('evaluator')),card('observer','observer',()=>navigate('observer')));
   if (screen === 'evaluator' || screen === 'history') renderRows();
   if (screen === 'observer') {
-    if (observerKey || readSavedCode()) {
-      if (!observerKey) hub.append(button('forgetCode',()=>{
-        try {localStorage.removeItem(savedMonitoringCode)} catch {report('Storage unavailable');return}
-        navigate('observer');
-      }));
-      renderMap();
-    }
-    else {
-      const form = node('form');
-      hub.append(node('p',tr('codeHint')));
-      const input = field('password','enterCode');
-      input.spellcheck = false;
-      input.autocomplete = 'off';
-      form.append(input,node('button',tr('open'),'assessment-action'));
-      form.onsubmit = event => {
-        event.preventDefault();
-        const key = input.value.trim().toLowerCase();
-        if (!/^[0-9a-f]{64}$/.test(key)) {notice = 'invalidCode';render();return}
-        try {localStorage.setItem(savedMonitoringCode,key)} catch {report('Storage unavailable');return}
-        navigate('observer');
-      };
-      hub.append(form);
+    renderMap();
+    if (!observerKey) {
+      const pairing = node('details','','monitoring-pairing');
+      pairing.append(node('summary',tr('pairing')),node('p',tr('codeHint')));
+      const code = field('text','monitoringCode',readSavedCode() || '');
+      code.readOnly = true;
+      code.dir = 'ltr';
+      code.onclick = () => code.select();
+      const copy = button('copyCode',async ()=>{
+        try {
+          await navigator.clipboard.writeText(code.value);
+          copy.textContent = tr('copied');
+        } catch {code.focus();code.select()}
+      });
+      if (code.value) pairing.append(code,copy);
+      hub.append(pairing);
     }
   }
 }
@@ -286,6 +278,9 @@ async function navigate(next) {
   if (next !== 'observer') {
     observerKey = null;
     if (viewerFromHash(location.hash)) history.replaceState(null,'',location.pathname);
+  }
+  if (next === 'observer' && !observerKey) {
+    try {deviceKey(savedMonitoringCode)} catch {notice = 'error'}
   }
   if (['evaluator','history'].includes(next)) notice = 'load';
   render();
@@ -359,9 +354,9 @@ async function openAssessment(id) {
   pending = null; syncState = '';
   $('assessmentName').textContent = data.title;
   setGpsStatus('');
-  $('assessmentObserverLink').value = '';
-  $('assessmentObserverLink').closest('label').hidden = true;
-  $('assessmentCopyLink').hidden = true;
+  const pairingInput = $('assessmentObserverLink');
+  try {pairingInput.value = localStorage.getItem('bamco-device-monitoring-code') || ''} catch {pairingInput.value = ''}
+  pairingInput.disabled = false;
   $('assessmentShare').disabled = false;
   $('assessmentStop').disabled = true;
   $('assessmentGps').classList.toggle('hidden',data.status !== 'active');
@@ -431,15 +426,19 @@ $('assessmentGps').onsubmit = async event => {
   event.preventDefault();
   if (!current || watch !== null || gpsViewer) return;
   if (!navigator.geolocation) {setGpsStatus('gpsError');return}
+  const pairingInput = $('assessmentObserverLink');
+  const monitoringKey = pairingInput.value.trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(monitoringKey)) {setGpsStatus('invalidCode');return}
   const row = current;
   const viewer = randomKey();
   gpsViewer = viewer;
   const generation = ++gpsGeneration;
   $('assessmentBack').disabled = true;
   $('assessmentShare').disabled = true;
-  let result, monitoringKey;
+  pairingInput.disabled = true;
+  let result;
   try {
-    monitoringKey = deviceKey('bamco-device-monitoring-code');
+    localStorage.setItem('bamco-device-monitoring-code',monitoringKey);
     result = await client.rpc('bamco_start_site_monitoring',{
       browser_key:deviceKey('bamco-assessment-browser-key'),
       assessment_id:row.id,viewer_key:viewer,monitoring_key:monitoringKey
@@ -450,15 +449,12 @@ $('assessmentGps').onsubmit = async event => {
   if (error || !data) {
     gpsViewer = '';
     $('assessmentShare').disabled = false;
+    pairingInput.disabled = false;
     setGpsStatus('error');
     return;
   }
   if (current !== row || generation !== gpsGeneration) return;
   $('assessmentStop').disabled = false;
-  const link = $('assessmentObserverLink');
-  link.value = monitoringKey;
-  link.closest('label').hidden = false;
-  $('assessmentCopyLink').hidden = false;
   setGpsStatus('keepOpen');
   let last = 0, writing = false;
   const publish = async ({coords}) => {
@@ -485,22 +481,10 @@ async function stopGps() {
   if (!ok) return false;
   gpsViewer = '';
   $('assessmentShare').disabled = false; $('assessmentStop').disabled = true;
-  $('assessmentObserverLink').value = '';
-  $('assessmentObserverLink').closest('label').hidden = true;
-  $('assessmentCopyLink').hidden = true;
+  $('assessmentObserverLink').disabled = false;
   return true;
 }
 $('assessmentStop').onclick = stopGps;
-$('assessmentCopyLink').onclick = async () => {
-  const link = $('assessmentObserverLink');
-  try {
-    await navigator.clipboard.writeText(link.value);
-    setGpsStatus('copied');
-  } catch {
-    link.focus();
-    link.select();
-  }
-};
 
 function renderMap() {
   const panel = node('div');

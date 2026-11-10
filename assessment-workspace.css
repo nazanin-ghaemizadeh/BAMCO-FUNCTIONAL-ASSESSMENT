@@ -22,3 +22,6 @@ body[data-view="home"] #landing {grid-template-rows:max-content max-content}
 body[data-view="home"] .app-header .header-right {display:flex!important}
 html[lang="en"] .app-header .brand b {font-family:"Times New Roman",Times,serif}
 html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
+#assessmentGps label {flex:1 1 100%}
+#assessmentGps label[hidden] {display:none}
+#assessmentGps #assessmentObserverLink {display:block;width:min(100%,36rem)}

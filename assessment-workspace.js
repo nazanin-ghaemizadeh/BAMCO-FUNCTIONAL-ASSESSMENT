@@ -7,7 +7,8 @@ const editor = $('assessmentEditorBar');
 const app = window.BAMCO_ASSESSMENT;
 const client = window.supabase?.createClient(
   'https://cwpfzvcwuiawjtvsnpkq.supabase.co',
-  'sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM'
+  'sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM',
+  {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}
 );
 
 const labels = {
@@ -16,10 +17,6 @@ const labels = {
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
   observer:['ناظر GPS','GPS observer','定位观察员'],
-  login:['ورود سازمانی','Organization sign-in','组织账户登录'],
-  email:['ایمیل','Email','邮箱'],
-  password:['رمز عبور','Password','密码'],
-  signOut:['خروج','Sign out','退出'],
   back:['بازگشت','Back','返回'],
   create:['ارزیابی جدید','New assessment','新建评估'],
   name:['عنوان ارزیابی','Assessment title','评估名称'],
@@ -39,7 +36,12 @@ const labels = {
   unsaved:['تغییرات ذخیره نشد. نسخه پشتیبان بگیرید یا دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. نسخه پشتیبان بگیرید و آن را دوباره باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
-  observerEmail:['ایمیل حساب ناظر','Observer account email','观察员账户邮箱'],
+  copyLink:['کپی لینک','Copy link','复制链接'],
+  copied:['لینک کپی شد.','Link copied.','链接已复制。'],
+  observerLink:['لینک اختصاصی ناظر','Private observer link','专用观察链接'],
+  enterLink:['لینک ناظر را وارد کنید','Paste the observer link','粘贴观察链接'],
+  invalidLink:['لینک ناظر معتبر نیست.','The observer link is invalid.','观察链接无效。'],
+  browserScope:['ارزیابی‌های این مرورگر','Assessments for this browser','此浏览器的评估'],
   share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
   stop:['توقف ارسال GPS','Stop GPS sharing','停止共享定位'],
   gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
@@ -103,8 +105,32 @@ try {
   if (['fa','en','zh'].includes(stored)) language = stored;
 } catch {}
 const tr = key => labels[key][['fa','en','zh'].indexOf(language)] || labels[key][0];
-let user, screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
-let map, markers, poll, watch = null, gpsGeneration = 0, gpsEmail = '', gpsWrite = Promise.resolve(), heartbeat;
+let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
+let map, markers, poll, watch = null, gpsGeneration = 0, gpsViewer = '', gpsWrite = Promise.resolve(), heartbeat;
+
+let observerKey = null;
+
+function randomKey() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+function ownerRequest(operation,args = {}) {
+  try {
+    const storageKey = 'bamco-assessment-browser-key';
+    let browser_key = localStorage.getItem(storageKey);
+    if (!/^[0-9a-f]{64}$/.test(browser_key || '')) {
+      browser_key = randomKey();
+      localStorage.setItem(storageKey,browser_key);
+    }
+    return client.rpc('bamco_browser_assessment',{browser_key,operation,args});
+  } catch (error) {
+    return Promise.resolve({error});
+  }
+}
+
+function viewerFromHash(hash) {
+  return /^#observer=([0-9a-f]{64})$/.exec(hash)?.[1] || null;
+}
 
 function node(tag, text, className) {
   const element = document.createElement(tag);
@@ -157,7 +183,8 @@ function render() {
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
   $('assessmentStop').textContent = tr('stop');
-  document.querySelector('label[for="observerEmail"]').textContent = tr('observerEmail');
+  $('assessmentCopyLink').textContent = tr('copyLink');
+  $('assessmentObserverLinkLabel').textContent = tr('observerLink');
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
     if (language !== 'fa') $('assessmentSync').append(' ',tr('partial'));
@@ -171,57 +198,59 @@ function render() {
     status.setAttribute('role','status');
     hub.append(status);
   }
-  if (!user) {
-    if (!client) {hub.append(button('retry',()=>location.reload()));return}
-    const form = node('form');
-    const email = field('email','email'), password = field('password','password');
-    email.autocomplete = 'username'; password.autocomplete = 'current-password';
-    form.append(email,password,node('button',tr('login')));
-    form.onsubmit = async event => {
-      event.preventDefault();
-      form.querySelector('button').disabled = true;
-      const result = await client.auth.signInWithPassword({email:email.value.trim(),password:password.value});
-      if (result.error) {report(result.error);return}
-      user = result.data.user;
-      await navigate('home');
-    };
-    hub.append(form);
-    return;
-  }
   const toolbar = node('div','','toolbar');
   if (screen !== 'home') toolbar.append(button('back',()=>navigate(['evaluator','observer'].includes(screen) ? 'roles' : 'home')));
-  toolbar.append(button('signOut',async () => {
-    const {error} = await client.auth.signOut();
-    if (error) {report(error);return}
-    user = null;
-    await navigate('home');
-  }));
   hub.append(toolbar);
   if (screen === 'home') cards(card('active','◇',()=>navigate('roles')),card('history','◷',()=>navigate('history')));
   if (screen === 'roles') cards(card('evaluator','◇',()=>navigate('evaluator')),card('observer','⌖',()=>navigate('observer')));
   if (screen === 'evaluator' || screen === 'history') renderRows();
-  if (screen === 'observer') renderMap();
+  if (screen === 'observer') {
+    if (observerKey) renderMap();
+    else {
+      const form = node('form');
+      const input = field('text','enterLink');
+      input.autocomplete = 'off';
+      form.append(input,node('button',tr('open')));
+      form.onsubmit = event => {
+        event.preventDefault();
+        let key;
+        try {
+          const link = new URL(input.value.trim(),location.href);
+          if (link.origin === location.origin) key = viewerFromHash(link.hash);
+        } catch {}
+        if (!key) {notice = tr('invalidLink');render();return}
+        observerKey = key;
+        history.replaceState(null,'','#observer='+key);
+        navigate('observer');
+      };
+      hub.append(form);
+    }
+  }
 }
 
 async function navigate(next) {
   clearInterval(poll);
   const generation = ++syncGeneration;
   screen = next; rows = []; notice = '';
+  if (next !== 'observer') {
+    observerKey = null;
+    if (viewerFromHash(location.hash)) history.replaceState(null,'',location.pathname);
+  }
   if (['evaluator','history'].includes(next)) notice = tr('load');
   render();
-  if (next === 'observer') {
+  if (next === 'observer' && observerKey) {
     await refreshMap();
     if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
   }
   if (!['evaluator','history'].includes(next)) return;
-  const {data,error} = await client.from('bamco_assessments').select('id,title,status,revision')
-    .eq('status',next === 'history' ? 'completed' : 'active').order('created_at',{ascending:false});
+  const {data,error} = await ownerRequest('list',{status:next === 'history' ? 'completed' : 'active'});
   if (generation !== syncGeneration) return;
   if (error) {report(error);return}
   rows = data; notice = ''; render();
 }
 
 function renderRows() {
+  hub.append(node('p',tr('browserScope')));
   if (screen === 'evaluator') {
     const form = node('form');
     const title = field('text','name');
@@ -255,7 +284,7 @@ async function create(title,snapshot,control) {
   if (!title || title.length > 120 || control.disabled) return;
   control.disabled = true;
   const generation = syncGeneration;
-  const {data,error} = await client.from('bamco_assessments').insert({title,snapshot}).select('id').single();
+  const {data,error} = await ownerRequest('create',{title,snapshot});
   control.disabled = false;
   if (generation !== syncGeneration) return;
   if (error) {report(error);return}
@@ -263,10 +292,8 @@ async function create(title,snapshot,control) {
 }
 
 async function mutate(row,values) {
-  const query = client.from('bamco_assessments');
-  const operation = values ? query.update({...values,revision:row.revision+1}) : query.delete();
   const generation = syncGeneration;
-  const {data,error} = await operation.eq('id',row.id).eq('revision',row.revision).select('id').maybeSingle();
+  const {data,error} = await ownerRequest(values ? 'edit' : 'delete',{id:row.id,revision:row.revision,...values});
   if (generation !== syncGeneration) return;
   if (error || !data) {report(error || tr('conflict'));return}
   await navigate(screen);
@@ -274,28 +301,22 @@ async function mutate(row,values) {
 
 async function openAssessment(id) {
   const generation = ++syncGeneration;
-  const {data,error} = await client.from('bamco_assessments').select('id,title,status,snapshot,revision').eq('id',id).single();
+  const {data,error} = await ownerRequest('open',{id});
   if (generation !== syncGeneration) return;
-  if (error) {report(error);return}
+  if (error || !data) {report(error || tr('conflict'));return}
   current = data;
   pending = null; syncState = '';
   $('assessmentName').textContent = data.title;
   $('assessmentGpsStatus').textContent = '';
-  $('observerEmail').value = '';
+  $('assessmentObserverLink').value = '';
+  $('assessmentObserverLink').closest('label').hidden = true;
+  $('assessmentCopyLink').hidden = true;
+  $('assessmentShare').disabled = false;
   $('assessmentStop').disabled = true;
   $('assessmentGps').classList.toggle('hidden',data.status !== 'active');
   editor.classList.remove('hidden');
   app.open(data.snapshot,queueSave,data.status !== 'active');
   render();
-  if (data.status === 'active') {
-    const result = await client.from('bamco_assessment_gps').select('observer_email,sharing').eq('assessment_id',id).maybeSingle();
-    if (current !== data || watch !== null || gpsEmail) return;
-    if (result.error) { $('assessmentGpsStatus').textContent = tr('error'); return }
-    if (result.data) {
-      $('observerEmail').value = result.data.observer_email || '';
-      $('assessmentStop').disabled = !result.data.sharing;
-    }
-  }
 }
 
 function queueSave(snapshot) {
@@ -311,9 +332,7 @@ async function flush() {
     while (pending) {
       const snapshot = pending;
       pending = null; syncState = 'saving'; render();
-      const {data,error} = await client.from('bamco_assessments')
-        .update({snapshot,revision:row.revision+1}).eq('id',row.id).eq('revision',row.revision)
-        .eq('status','active').select('revision').maybeSingle();
+      const {data,error} = await ownerRequest('save',{id:row.id,revision:row.revision,snapshot});
       if (error || !data) {
         console.error(error || 'Revision changed');
         pending ||= snapshot;
@@ -328,11 +347,14 @@ async function flush() {
 }
 
 $('assessmentBack').onclick = async () => {
+  const row = current;
   await flush();
+  if (!row || current !== row) return;
   if (pending && !confirm(tr('leave'))) return;
-  if (watch !== null || gpsEmail) {
+  if (watch !== null || gpsViewer) {
     if (!await stopGps()) return;
   }
+  if (current !== row) return;
   const next = current.status === 'active' ? 'evaluator' : 'history';
   pending = null; current = null;
   editor.classList.add('hidden');
@@ -340,11 +362,10 @@ $('assessmentBack').onclick = async () => {
   await navigate(next);
 };
 
-function gpsUpdate(values) {
-  const id = current.id;
+function gpsUpdate(operation,values = {}) {
+  const id = current.id, viewer = gpsViewer;
   gpsWrite = gpsWrite.then(async () => {
-    const {data,error} = await client.from('bamco_assessment_gps').update(values)
-      .eq('assessment_id',id).select('assessment_id').maybeSingle();
+    const {data,error} = await ownerRequest(operation,{id,viewer,...values});
     return !error && Boolean(data);
   }).catch(()=>false);
   return gpsWrite;
@@ -352,34 +373,43 @@ function gpsUpdate(values) {
 
 $('assessmentGps').onsubmit = async event => {
   event.preventDefault();
-  if (!current || watch !== null || gpsEmail) return;
+  if (!current || watch !== null || gpsViewer) return;
   if (!navigator.geolocation) {$('assessmentGpsStatus').textContent = tr('gpsError');return}
-  const email = $('observerEmail').value.trim().toLowerCase();
   const row = current;
-  gpsEmail = email;
+  const viewer = randomKey();
+  gpsViewer = viewer;
   const generation = ++gpsGeneration;
-  const values = {observer_email:email,sharing:true,latitude:null,longitude:null,recorded_at:null};
-  const updated = await client.from('bamco_assessment_gps').update(values)
-    .eq('assessment_id',row.id).select('assessment_id').maybeSingle();
-  const result = updated.error || updated.data ? updated :
-    await client.from('bamco_assessment_gps').insert({assessment_id:row.id,...values});
-  if (result.error) {gpsEmail = '';$('assessmentGpsStatus').textContent = tr('error');return}
+  $('assessmentBack').disabled = true;
+  $('assessmentShare').disabled = true;
+  const {data,error} = await ownerRequest('gps_start',{id:row.id,viewer});
+  $('assessmentBack').disabled = false;
+  if (error || !data) {
+    gpsViewer = '';
+    $('assessmentShare').disabled = false;
+    $('assessmentGpsStatus').textContent = tr('error');
+    return;
+  }
   if (current !== row || generation !== gpsGeneration) return;
-  $('assessmentShare').disabled = true; $('assessmentStop').disabled = false;
-  $('observerEmail').disabled = true;
+  $('assessmentStop').disabled = false;
+  const url = new URL(location.href);
+  url.hash = 'observer='+viewer;
+  const link = $('assessmentObserverLink');
+  link.value = url.href;
+  link.closest('label').hidden = false;
+  $('assessmentCopyLink').hidden = false;
   $('assessmentGpsStatus').textContent = tr('keepOpen');
   let last = 0, writing = false;
-  const publish = async ({coords,timestamp}) => {
+  const publish = async ({coords}) => {
     if (generation !== gpsGeneration || writing || Date.now()-last < 4000) return;
     writing = true; last = Date.now();
-    const ok = await gpsUpdate({latitude:coords.latitude,longitude:coords.longitude,recorded_at:new Date(timestamp).toISOString()});
+    const ok = await gpsUpdate('gps_point',{latitude:coords.latitude,longitude:coords.longitude});
     writing = false;
     if (generation === gpsGeneration) $('assessmentGpsStatus').textContent = tr(ok?'keepOpen':'gpsError');
   };
-  const error = () => {if(generation === gpsGeneration)$('assessmentGpsStatus').textContent = tr('gpsError')};
+  const onLocationError = () => {if(generation === gpsGeneration)$('assessmentGpsStatus').textContent = tr('gpsError')};
   const options = {enableHighAccuracy:true,maximumAge:5000,timeout:20000};
-  watch = navigator.geolocation.watchPosition(publish,error,options);
-  heartbeat = setInterval(()=>navigator.geolocation.getCurrentPosition(publish,error,options),30000);
+  watch = navigator.geolocation.watchPosition(publish,onLocationError,options);
+  heartbeat = setInterval(()=>navigator.geolocation.getCurrentPosition(publish,onLocationError,options),30000);
 };
 
 async function stopGps() {
@@ -387,15 +417,28 @@ async function stopGps() {
   clearInterval(heartbeat);
   if (watch !== null) navigator.geolocation.clearWatch(watch);
   watch = null;
-  const ok = await gpsUpdate({sharing:false,latitude:null,longitude:null,recorded_at:null});
+  if (!gpsViewer) return true;
+  const ok = await gpsUpdate('gps_stop');
   $('assessmentGpsStatus').textContent = ok ? '' : tr('error');
   if (!ok) return false;
-  gpsEmail = '';
+  gpsViewer = '';
   $('assessmentShare').disabled = false; $('assessmentStop').disabled = true;
-  $('observerEmail').disabled = false;
+  $('assessmentObserverLink').value = '';
+  $('assessmentObserverLink').closest('label').hidden = true;
+  $('assessmentCopyLink').hidden = true;
   return true;
 }
 $('assessmentStop').onclick = stopGps;
+$('assessmentCopyLink').onclick = async () => {
+  const link = $('assessmentObserverLink');
+  try {
+    await navigator.clipboard.writeText(link.value);
+    $('assessmentGpsStatus').textContent = tr('copied');
+  } catch {
+    link.focus();
+    link.select();
+  }
+};
 
 function renderMap() {
   const panel = node('div');
@@ -416,11 +459,9 @@ async function refreshMap() {
   if (!map || refreshing) return;
   const generation = syncGeneration;
   refreshing = true;
-  const {data,error} = await client.from('bamco_assessment_gps')
-    .select('latitude,longitude,recorded_at').eq('sharing',true)
-    .eq('observer_email',user.email.toLowerCase()).not('recorded_at','is',null)
-    .gt('recorded_at',new Date(Date.now()-120000).toISOString())
-    .order('recorded_at',{ascending:false});
+  const result = client ? await client.rpc('bamco_observer_location',{viewer_key:observerKey}) : {error:true};
+  const {error} = result;
+  const data = result.data ? [result.data] : [];
   refreshing = false;
   if (generation !== syncGeneration || !map) return;
   const first = !markers.getLayers().length;
@@ -444,11 +485,6 @@ window.addEventListener('beforeunload',event => {
   if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}
 });
 
-(async () => {
-  if (!client) {notice = tr('error');render();return}
-  notice = tr('load');render();
-  const {data} = await client.auth.getUser();
-  user = data.user;
-  await navigate('home');
-})();
+observerKey = viewerFromHash(location.hash);
+navigate(observerKey || location.search === '?observer' ? 'observer' : 'home');
 })();

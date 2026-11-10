@@ -1,22 +1,62 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id), app=window.BAMCO_ASSESSMENT;
-let session=null,watch=null,map=null,marker=null,trace=null,points=[],lastTab='',lastDay='',lastStamp='';
+const $=id=>document.getElementById(id),app=window.BAMCO_ASSESSMENT;
+let lastStamp='';
 
-const context=()=>{const tab=document.body.dataset.view;if(!['drive','durability'].includes(tab))return null;const day=Number(document.querySelector('.day-picker-trigger strong')?.textContent?.match(/[0-9۰-۹]+/)?.[0]?.replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))||0);return day?{tab,day,key:tab+':'+day}:null};
-function stop(){if(watch!==null)navigator.geolocation.clearWatch(watch);watch=null;if(session){session.stoppedAt=new Date().toISOString();session=null}document.querySelector('#bamco-live-stop')?.setAttribute('disabled','');const x=$('bamco-live-state');if(x)x.textContent='ثبت موقعیت متوقف شد';}
-function paint(){const c=context();if(!c)return;const host=$('schedulePanel');if(!host)return;const markerKey=c.key;const meta=app.mission(markerKey);const started=session?.key===markerKey;const exists=$('bamco-day-workflow');if(exists&&lastStamp===markerKey)return;lastStamp=markerKey;map=null;marker=null;trace=null;points=[];
-document.querySelectorAll('#bamco-day-workflow').forEach(node=>node.remove());
-const form=document.createElement('section');form.id='bamco-day-workflow';form.className='bamco-day-workflow';form.innerHTML='<div class="section-heading"><div><h2>اطلاعات مأموریت روز '+c.day+'</h2><p>پیش از شروع آزمون، اطلاعات راننده و شرایط پیمایش ثبت شود.</p></div></div><div class="bamco-day-fields"><label>نام و نام خانوادگی راننده<input name="driver" required autocomplete="name"></label><label>نام سایر حاضرین در خودرو<input name="passengers" placeholder="نام‌ها را با ویرگول جدا کنید"></label><label>دمای هوا (°C)<input name="temperature" type="number" step="0.1" placeholder="مثلاً ۲۵"></label><label>وضعیت آب و هوا<select name="weather"><option value="">انتخاب کنید</option><option>آفتابی</option><option>ابری</option><option>بارانی</option><option>برفی</option><option>مه‌آلود</option><option>باد شدید</option></select></label><label>نوع بنزین<input name="fuel" placeholder="معمولی / سوپر"></label><label>جایگاه سوخت<input name="station" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="liters" type="number" min="0" step="0.01"></label></div><div class="bamco-day-actions"><button type="button" id="bamco-day-start" class="primary">ثبت اطلاعات و شروع پیمایش</button><button type="button" id="bamco-live-stop" class="secondary" disabled>پایان پیمایش و توقف GPS</button></div><p id="bamco-live-state" role="status">تا شروع مأموریت، GPS فعال نیست.</p><div id="bamco-live-map" hidden><div class="bamco-live-map"></div><p>مسیر زنده روی همین گوشی نمایش داده می‌شود. برای نمایش روی دستگاه ناظر، ارسال GPS را از نوار ارزیابی فعال کنید.</p></div>';
-host.insertAdjacentElement('afterbegin',form);
-for(const inp of form.querySelectorAll('[name]'))if(meta[inp.name]!==undefined)inp.value=meta[inp.name];
-const q=$('questionsPanel');if(q)q.classList.toggle('hidden',!started&&!meta.startedAt&&!app.isReadOnly());
-if(app.isReadOnly()){form.querySelectorAll('input,select,button').forEach(el=>el.disabled=true);return}
-$('bamco-day-start').onclick=()=>begin(c,form);
-$('bamco-live-stop').onclick=()=>{stop();$('bamco-day-start').disabled=false;};
-if(started){$('bamco-day-start').disabled=true;$('bamco-live-stop').disabled=false;showMap()}
+const context=()=>{
+  const tab=document.body.dataset.view;
+  if(!['drive','durability'].includes(tab))return null;
+  const raw=document.querySelector('.day-picker-trigger strong')?.textContent?.match(/[0-9۰-۹]+/)?.[0]||'';
+  const day=Number(raw.replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))||0);
+  return day?{tab,day,key:tab+':'+day}:null;
+};
+
+function paint(){
+  const c=context();
+  if(!c)return;
+  const host=$('schedulePanel');
+  if(!host)return;
+  const markerKey=c.key;
+  const meta=app.mission(markerKey);
+  if($('bamco-day-workflow')&&lastStamp===markerKey)return;
+  lastStamp=markerKey;
+  document.querySelectorAll('#bamco-day-workflow').forEach(node=>node.remove());
+  const form=document.createElement('section');
+  form.id='bamco-day-workflow';
+  form.className='bamco-day-workflow';
+  form.innerHTML='<div class="section-heading"><div><h2>اطلاعات مأموریت روز '+c.day+'</h2><p>اطلاعات راننده و شرایط پیمایش را ثبت کنید؛ اشتراک موقعیت فقط از نوار بالای ارزیابی انجام می‌شود.</p></div></div><div class="bamco-day-fields"><label>نام و نام خانوادگی راننده<input name="driver" required autocomplete="name"></label><label>نام سایر حاضرین در خودرو<input name="passengers" placeholder="نام‌ها را با ویرگول جدا کنید"></label><label>دمای هوا (°C)<input name="temperature" type="number" step="0.1" placeholder="مثلاً ۲۵"></label><label>وضعیت آب و هوا<select name="weather"><option value="">انتخاب کنید</option><option>آفتابی</option><option>ابری</option><option>بارانی</option><option>برفی</option><option>مه‌آلود</option><option>باد شدید</option></select></label><label>نوع بنزین<input name="fuel" placeholder="معمولی / سوپر"></label><label>جایگاه سوخت<input name="station" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="liters" type="number" min="0" step="0.01"></label></div><div class="bamco-day-actions"><button type="button" id="bamco-day-start" class="primary">ثبت اطلاعات و ورود به سؤالات</button></div><p id="bamco-live-state" role="status"></p>';
+  host.insertAdjacentElement('afterbegin',form);
+  for(const input of form.querySelectorAll('[name]'))if(meta[input.name]!==undefined)input.value=meta[input.name];
+  const started=Boolean(meta.startedAt);
+  const questions=$('questionsPanel');
+  if(questions)questions.classList.toggle('hidden',!started&&!app.isReadOnly());
+  $('bamco-live-state').textContent=started?'اطلاعات مأموریت ثبت شده است. برای اشتراک موقعیت از گزینه بالای صفحه استفاده کنید.':'پس از ثبت اطلاعات، سؤالات این روز نمایش داده می‌شوند.';
+  if(app.isReadOnly()){
+    form.querySelectorAll('input,select,button').forEach(el=>el.disabled=true);
+    return;
+  }
+  $('bamco-day-start').onclick=()=>begin(c,form);
 }
-function showMap(){const m=$('bamco-live-map');if(!m)return;m.hidden=false;if(!window.L){$('bamco-live-state').textContent='بارگذاری نقشه ممکن نشد';return}if(!map){map=L.map(m.querySelector('.bamco-live-map')).setView([35.6892,51.389],11);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);trace=L.polyline([],{color:'#218568',weight:4}).addTo(map)}setTimeout(()=>map?.invalidateSize(),100)}
-function begin(c,form){const driver=form.querySelector('[name=driver]').value.trim();if(!driver){form.querySelector('[name=driver]').focus();return}const data=Object.fromEntries([...form.querySelectorAll('[name]')].map(e=>[e.name,e.value]));const startedAt=new Date().toISOString();app.setMission(c.key,{...data,startedAt});stop();session={key:c.key,startedAt};$('bamco-day-start').disabled=true;$('bamco-live-stop').disabled=false;showMap();$('questionsPanel')?.classList.remove('hidden');$('bamco-live-state').textContent='درخواست مجوز مکان؛ فقط با اجازه شما ردیابی شروع می‌شود';watch=navigator.geolocation?.watchPosition(pos=>{if(session?.key!==c.key)return;const loc=[pos.coords.latitude,pos.coords.longitude];points.push(loc);if(points.length>3000)points.shift();trace?.setLatLngs(points);if(map){if(!marker)marker=L.marker(loc).addTo(map);else marker.setLatLng(loc);map.setView(loc,16)}$('bamco-live-state').textContent='GPS فعال — آخرین موقعیت: '+new Date(pos.timestamp).toLocaleTimeString('fa-IR')+' — دقت '+Math.round(pos.coords.accuracy)+' متر';},err=>{$('bamco-live-state').textContent='خطای موقعیت: '+err.message},{enableHighAccuracy:true,maximumAge:4000,timeout:25000})??null;$('questionsPanel')?.scrollIntoView({behavior:'smooth',block:'nearest'})}
-document.addEventListener('bamco:assessment-close',()=>{stop();lastStamp=''});
-const observer=new MutationObserver(()=>{const c=context();if(!c){lastStamp='';return}if(!document.getElementById('bamco-day-workflow')){lastStamp='';paint()}});observer.observe(document.getElementById('schedulePanel'),{childList:true});document.addEventListener('click',e=>{if(e.target.closest('[data-day],[data-tab]')){if(watch!==null)stop();lastStamp='';setTimeout(paint,0)}});document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});paint();
+
+function begin(c,form){
+  const driver=form.querySelector('[name=driver]').value.trim();
+  if(!driver){form.querySelector('[name=driver]').focus();return}
+  const data=Object.fromEntries([...form.querySelectorAll('[name]')].map(element=>[element.name,element.value]));
+  app.setMission(c.key,{...data,startedAt:app.mission(c.key).startedAt||new Date().toISOString(),updatedAt:new Date().toISOString()});
+  $('questionsPanel')?.classList.remove('hidden');
+  $('bamco-live-state').textContent='اطلاعات مأموریت در دیتابیس ذخیره شد. اشتراک موقعیت فقط از نوار بالای ارزیابی کنترل می‌شود.';
+  $('questionsPanel')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+document.addEventListener('bamco:assessment-close',()=>{lastStamp=''});
+const observer=new MutationObserver(()=>{
+  const c=context();
+  if(!c){lastStamp='';return}
+  if(!$('bamco-day-workflow')){lastStamp='';paint()}
+});
+observer.observe($('schedulePanel'),{childList:true});
+document.addEventListener('click',event=>{
+  if(event.target.closest('[data-day],[data-tab]')){lastStamp='';setTimeout(paint,0)}
+});
+document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});
+paint();
 })();

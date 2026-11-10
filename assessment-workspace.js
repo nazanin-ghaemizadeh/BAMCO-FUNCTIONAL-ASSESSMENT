@@ -37,7 +37,6 @@ const labels = {
   remove:['حذف ارزیابی','Delete assessment','删除评估'],
   confirm:['ارزیابی و داده‌های آن برای همیشه حذف شوند؟','Permanently delete the assessment and its data?','永久删除此评估及其数据？'],
   empty:['ارزیابی‌ای در این بخش وجود ندارد.','There are no assessments here.','此处暂无评估。'],
-  legacy:['ایجاد ارزیابی از داده‌های این مرورگر','Create from this browser’s previous data','从此浏览器的旧数据创建'],
   load:['در حال اتصال…','Connecting…','正在连接…'],
   error:['ارتباط با سامانه برقرار نشد.','Could not connect to the service.','无法连接到服务。'],
   retry:['تلاش دوباره','Retry','重试'],
@@ -46,24 +45,10 @@ const labels = {
   unsaved:['تغییرات ذخیره نشد. نسخه پشتیبان بگیرید یا دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. نسخه پشتیبان بگیرید و آن را دوباره باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
-  copyCode:['کپی کد','Copy code','复制代码'],
-  copied:['کد کپی شد.','Code copied.','代码已复制。'],
-  monitoringCode:['کد اتصال مرورگر مدیر','Manager browser pairing code','主管浏览器配对码'],
-  codeHint:['ارزیاب این کد را یک‌بار روی گوشی خود وارد می‌کند.','The evaluator enters this code once on their phone.','评估员在手机上输入此代码一次。'],
-  pairing:['اتصال اولیه به گوشی ارزیاب','Pair the evaluator’s phone','配对评估员手机'],
-  invalidCode:['کد دسترسی کامل را وارد کنید.','Enter the full access code.','请输入完整的访问代码。'],
-  accessDevices:['دسترسی از دستگاه دیگر','Access from another device','跨设备访问'],
-  accessHint:['کد ارزیاب را از دستگاهی که فهرست را دارد کپی کنید و در دستگاه جدید وارد کنید. این کد اجازه مشاهده، ویرایش و حذف ارزیابی‌ها را می‌دهد.','Copy the evaluator code from the device that has the list and enter it on the new device. This code grants access to view, edit, and delete assessments.','从已有评估列表的设备复制评估员代码，并在新设备上输入。此代码允许查看、编辑及删除评估。'],
-  showAccessCode:['نمایش کد ارزیاب','Show evaluator code','显示评估员代码'],
-  evaluatorCode:['کد ارزیاب','Evaluator code','评估员代码'],
-  useAccessCode:['اتصال به فهرست','Connect to assessment list','连接评估列表'],
-  restoreDeviceAccess:['بازگشت به دسترسی اولیه این دستگاه','Restore this device’s original access','恢复此设备的原有访问权限'],
-  databaseScope:['ارزیابی‌های ثبت‌شده در سامانه','Assessments saved in the system','系统中已保存的评估'],
-  share:['شروع ارسال GPS','Start GPS sharing','开始共享定位'],
-  stop:['توقف ارسال GPS','Stop GPS sharing','停止共享定位'],
+  share:['اشتراک موقعیت مکانی','Share location','共享位置'],
+  stop:['توقف اشتراک موقعیت','Stop sharing','停止共享'],
   gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
   gpsError:['GPS در دسترس نیست. مجوز موقعیت و اتصال را بررسی کنید.','GPS is unavailable. Check location permissions and your connection.','定位不可用。请检查定位权限和网络。'],
-  keepOpen:['برای ارسال، صفحه را باز و گوشی را روشن نگه دارید.','Keep this page open and the phone awake to share location.','共享定位时请保持页面开启及手机亮屏。'],
   position:['آخرین موقعیت','Latest location','最新位置'],
   backup:['دریافت نسخه پشتیبان','Download backup','下载备份'],
   partial:['متن تخصصی بانک آزمون فعلاً فارسی است.','The technical test bank is currently in Persian.','专业试验题库目前为波斯语。']
@@ -133,52 +118,27 @@ try {
 } catch {}
 const tr = key => labels[key][['fa','en','zh'].indexOf(language)] || labels[key][0];
 const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-language]')];
+
+labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
+labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
+labels.monitoringHint=['تمام موقعیت‌هایی که ارزیابان اجازه داده‌اند، بدون کد و به‌صورت خودکار در این نقشه نمایش داده می‌شوند.','Every location explicitly shared by an evaluator appears here automatically, with no code or link.','评估员明确授权共享的位置会自动显示在此地图上，无需代码或链接。'];
+labels.activeHint=['همه ارزیابی‌های تکمیل‌نشده مستقیماً از پایگاه داده نمایش داده می‌شوند.','All unfinished assessments are loaded directly from the database.','所有未完成的评估均直接从数据库加载。'];
+labels.historyHint=['ارزیابی‌های خاتمه‌یافته را برای مرور نتایج انتخاب کنید.','Select a completed assessment to review its results.','选择已完成的评估以查看结果。'];
+labels.created=['ایجاد','Created','创建时间'];
+labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
+labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
+
 let gpsStatus = '';
 let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
-let map, markers, poll, watch = null, gpsGeneration = 0, gpsViewer = '', gpsWrite = Promise.resolve(), heartbeat;
-
-let observerKey = null;
-const savedMonitoringCode = 'bamco-saved-monitoring-code';
-
-function readSavedCode() {
-  try {return localStorage.getItem(savedMonitoringCode)} catch {return null}
-}
+let map, markers, poll, watch = null, heartbeat = null, locationSession = '', gpsGeneration = 0, gpsWrite = Promise.resolve(), refreshing = false, mapFitted = false;
 
 function randomKey() {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
-function deviceKey(storageKey) {
-  let key = localStorage.getItem(storageKey);
-  if (!/^[0-9a-f]{64}$/.test(key || '')) {
-    key = randomKey();
-    localStorage.setItem(storageKey,key);
-  }
-  return key;
-}
-
-const sharedAccessStorage = 'bamco-shared-assessment-key';
-let sharedAccessKey;
-try {
-  const stored = localStorage.getItem(sharedAccessStorage);
-  if (/^[0-9a-f]{64}$/.test(stored || '')) sharedAccessKey = stored;
-} catch {}
-
-function assessmentKey() {
-  return sharedAccessKey || deviceKey('bamco-assessment-browser-key');
-}
-
 function ownerRequest(operation,args = {}) {
-  try {
-    const browser_key = assessmentKey();
-    return client.rpc('bamco_browser_assessment',{browser_key,operation,args});
-  } catch (error) {
-    return Promise.resolve({error});
-  }
-}
-
-function viewerFromHash(hash) {
-  return /^#observer=([0-9a-f]{64})$/.exec(hash)?.[1] || null;
+  if (!client) return Promise.resolve({error:new Error('Database client is unavailable')});
+  return client.rpc('bamco_assessment',{operation,args});
 }
 
 function node(tag, text, className) {
@@ -189,10 +149,10 @@ function node(tag, text, className) {
 }
 
 function button(key, action, className = 'assessment-action') {
-  const b = node('button', tr(key), className);
-  b.type = 'button';
-  b.onclick = action;
-  return b;
+  const control = node('button', tr(key), className);
+  control.type = 'button';
+  control.onclick = action;
+  return control;
 }
 
 function field(type, key, value = '') {
@@ -206,17 +166,17 @@ function field(type, key, value = '') {
 }
 
 function card(key, icon, action) {
-  const b = button(key, action, 'gate-card');
-  b.dataset.gateIcon = icon;
-  b.setAttribute('aria-label',tr(key));
+  const control = button(key, action, 'gate-card');
+  control.dataset.gateIcon = icon;
+  control.setAttribute('aria-label',tr(key));
   const illustration = node('span','','gate-illustration');
   illustration.setAttribute('aria-hidden','true');
-  b.replaceChildren(illustration,node('strong',tr(key)),node('span',tr(key+'Cta'),'gate-cta'));
-  return b;
+  control.replaceChildren(illustration,node('strong',tr(key)),node('span',tr(key+'Cta'),'gate-cta'));
+  return control;
 }
 
 function cards(...items) {
-  const grid = node('div', '', 'gate-grid');
+  const grid = node('div', '', 'gate-grid'+(items.length===3?' three':''));
   grid.append(...items);
   hub.append(grid);
 }
@@ -227,30 +187,41 @@ function report(error) {
   render();
 }
 
+function locale() {
+  return language === 'fa' ? 'fa-IR' : language === 'zh' ? 'zh-CN' : 'en-GB';
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? '' : date.toLocaleString(locale(),{dateStyle:'medium',timeStyle:'short'});
+}
+
 function render() {
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
   translateInterface();
   $('assessmentLanguages').setAttribute('aria-label',tr('language'));
-  for (const b of languageButtons) b.setAttribute('aria-pressed',String(b.dataset.language === language));
+  for (const control of languageButtons) control.setAttribute('aria-pressed',String(control.dataset.language === language));
   $('brandName').textContent = tr('brandName');
   $('brandTitle').textContent = tr('brandTitle');
   document.querySelector('.brand-logo').alt = tr('brandAlt');
   document.title = tr('brandName')+' | '+tr('brandTitle');
   $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
+  $('assessmentGpsLabel').textContent = tr('locationShareTitle');
   $('backupBtn').textContent = tr('backup');
   $('assessmentBack').textContent = tr('back');
   $('assessmentShare').textContent = tr('share');
   $('assessmentStop').textContent = tr('stop');
-  $('assessmentObserverLinkLabel').textContent = tr('monitoringCode');
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
     if (language !== 'fa') $('assessmentSync').append(' ',tr('partial'));
     if (pending && !saving && syncState === 'unsaved') $('assessmentSync').append(' ',button('retry',flush));
     return;
   }
+
   if (map) {map.remove();map = null}
-  const title = node('h1',screen === 'home' ? '' : tr(screen === 'roles' ? 'active' : screen),'gate-title welcome-title');
+  const title = node('h1',screen === 'home' ? '' : tr(screen),'gate-title welcome-title');
   if (screen === 'home') title.append(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
   const divider = node('div','','welcome-divider');
   divider.setAttribute('aria-hidden','true');
@@ -261,119 +232,70 @@ function render() {
     status.setAttribute('role','status');
     hub.append(status);
   }
-  const toolbar = node('div','','toolbar');
-  if (screen !== 'home') toolbar.append(button('back',()=>navigate(['evaluator','observer'].includes(screen) ? 'roles' : 'home')));
-  if (toolbar.childElementCount) hub.append(toolbar);
-  if (screen === 'home') cards(card('active','setup',()=>navigate('roles')),card('history','results',()=>navigate('history')));
-  if (screen === 'roles') cards(card('evaluator','supplementary',()=>navigate('evaluator')),card('observer','observer',()=>navigate('observer')));
-  if (screen === 'evaluator' || screen === 'history') renderRows();
+  if (screen !== 'home') {
+    const toolbar = node('div','','toolbar');
+    toolbar.append(button('back',()=>navigate('home')));
+    hub.append(toolbar);
+  }
+  if (screen === 'home') {
+    cards(
+      card('active','setup',()=>navigate('active')),
+      card('history','results',()=>navigate('history')),
+      card('observer','observer',()=>navigate('observer'))
+    );
+  }
+  if (screen === 'active' || screen === 'history') renderRows();
   if (screen === 'observer') {
+    hub.append(node('p',tr('monitoringHint'),'assessment-screen-hint'));
     renderMap();
-    if (!observerKey) {
-      const pairing = node('details','','monitoring-pairing');
-      pairing.append(node('summary',tr('pairing')),node('p',tr('codeHint')));
-      const code = field('text','monitoringCode',readSavedCode() || '');
-      code.readOnly = true;
-      code.dir = 'ltr';
-      code.onclick = () => code.select();
-      const copy = button('copyCode',async ()=>{
-        try {
-          await navigator.clipboard.writeText(code.value);
-          copy.textContent = tr('copied');
-        } catch {code.focus();code.select()}
-      });
-      if (code.value) pairing.append(code,copy);
-      hub.append(pairing);
-    }
   }
 }
 
 async function navigate(next) {
   clearInterval(poll);
+  poll = null;
   const generation = ++syncGeneration;
-  screen = next; rows = []; notice = '';
-  if (next !== 'observer') {
-    observerKey = null;
-    if (viewerFromHash(location.hash)) history.replaceState(null,'',location.pathname);
-  }
-  if (next === 'observer' && !observerKey) {
-    try {deviceKey(savedMonitoringCode)} catch {notice = 'error'}
-  }
-  if (['evaluator','history'].includes(next)) notice = 'load';
+  screen = next;
+  rows = [];
+  notice = '';
+  if (['active','history'].includes(next)) notice = 'load';
   render();
-  if (next === 'observer' && (observerKey || readSavedCode())) {
+  if (next === 'observer') {
     await refreshMap();
     if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
+    return;
   }
-  if (!['evaluator','history'].includes(next)) return;
+  if (!['active','history'].includes(next)) return;
   const {data,error} = await ownerRequest('list',{status:next === 'history' ? 'completed' : 'active'});
   if (generation !== syncGeneration) return;
   if (error) {report(error);return}
-  rows = data; notice = ''; render();
-}
-
-function renderDeviceAccess() {
-  const details = node('details','','monitoring-pairing');
-  details.append(node('summary',tr('accessDevices')),node('p',tr('accessHint')));
-  const reveal = button('showAccessCode',()=>{
-    let key;
-    try {key = assessmentKey()} catch {report('Storage unavailable');return}
-    const input = field('text','evaluatorCode',key);
-    input.readOnly = true;
-    input.dir = 'ltr';
-    input.onclick = () => input.select();
-    reveal.replaceWith(input,button('copyCode',async event=>{
-      const copy = event.currentTarget;
-      try {await navigator.clipboard.writeText(key);copy.textContent = tr('copied')}
-      catch {input.focus();input.select()}
-    }));
-  });
-  const form = node('form');
-  const input = field('password','evaluatorCode');
-  input.maxLength = 64;
-  input.dir = 'ltr';
-  input.autocomplete = 'off';
-  input.spellcheck = false;
-  const status = node('p');
-  status.setAttribute('role','status');
-  form.append(input,node('button',tr('useAccessCode'),'assessment-action'));
-  form.onsubmit = event=>{
-    event.preventDefault();
-    const key = input.value.trim().toLowerCase();
-    if (!/^[0-9a-f]{64}$/.test(key)) {status.textContent = tr('invalidCode');return}
-    try {localStorage.setItem(sharedAccessStorage,key)} catch {status.textContent = tr('error');return}
-    sharedAccessKey = key;
-    navigate(screen);
-  };
-  details.append(reveal,form,status);
-  if (sharedAccessKey) details.append(button('restoreDeviceAccess',()=>{
-    try {localStorage.removeItem(sharedAccessStorage)} catch {report('Storage unavailable');return}
-    sharedAccessKey = undefined;
-    navigate(screen);
-  }));
-  hub.append(details);
+  rows = Array.isArray(data) ? data : [];
+  notice = '';
+  render();
 }
 
 function renderRows() {
-  hub.append(node('p',tr('databaseScope')));
-  if (notice !== 'load') renderDeviceAccess();
-  if (screen === 'evaluator') {
+  hub.append(node('p',tr(screen === 'active' ? 'activeHint' : 'historyHint'),'assessment-screen-hint'));
+  if (screen === 'active') {
     const form = node('form');
     const title = field('text','name');
     title.maxLength = 120;
-    form.append(title,node('button',tr('create'),'assessment-action'));
+    const createButton = node('button',tr('create'),'assessment-action');
+    form.append(title,createButton);
     form.onsubmit = async event => {
       event.preventDefault();
-      await create(title.value,{},form.querySelector('button'));
+      await create(title.value,{},createButton);
     };
-    const legacy = app.legacy();
-    if (legacy?.config) form.append(button('legacy',event=>create(title.value || prompt(tr('name')) || '',legacy,event.currentTarget)));
     hub.append(form);
   }
   if (!rows.length && !notice) hub.append(node('p',tr('empty')));
   for (const row of rows) {
     const item = node('div','','surface assessment-row');
-    item.append(node('bdi',row.title,'assessment-row-title'),button('open',()=>openAssessment(row.id)));
+    const heading = node('div','','assessment-row-heading');
+    heading.append(node('bdi',row.title,'assessment-row-title'));
+    const meta = node('small',tr('created')+': '+formatDate(row.created_at),'assessment-row-meta');
+    heading.append(meta);
+    item.append(heading,button('open',()=>openAssessment(row.id)));
     item.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
@@ -393,7 +315,7 @@ async function create(title,snapshot,control) {
   const {data,error} = await ownerRequest('create',{title,snapshot});
   control.disabled = false;
   if (generation !== syncGeneration) return;
-  if (error) {report(error);return}
+  if (error || !data) {report(error || 'Create failed');return}
   await openAssessment(data.id);
 }
 
@@ -411,12 +333,10 @@ async function openAssessment(id) {
   if (generation !== syncGeneration) return;
   if (error || !data) {report(error || tr('conflict'));return}
   current = data;
-  pending = null; syncState = '';
+  pending = null;
+  syncState = '';
   $('assessmentName').textContent = data.title;
   setGpsStatus('');
-  const pairingInput = $('assessmentObserverLink');
-  try {pairingInput.value = localStorage.getItem('bamco-device-monitoring-code') || ''} catch {pairingInput.value = ''}
-  pairingInput.disabled = false;
   $('assessmentShare').disabled = false;
   $('assessmentStop').disabled = true;
   $('assessmentGps').classList.toggle('hidden',data.status !== 'active');
@@ -437,7 +357,9 @@ async function flush() {
   saving = (async () => {
     while (pending) {
       const snapshot = pending;
-      pending = null; syncState = 'saving'; render();
+      pending = null;
+      syncState = 'saving';
+      render();
       const {data,error} = await ownerRequest('save',{id:row.id,revision:row.revision,snapshot});
       if (error || !data) {
         console.error(error || 'Revision changed');
@@ -457,12 +379,11 @@ $('assessmentBack').onclick = async () => {
   await flush();
   if (!row || current !== row) return;
   if (pending && !confirm(tr('leave'))) return;
-  if (watch !== null || gpsViewer) {
-    if (!await stopGps()) return;
-  }
+  if (watch !== null || locationSession) await stopGps();
   if (current !== row) return;
-  const next = current.status === 'active' ? 'evaluator' : 'history';
-  pending = null; current = null;
+  const next = current.status === 'active' ? 'active' : 'history';
+  pending = null;
+  current = null;
   editor.classList.add('hidden');
   app.home();
   await navigate(next);
@@ -474,58 +395,75 @@ function setGpsStatus(key) {
 }
 
 function gpsUpdate(operation,values = {}) {
-  const id = current.id, viewer = gpsViewer;
+  const id = current?.id;
+  const session = locationSession;
+  if (!id || !session) return Promise.resolve(false);
   gpsWrite = gpsWrite.then(async () => {
-    const {data,error} = await ownerRequest(operation,{id,viewer,...values});
+    const {data,error} = await ownerRequest(operation,{id,session,...values});
     return !error && Boolean(data);
   }).catch(()=>false);
   return gpsWrite;
 }
 
+function firstPosition(options) {
+  return new Promise((resolve,reject)=>{
+    if (!navigator.geolocation) {reject(new Error('Geolocation unavailable'));return}
+    navigator.geolocation.getCurrentPosition(resolve,reject,options);
+  });
+}
+
 $('assessmentGps').onsubmit = async event => {
   event.preventDefault();
-  if (!current || watch !== null || gpsViewer) return;
+  if (!current || watch !== null || locationSession) return;
   if (!navigator.geolocation) {setGpsStatus('gpsError');return}
-  const pairingInput = $('assessmentObserverLink');
-  const monitoringKey = pairingInput.value.trim().toLowerCase();
-  if (!/^[0-9a-f]{64}$/.test(monitoringKey)) {setGpsStatus('invalidCode');return}
   const row = current;
-  const viewer = randomKey();
-  gpsViewer = viewer;
   const generation = ++gpsGeneration;
+  const options = {enableHighAccuracy:true,maximumAge:5000,timeout:20000};
   $('assessmentBack').disabled = true;
   $('assessmentShare').disabled = true;
-  pairingInput.disabled = true;
-  let result;
+  setGpsStatus('locationRequest');
+  let first;
   try {
-    localStorage.setItem('bamco-device-monitoring-code',monitoringKey);
-    result = await client.rpc('bamco_start_site_monitoring',{
-      browser_key:assessmentKey(),
-      assessment_id:row.id,viewer_key:viewer,monitoring_key:monitoringKey
-    });
-  } catch (error) {result = {error}}
-  const {data,error} = result;
-  $('assessmentBack').disabled = false;
-  if (error || !data) {
-    gpsViewer = '';
+    first = await firstPosition(options);
+  } catch (error) {
+    console.error(error);
+    $('assessmentBack').disabled = false;
     $('assessmentShare').disabled = false;
-    pairingInput.disabled = false;
-    setGpsStatus('error');
+    setGpsStatus('gpsError');
     return;
   }
   if (current !== row || generation !== gpsGeneration) return;
+  const session = randomKey();
+  const start = await ownerRequest('gps_start',{id:row.id,session});
+  $('assessmentBack').disabled = false;
+  if (start.error || !start.data) {
+    $('assessmentShare').disabled = false;
+    setGpsStatus('error');
+    return;
+  }
+  locationSession = session;
   $('assessmentStop').disabled = false;
   setGpsStatus('keepOpen');
-  let last = 0, writing = false;
-  const publish = async ({coords}) => {
+  let last = 0;
+  let writing = false;
+  const publish = async position => {
     if (generation !== gpsGeneration || writing || Date.now()-last < 4000) return;
-    writing = true; last = Date.now();
-    const ok = await gpsUpdate('gps_point',{latitude:coords.latitude,longitude:coords.longitude});
+    writing = true;
+    last = Date.now();
+    const coords = position.coords;
+    const ok = await gpsUpdate('gps_point',{
+      latitude:coords.latitude,
+      longitude:coords.longitude,
+      accuracy:Math.max(0,coords.accuracy||0)
+    });
     writing = false;
     if (generation === gpsGeneration) setGpsStatus(ok?'keepOpen':'gpsError');
   };
-  const onLocationError = () => {if(generation === gpsGeneration)setGpsStatus('gpsError')};
-  const options = {enableHighAccuracy:true,maximumAge:5000,timeout:20000};
+  await publish(first);
+  const onLocationError = error => {
+    console.error(error);
+    if (generation === gpsGeneration) setGpsStatus('gpsError');
+  };
   watch = navigator.geolocation.watchPosition(publish,onLocationError,options);
   heartbeat = setInterval(()=>navigator.geolocation.getCurrentPosition(publish,onLocationError,options),30000);
 };
@@ -533,16 +471,22 @@ $('assessmentGps').onsubmit = async event => {
 async function stopGps() {
   ++gpsGeneration;
   clearInterval(heartbeat);
+  heartbeat = null;
   if (watch !== null) navigator.geolocation.clearWatch(watch);
   watch = null;
-  if (!gpsViewer) return true;
+  const session = locationSession;
+  if (!session) {
+    $('assessmentShare').disabled = false;
+    $('assessmentStop').disabled = true;
+    setGpsStatus('');
+    return true;
+  }
   const ok = await gpsUpdate('gps_stop');
+  locationSession = '';
+  $('assessmentShare').disabled = false;
+  $('assessmentStop').disabled = true;
   setGpsStatus(ok ? '' : 'error');
-  if (!ok) return false;
-  gpsViewer = '';
-  $('assessmentShare').disabled = false; $('assessmentStop').disabled = true;
-  $('assessmentObserverLink').disabled = false;
-  return true;
+  return ok;
 }
 $('assessmentStop').onclick = stopGps;
 
@@ -550,37 +494,46 @@ function renderMap() {
   const panel = node('div');
   panel.id = 'assessmentMap';
   const status = node('p',tr('gpsWait'));
-  status.id = 'assessmentMapStatus'; status.setAttribute('role','status');
+  status.id = 'assessmentMapStatus';
+  status.setAttribute('role','status');
   hub.append(panel,status);
   if (!window.L) {status.textContent = tr('error');return}
   map = L.map(panel).setView([32,53],5);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,attribution:'© OpenStreetMap'
+    maxZoom:19,
+    attribution:'© OpenStreetMap'
   }).addTo(map);
   markers = L.featureGroup().addTo(map);
+  mapFitted = false;
+  setTimeout(()=>map?.invalidateSize(),0);
 }
 
-let refreshing = false;
 async function refreshMap() {
   if (!map || refreshing) return;
   const generation = syncGeneration;
   refreshing = true;
-  const result = !client ? {error:true} : observerKey
-    ? await client.rpc('bamco_observer_location',{viewer_key:observerKey})
-    : await client.rpc('bamco_site_monitoring_locations',{monitoring_key:readSavedCode()});
-  const {error} = result;
-  const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+  const result = !client ? {error:true} : await client.rpc('bamco_live_locations');
+  const data = Array.isArray(result.data) ? result.data : [];
   refreshing = false;
   if (generation !== syncGeneration || !map) return;
-  const first = !markers.getLayers().length;
   markers.clearLayers();
-  $('assessmentMapStatus').textContent = tr(error ? 'error' : data.length ? 'position' : 'gpsWait');
-  if (error) return;
+  $('assessmentMapStatus').textContent = result.error ? tr('error') :
+    data.length ? data.length.toLocaleString(locale())+' '+tr('liveCount') : tr('gpsWait');
+  if (result.error) return;
   for (const point of data) {
-    const time = new Date(point.recorded_at).toLocaleString(language);
-    L.marker([point.latitude,point.longitude]).bindPopup(node('span',time)).addTo(markers);
+    const popup = node('div','','assessment-map-popup');
+    popup.append(node('strong',point.title));
+    popup.append(node('span',formatDate(point.recorded_at)));
+    if (Number.isFinite(Number(point.accuracy_m))) {
+      const accuracyLabel = language === 'fa' ? 'دقت: ' : language === 'zh' ? '精度：' : 'Accuracy: ';
+      popup.append(node('span',accuracyLabel+Math.round(Number(point.accuracy_m)).toLocaleString(locale())+(language==='zh'?' 米':' m')));
+    }
+    L.marker([point.latitude,point.longitude]).bindPopup(popup).addTo(markers);
   }
-  if (first && data.length) map.fitBounds(markers.getBounds(),{maxZoom:15});
+  if (!mapFitted && data.length) {
+    map.fitBounds(markers.getBounds(),{maxZoom:15,padding:[28,28]});
+    mapFitted = true;
+  }
 }
 
 for (const control of languageButtons) control.onclick = () => {
@@ -593,6 +546,5 @@ window.addEventListener('beforeunload',event => {
   if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}
 });
 
-observerKey = viewerFromHash(location.hash);
-navigate(observerKey || location.search === '?observer' ? 'observer' : 'home');
+navigate(location.search === '?observer' ? 'observer' : 'home');
 })();

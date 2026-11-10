@@ -14,16 +14,18 @@ icons.drive='<svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="
 icons.observer='<svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"/><path d="M29 53l35-13 33 13 34-13v56l-34 13-33-13-35 13z" fill="#edf7f3" stroke="#78a99a" stroke-width="2.5" stroke-linejoin="round"/><path d="M64 40v56m33-43v56M40 88l17-13 14 6 19-12 18 8 11-12" fill="none" stroke="#8ebbad" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 13c-15 0-27 12-27 27 0 17 27 38 27 38s27-21 27-38c0-15-12-27-27-27z" fill="#d9c8e9" stroke="#9980b5" stroke-width="2.5"/><circle cx="80" cy="40" r="10" fill="#fbf7fd" stroke="#9980b5" stroke-width="2"/><path d="M127 15v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"/><path d="M24 30v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"/></svg>';
 function polish(root){if(root.nodeType===3){if(root.parentElement&&!root.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName'))root.nodeValue=digits(root.nodeValue);return;}if(root.nodeType!==1&&root!==document.body)return;root.querySelectorAll?.('.gate-card').forEach(c=>{const i=c.querySelector('.gate-illustration');if(i&&!i.querySelector('svg'))i.innerHTML=icons[c.dataset.gateIcon || c.dataset.open]||car;});const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walk.nextNode())if(!n.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName'))n.nodeValue=digits(n.nodeValue);}
 const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if(m.type==='characterData')polish(m.target);else m.addedNodes.forEach(polish)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});polish(document.body);
-(function initVehicleDropdowns(){
- const selects=[...document.querySelectorAll('#vehicleForm select')];
+window.BAMCO_DROPDOWNS=function(root=document){
+ const selects=[...root.querySelectorAll('#vehicleForm select,select[name="temperature"]')];
  const closeAll=(except)=>document.querySelectorAll('.vehicle-dropdown-list').forEach(l=>{if(l!==except){l.hidden=true;l.previousElementSibling?.setAttribute('aria-expanded','false')}});
  selects.forEach(select=>{
   if(select.dataset.customDropdown)return;
   select.dataset.customDropdown='1';select.classList.add('vehicle-native-hidden');
+  const english=[...select.options].some(o=>/[A-Za-z]/.test(o.textContent))&&select.closest('#vehicleForm');
+  select.parentElement.classList.toggle('english-dropdown',Boolean(english));
   const trigger=document.createElement('button');trigger.type='button';trigger.className='vehicle-dropdown-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
   const title=document.createElement('span');const arrow=document.createElement('span');arrow.className='vehicle-dropdown-arrow';arrow.textContent='⌄';trigger.append(title,arrow);
   const list=document.createElement('div');list.className='vehicle-dropdown-list';list.setAttribute('role','listbox');list.hidden=true;
-  const refresh=()=>{title.textContent=select.selectedOptions[0]?.textContent||'';list.querySelectorAll('[data-value]').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.value===select.value)))};
+  const refresh=()=>{trigger.disabled=select.disabled;title.textContent=select.selectedOptions[0]?.textContent||'';list.querySelectorAll('[data-value]').forEach(x=>{x.disabled=select.disabled;x.setAttribute('aria-selected',String(x.dataset.value===select.value))})};
   [...select.options].forEach(opt=>{const item=document.createElement('button');item.type='button';item.className='vehicle-dropdown-option';item.setAttribute('role','option');item.dataset.value=opt.value;item.textContent=opt.textContent;item.addEventListener('click',()=>{select.value=opt.value;select.dispatchEvent(new Event('change',{bubbles:true}));refresh();closeAll();trigger.focus()});list.append(item)});
   select.addEventListener('change',refresh);
   select.insertAdjacentElement('afterend',trigger);trigger.insertAdjacentElement('afterend',list);refresh();
@@ -31,8 +33,10 @@ const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if
   trigger.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();return}if(['ArrowDown','Enter',' '].includes(e.key)&&list.hidden){e.preventDefault();trigger.click();list.querySelector('[aria-selected=true]')?.focus()}});
   list.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();trigger.focus()}});
  });
- document.addEventListener('pointerdown',e=>{if(!e.target.closest('.vehicle-dropdown-trigger,.vehicle-dropdown-list'))closeAll()});
-})();
+
+};
+window.BAMCO_DROPDOWNS();
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.vehicle-dropdown-trigger,.vehicle-dropdown-list'))document.querySelectorAll('.vehicle-dropdown-list').forEach(list=>{list.hidden=true;list.previousElementSibling?.setAttribute('aria-expanded','false')})});
 observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 })();
 

@@ -196,13 +196,19 @@ function dayContext(){
  const day=currentDay();
  return {tab:state.tab,day,key:state.tab+':'+day,section:dayScreen};
 }
+function dayRouteAppearance(p){
+ const text=p.type||p.route||'';
+ const kind=p.routeId||(/گرم|سرد/.test(text)?'hot':/خاکی|خارج.?جاده|ناهموار/.test(text)?'offroad':/کوهستان|شیب/.test(text)?'mountain':/شهری/.test(text)&&!/برون/.test(text)?'urban':'rural');
+ const paths={hot:'<circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/>',urban:'<path d="M3 21V7h8v14m0-10h10v10M6 10h2m-2 4h2m-2 4h2m6-3h3m-3 3h3M1 21h22"/>',rural:'<path d="M7 2 2 22M17 2l5 20M12 3v4m0 3v4m0 3v4"/>',mountain:'<path d="m1 21 8-17 6 11 3-6 5 12H1m5-10 3 2 3-3"/>',offroad:'<path d="m2 20 4-4 4 2 4-5 4 2 4-4M3 8l3-3 3 3m4-1 3-3 4 4"/>'};
+ return {kind,icon:'<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(paths[kind]||paths.rural)+'</svg>',label:text};
+}
 function renderDayNavigation(){
  const c=dayContext(),host=byId('dayNavigation');
  host.classList.toggle('hidden',!c||!['days','menu'].includes(dayScreen));
  if(!c){host.replaceChildren();return}
  if(dayScreen==='days'){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan();
-  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>'<button type="button" class="assessment-day-tile" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'"><span>روز</span><strong>'+number(p.day)+'</strong><small>'+number(p.km)+' کیلومتر</small></button>').join('')+'</div>';
+  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-route-icon">'+theme.icon+'</span><span>روز</span><strong>'+number(p.day)+'</strong><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small></button>'}).join('')+'</div>';
  }else if(dayScreen==='menu'){
   host.innerHTML='<div class="assessment-day-sections">'+[
    ['form','فرم روزانه','ثبت اطلاعات پیمایش و شرایط روز','▤'],

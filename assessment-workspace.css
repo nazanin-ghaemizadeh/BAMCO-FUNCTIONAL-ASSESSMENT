@@ -327,3 +327,7 @@ html[dir] body :is(#moduleLanding .gate-card strong,#moduleLanding .gate-cta,.da
 /* Center both the score and its description in every locale. */
 html[dir] body .scores button.score {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center!important}
 html[dir] body .scores button.score :is(strong,small,span) {display:block;width:100%;margin-inline:0;text-align:center!important;text-justify:auto!important}
+
+/* Center the calculated distance and its placeholder in every language. */
+html[dir] body #bamco-day-form input[name="distanceKm"],
+html[dir] body #bamco-day-form input[name="distanceKm"]::placeholder {text-align:center!important;text-justify:auto!important}

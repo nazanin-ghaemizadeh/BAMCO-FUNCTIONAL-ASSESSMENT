@@ -29,3 +29,7 @@
 @media print{body[data-view=results] .app-header,body[data-view=results] #assessmentPageActions,body[data-view=results] .report-tabs,body[data-view=results] .report-filters,body[data-view=results] .report-actions,body[data-view=results] .report-editor,body[data-view=results] .report-file-button{display:none!important}.report-card{break-inside:avoid;box-shadow:none!important}.report-table-scroll{overflow:visible}.report-content{display:block}body[data-view=results]{padding:0;background:#fff}}
 
 #staticTestForm label{position:relative;display:block}#staticTestForm select.vehicle-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;overflow:hidden!important}
+
+/* Keep dashboard alignment consistent with the centered Persian layout in every language. */
+html[dir] body #assessmentDashboard :is(.report-card>header h2,.report-card>header p,.report-caption,.report-empty,.report-metric span,.report-metric strong,.report-metric small,.report-identity span,.report-identity strong,.report-compare-cards h3,.report-compare-cards p,.report-compare-cards small,.report-comments h3,.report-sub h3,.report-classification b,.report-classification span){text-align:center!important;text-justify:auto!important}
+#assessmentDashboard .report-metric strong,#assessmentDashboard .report-compare-cards>article>strong{direction:ltr;unicode-bidi:isolate;text-align:center!important}

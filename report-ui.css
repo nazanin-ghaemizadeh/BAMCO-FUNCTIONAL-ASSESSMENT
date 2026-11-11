@@ -33,3 +33,112 @@
 /* Keep dashboard alignment consistent with the centered Persian layout in every language. */
 html[dir] body #assessmentDashboard :is(.report-card>header h2,.report-card>header p,.report-caption,.report-empty,.report-metric span,.report-metric strong,.report-metric small,.report-identity span,.report-identity strong,.report-compare-cards h3,.report-compare-cards p,.report-compare-cards small,.report-comments h3,.report-sub h3,.report-classification b,.report-classification span){text-align:center!important;text-justify:auto!important}
 #assessmentDashboard .report-metric strong,#assessmentDashboard .report-compare-cards>article>strong{direction:ltr;unicode-bidi:isolate;text-align:center!important}
+
+/* Reference dashboard: blue/teal report panels, three evidence bands and full-label charts. */
+#assessmentDashboard{--report-ink:#173e62;--report-line:#d8e6ee;--report-mint:#f1f7fa}
+#assessmentDashboard .report-card{border-radius:16px;padding:24px;background:#fff;box-shadow:0 5px 20px #193f6110;margin-bottom:20px}
+#assessmentDashboard .report-card>header{margin-bottom:20px}
+#assessmentDashboard .report-card h2{font-size:24px;color:#163b69}
+#assessmentDashboard .report-card>header p,#assessmentDashboard .report-caption{color:#6a7e91;font-size:15px;line-height:1.85}
+#assessmentDashboard .report-tabs{background:#f2f7fa;border-radius:14px;border-color:var(--report-line);margin-bottom:22px}
+#assessmentDashboard :is(button.primary,a.primary){background:linear-gradient(115deg,#205878,#258679);border-color:#23677b;color:white}
+#assessmentDashboard :is(button.secondary,a.secondary,.report-file-button){background:#f8fbfd;border:1px solid #cadde7;color:#24526d;border-radius:10px}
+#assessmentDashboard .reference-hero{display:grid;grid-template-columns:1fr 230px;gap:28px;align-items:stretch;border-top:4px solid #2a7789;background:linear-gradient(120deg,#fff,#f4f9fc)}
+#assessmentDashboard .report-identity{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 0;border:0;gap:24px}
+#assessmentDashboard .report-identity>div{display:flex;flex-direction:column;justify-content:center;min-width:0}
+#assessmentDashboard .report-identity span{color:#6f8596}
+#assessmentDashboard .report-identity strong{font-size:21px;color:#163b69}
+#assessmentDashboard .reference-score{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:18px;border-radius:14px;background:#edf5fa;border:1px solid #cfdfeb}
+#assessmentDashboard .reference-score>strong{font-size:46px;line-height:1.2;direction:ltr;unicode-bidi:isolate;color:#175c82}
+#assessmentDashboard .reference-score>small{font-size:14px;color:#6d8190}
+#assessmentDashboard .report-decision{font-size:17px;padding:9px 14px;border-radius:8px;margin-top:5px}
+#assessmentDashboard .reference-kpis{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#assessmentDashboard .reference-kpis .report-card{margin-bottom:20px}
+#assessmentDashboard .reference-progress-head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:10px 0 18px;flex-wrap:wrap}
+#assessmentDashboard .reference-progress-head strong{font-size:24px;color:#195b7d}
+#assessmentDashboard .reference-progress-head b{font-size:22px;font-weight:400}
+#assessmentDashboard .report-completion{background:#eaf1f6;height:14px}
+#assessmentDashboard .report-completion>div{background:linear-gradient(90deg,#2871a0,#45a99c)}
+#assessmentDashboard .reference-entry{background:#f6fafc}
+#assessmentDashboard .reference-analytics{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;margin-bottom:20px}
+#assessmentDashboard .reference-analytics>.report-card{margin:0}
+#assessmentDashboard .reference-radar-card{grid-column:1/-1}
+#assessmentDashboard .reference-chart-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;direction:ltr;padding:8px 0;scrollbar-width:thin;scrollbar-color:#aac5d5 #edf4f8}
+#assessmentDashboard .reference-chart-scroll>svg{display:block;width:100%;height:auto;margin:0 auto;overflow:visible}
+#assessmentDashboard .reference-chart-scroll[data-chart-container=weighted-columns]>svg{min-width:1000px;min-height:370px}
+#assessmentDashboard .reference-chart-scroll[data-chart-container=quality-frequency]>svg{min-width:490px;max-width:730px}
+#assessmentDashboard .reference-chart-scroll[data-chart-container=weighted-radar]>svg{max-width:950px;min-width:600px}
+#assessmentDashboard .reference-chart-scroll[data-chart-container^=comparison-criterion]>svg,#assessmentDashboard .reference-chart-scroll[data-chart-container^=comparison-test]>svg{min-width:1400px}
+#assessmentDashboard .reference-chart-scroll[data-chart-container^=comparison-radar]>svg{max-width:950px;min-width:600px}
+#assessmentDashboard .report-chart-target{cursor:pointer;outline:none}
+#assessmentDashboard .report-chart-target:hover text,#assessmentDashboard .report-chart-target:focus-visible text{text-decoration:underline;font-weight:bold}
+#assessmentDashboard .reference-classification{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#assessmentDashboard .reference-classification article{padding:18px 12px;border-radius:11px;border:1px solid #d8e5eb;text-align:center}
+#assessmentDashboard .reference-classification :is(b,strong){display:block;margin:7px 0}
+#assessmentDashboard .reference-classification b{font-size:22px}
+#assessmentDashboard .reference-classification p{font-size:15px;line-height:1.8;margin-bottom:0;color:#486477}
+#assessmentDashboard .reference-classification .pass{background:#eff9f5;border-color:#bfdfd2}
+#assessmentDashboard .reference-classification .conditional{background:#fff9e9;border-color:#efddb1}
+#assessmentDashboard .reference-classification .revise{background:#fff2e7;border-color:#edcfb2}
+#assessmentDashboard .reference-classification .reject{background:#fff1f2;border-color:#ebc9cf}
+#assessmentDashboard .report-table-scroll{border:1px solid #d7e3eb;border-radius:11px}
+#assessmentDashboard .result-table{border-collapse:collapse;table-layout:auto}
+#assessmentDashboard .result-table th{background:#205775;color:#fff;border-color:#497992;padding:14px 12px}
+#assessmentDashboard .result-table td{color:#214967;border-color:#dbe6ed;padding:14px 12px;background:#fff}
+#assessmentDashboard .result-table tr:nth-child(even) td{background:#f3f8fb}
+#assessmentDashboard .result-table td:first-child{background:#edf4f8;color:#164869}
+#assessmentDashboard .result-table .report-text-button{color:#1d577c;width:100%;font-size:inherit}
+#assessmentDashboard .reference-point-bands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+#assessmentDashboard .reference-point-band{border:1px solid;padding:20px 16px;border-radius:13px;min-width:0}
+#assessmentDashboard .reference-point-band.strength{background:#edf9f4;border-color:#bce5d4;--band-ink:#24735a}
+#assessmentDashboard .reference-point-band.review{background:#fff8e9;border-color:#efddb1;--band-ink:#93711e}
+#assessmentDashboard .reference-point-band.weakness{background:#fff2f1;border-color:#f0c5c1;--band-ink:#a34d58}
+#assessmentDashboard .reference-point-band h3{margin:0 0 10px;font-size:21px;line-height:1.6;color:var(--band-ink)}
+#assessmentDashboard .reference-band-count{font-size:22px;color:var(--band-ink);text-align:center}
+#assessmentDashboard .reference-point-band>p{font-size:15px;color:var(--band-ink);margin:6px 0 18px}
+#assessmentDashboard .reference-point-group{border-top:1px solid #ffffff;margin:10px 0 0;padding-top:10px}
+#assessmentDashboard .reference-point-group summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;cursor:pointer;list-style:none}
+#assessmentDashboard .reference-point-group summary:before{content:'+';font-family:serif;font-size:22px;color:var(--band-ink)}
+#assessmentDashboard .reference-point-group[open] summary:before{content:'−'}
+#assessmentDashboard .reference-point-group summary strong{flex:1;font-size:17px;font-weight:400}
+#assessmentDashboard .reference-point-group summary span{background:#ffffffaa;padding:3px 10px;border-radius:8px;color:var(--band-ink)}
+#assessmentDashboard .reference-point-group article{display:flex;flex-direction:column;align-items:center;gap:9px;background:#ffffffcc;border-radius:10px;border:1px solid #ffffff;margin:10px 0;padding:17px 12px;overflow-wrap:anywhere;text-align:center}
+#assessmentDashboard .reference-point-group article>strong{font-size:17px;font-weight:400}
+#assessmentDashboard .reference-point-group article>b{font-size:25px;color:var(--band-ink)}
+#assessmentDashboard .reference-point-group article>small{font-size:14px;color:#667d89}
+#assessmentDashboard .reference-point-group article>p{font-size:15px;line-height:1.8;white-space:pre-wrap}
+#assessmentDashboard .report-text-button{color:#21698a}
+#assessmentDashboard .report-text-button:hover{background:#e8f2f8}
+#assessmentDashboard .reference-chart-legend{display:flex;justify-content:center;flex-wrap:wrap;gap:18px;margin:18px 0}
+#assessmentDashboard .reference-chart-legend>span{display:flex;align-items:center;gap:10px;font-size:16px}
+#assessmentDashboard .reference-chart-legend i{height:13px;width:13px;border-radius:4px;flex-shrink:0}
+#assessmentDashboard .reference-chart-legend b{font-weight:400;overflow-wrap:anywhere}
+#assessmentDashboard .reference-radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+#assessmentDashboard .reference-radar-grid>article{min-width:0;border:1px solid var(--report-line);padding:16px;border-radius:12px}
+#assessmentDashboard .reference-radar-grid h3{font-size:20px;margin:8px 0;text-align:center;overflow-wrap:anywhere}
+#assessmentDashboard .report-compare-cards article{background:#f6fafd;border-radius:12px;border-top:4px solid var(--case-color,#195b8e)}
+#assessmentDashboard .report-compare-cards strong{color:var(--case-color,#195b8e)}
+#assessmentDashboard .reference-delta{display:block;color:#5d8092;font-size:13px;margin-top:4px}
+#assessmentDashboard .reference-technical{background:linear-gradient(125deg,#f5faff,#fff);border-color:#c9dce9}
+#assessmentDashboard .reference-ai-intro{display:flex;align-items:center;gap:25px;max-width:940px;margin:0 auto 20px}
+#assessmentDashboard .reference-ai-icon{width:100px;height:100px;flex-shrink:0}
+#assessmentDashboard .reference-ai-icon svg{width:100%;height:100%}
+#assessmentDashboard .reference-ai-intro h3{font-size:22px;color:#17486d;margin:0 0 12px}
+#assessmentDashboard .reference-ai-intro p{font-size:17px;line-height:1.9;color:#587689;margin:0 0 15px}
+#assessmentDashboard .reference-api-status{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid #d5e2eb;background:#eff5fa;border-radius:20px;font-size:14px;color:#677d8c}
+#assessmentDashboard .reference-api-status.ready{color:#23785e;background:#edf8f1;border-color:#c1e1ce}
+#assessmentDashboard .reference-api-status.ready:before{content:'';width:7px;height:7px;border-radius:100%;background:#379d76}
+#assessmentDashboard .reference-fixed-prompt{border:1px solid #d1e1ed;border-radius:12px;background:#fff;padding:16px;margin-top:20px}
+#assessmentDashboard .reference-fixed-prompt>summary{cursor:pointer;text-align:center;color:#205c80}
+#assessmentDashboard .reference-fixed-prompt p{white-space:pre-wrap;line-height:2;font-size:16px;color:#405f76;padding:10px 15px;text-align:start!important}
+#assessmentDashboard .reference-fixed-prompt small{display:block;text-align:center;direction:ltr;color:#7d92a0}
+#assessmentDashboard :is(.reference-ai-status,.report-export-status){text-align:center;line-height:1.8;color:#946329}
+#assessmentDashboard .report-export-status:empty{display:none}
+#assessmentDashboard .report-comments article{background:#f7fafc;border-radius:12px}
+#assessmentDashboard .report-editor summary{background:#edf5fa;color:#205878}
+#assessmentDashboard .report-empty{color:#8195a4}
+html[dir] body #assessmentDashboard :is(.reference-point-band h3,.reference-point-band>p,.reference-point-group article>p,.reference-classification p,.reference-radar-grid h3,.reference-ai-intro h3,.reference-ai-intro p,.reference-ai-status,.report-export-status){text-align:center!important;text-justify:auto!important}
+@media(max-width:1100px){#assessmentDashboard .reference-analytics{grid-template-columns:1fr}#assessmentDashboard .reference-radar-grid{grid-template-columns:1fr}#assessmentDashboard .reference-point-bands{gap:12px}#assessmentDashboard .reference-point-band{padding:18px 12px}}
+@media(max-width:800px){#assessmentDashboard .reference-point-bands{grid-template-columns:1fr}#assessmentDashboard .reference-classification{grid-template-columns:1fr 1fr}#assessmentDashboard .reference-hero{grid-template-columns:1fr}#assessmentDashboard .reference-score{max-width:none}#assessmentDashboard .reference-kpis{grid-template-columns:1fr;gap:0}}
+@media(max-width:650px){#assessmentDashboard .report-card{padding:18px 13px}#assessmentDashboard .reference-ai-intro{flex-direction:column;gap:10px;text-align:center}#assessmentDashboard .report-card h2{font-size:21px}#assessmentDashboard .reference-chart-scroll[data-chart-container^=comparison-radar]>svg,#assessmentDashboard .reference-chart-scroll[data-chart-container=weighted-radar]>svg{min-width:540px}#assessmentDashboard .reference-classification article{padding:12px 8px}}
+@media print{#assessmentDashboard .reference-point-group[open]{break-inside:avoid}#assessmentDashboard .reference-fixed-prompt,#assessmentDashboard .reference-api-status{display:none}#assessmentDashboard .reference-analytics{display:block}#assessmentDashboard .reference-chart-scroll{overflow:visible}#assessmentDashboard .reference-chart-scroll>svg{min-width:0!important;max-width:100%!important}#assessmentDashboard .reference-radar-grid{grid-template-columns:1fr}#assessmentDashboard .report-card{break-inside:avoid}}

@@ -311,6 +311,7 @@ function addCustom(c,form){
 }
 
 function updateCustom(c,id,patch){
+  if(Object.hasOwn(patch,"score"))patch.band=window.BAMCO_REVIEW_CONTRACT.band(patch.score);
   const meta=app.mission(c.key),tests=customTests(meta).map(test=>test.id===id?{...test,...patch,updatedAt:new Date().toISOString()}:test);
   app.setMission(c.key,{...meta,customTests:tests,updatedAt:new Date().toISOString()});
 }

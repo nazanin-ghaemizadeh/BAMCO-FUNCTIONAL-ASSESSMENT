@@ -50,8 +50,9 @@ function build(snapshot={},filter={}){
  const rated=rows.filter(r=>r.avg!==null&&r.weight>0),ratedWeight=rated.reduce((s,r)=>s+r.weight,0),final=ratedWeight?rated.reduce((s,r)=>s+r.contribution,0)/ratedWeight:null;
  const total=rows.reduce((s,r)=>s+r.total,0),answered=rows.reduce((s,r)=>s+r.answered,0),completion=total?answered/total:0;
  const histogram=Array(10).fill(0);for(const entry of selectedEntries)if(rows.find(r=>r.id===categoryId(entry.test))?.weight>0)histogram[Math.round(entry.score)-1]++;
- return {snapshot,filter,settings,rows,units:allUnits,entries:selectedEntries,total,answered,completion,final,histogram,provisional:completion<1,decision:decision(final)};
+ return {snapshot,filter,settings,rows,units:allUnits,entries:selectedEntries,total,answered,completion,final,histogram,pointBands:pointBands(selectedEntries,rows),provisional:completion<1,decision:decision(final)};
 }
+function pointBands(entries,rows){const result={strength:[],review:[],weakness:[]};for(const e of entries){if(!(rows.find(r=>r.id===categoryId(e.test))?.weight>0))continue;const band=window.BAMCO_REVIEW_CONTRACT.band(e.score);if(band)result[band].push(e);}result.strength.sort((a,b)=>b.score-a.score);result.review.sort((a,b)=>a.score-b.score);result.weakness.sort((a,b)=>a.score-b.score);return result;}
 function decision(score){return score===null?'unrated':score>=85?'pass':score>=75?'conditional':score>=65?'revise':'reject'}
 function trends(model,unitKey,route='all'){
  const unit=model.units.find(u=>u.key===unitKey);if(!unit)return {entries:[],days:[],first:null,last:null,delta:null};

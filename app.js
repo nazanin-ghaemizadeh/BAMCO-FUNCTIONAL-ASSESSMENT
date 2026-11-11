@@ -16,8 +16,7 @@ function normalizeConfig(config={},complete=false){
 }
 function twoDifferentials(){return conf().twoDiff==='yes'}
 const state={config:{...defaultConfig},tab:'setup',driveDay:1,durDay:1,category:'همه',query:'',page:0,records:{},mileage:{drive:{},durability:{}},setupComplete:false};
-const sourceRepeats=atob('AAAAAAECAgICAgIBAAAAAAAAAQEBAQEBAQEBAQEBAQABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAgMBAQEBAAICAQICAgIAAQECAgICAgICAgICAgQBAQEAAAAAAQEBAQEBAQEBAQMBAAEBAQEBAwEAAQICAgICAgIBAQEBAQEBAQEBAQEBAQEAAAEAAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAEBAQEBAgICAQICAQEAAQEBAQICAwEBAQEDAQEBAQEBAwMBAwEBAQMAAAEBAAAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAEBAQEBAQEBBAQBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAABAAABAAADAwIBAAAAAAAAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEDAQMBAAEAAQEBBQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEEAQEBAQEBAQEBAAABAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEAAAAAAQEBAQEBAQEBAQEAAAAAAAAAAAAAAAEBAQEBAQEBAQEBAQEBAQEBAQEBAAEBAQEBAQEBAQEBAQIAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQIBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAAAAAAACAQIBAAAAAAEBAQEBAQEBAQAAAAAAAAECAgICAQEBAQAAAQAAAQEBAAEAAAEAAAAAAAEBAQEBAQABAQEBAQEBAQEAAQEBAQEBAQEBAQEBAQEBAQABAAABAQEBAQEBAQABAQEBAQEAAAAAAAAAAAADAAAAAAAAAAEAAAAAAAAAAQEAAAAAAAAAAwAAAAAAAQACAAAAAAAAAAAAAQABAQAEAAICAQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAQICAgICAQEBAQEBAQEAAAABAAEAAQEBAQEBAQEDAwAAAQEBAQEBAAAAAQEAAAABAwABAQEBAQEBAQAAAAAAAAAAAAAAAAAAAAAAAAABAQAAAAAAAAAAAAAA'),sourceLoads=atob('AAAAAAABAQEBAQEBAAAAAAEBAgICAgICAgIBAQECAgICAgEBAQEBAQEBAQEBAQEBAgICAgICAgICAgIAAAAAAAACAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAgICAgICAgICAgICAQEBAQEBAQMDAwMDAwMDAwAAAAAAAAACAAAAAAAAAAAABAAAAAUBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAICAgAAAAAAAAAGBwYGAgICCAgICAEICAgICAEBCAgIAgICAgICAgIICAgICAgICAgEBAgICAgCCAgICAgICAgICAgICAkICAgICgoKCgEKCgoICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCAgICAgICCAgICAgICAgIAgICCAgICAgICAgCCAgICAgAAAAAAgIICAgCAgICAgICAgIICAgICAgICAgIAAsFCAgICAgIDAwICAgICAgICAICAgICAgICAggICAENAAAAAAAAAAAAAAAFAgICAgICAQICAgICAgICAgICAgICAgIICAgICAgIAgICAgIBAQIBAgICAgIKCgoCAgICAgICAQECAgICAgECAgEKAgIBAgICAgICAggICA4PDg4OCAoCCAgCAgIBAgICAgICAQECAgICAgICAgICAgEBAQECAgIPAQsCAgICCAgIEAEBAgICAgICAgICAgECAQICAgICAgICCAgIAgICAgICAgICAgIAAAAAAAAAAAAAAAACAgEBAQEBAQEBAQEBAQEBAQEBAQEBAQECAgICAgICAQEBAgEBAgICAgICAQEBAQEBAgIHBwcHBwcHBwcHBwICAgICAgICAgIICAgICAgICAgICAICAgIICAgCAgICCAgICAgICAgICAgICAgICAICAgICAgICAgICAgIAAAAAAAAAAAAAAAAAAAICAgICAgAAAAAAAAAAAAACAQICAAAAAAICAgIICAgIAQICAgICAgIAAAAAAgICAgAAAAAAAAAAAAAAAAAAAAICAgICAgEBAQEBAgICAgICAQEBAgIBAQEBAQICAgICAQEBAQECAgIBAQEEBAQEBAQEBAcHBwcAAAAAAAAAAAAIBwACAgICAhEAAAAAAAAAERECAAAAAAAAAAAAAAAAAQcHBwIHBwcHBwcHAAENDQ0NDQ0NDQ0CAgICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgICAAAAAAAAAAAAAAAAAAAAAAAHBwcSEhISEhISEhISEhISEhISEhISEhISEhISEhISEhISEhIS'),sourceLoadLabels=["وزن خالص خودرو","راننده و سرنشین","فقط راننده","سرنشینان کامل","بدون بار / بار کامل","بدون بار صندوق / بار کامل صندوق","بدون بار / نیمه‌بار / حداکثر ظرفیت بار","بدون بار","فقط راننده / بار کامل","سرنشینان کامل / بار کامل صندوق","فقط راننده / نیمه‌بار","بار یدک","بار کامل","راننده و سرنشین / بار کامل","فقط راننده / بار کامل / حداکثر وزن مجاز","بار کامل / حداکثر وزن مجاز","طبق دفترچه سازنده / بارهای تعریف‌شده در پیمایش","وزن خالص خودرو / حداکثر وزن مجاز","قابل اعمال نیست – تحلیل اقتصادی/بازار"];
-function sourceFields(t){const match=String(t.baseId||t.id).split('@')[0].match(/^CR-(\d+)$/);const n=match?Number(match[1])-2:-1;return n>=0&&n<sourceRepeats.length?{repeats:['1','3','5','2','10','8'][sourceRepeats.charCodeAt(n)],load:sourceLoadLabels[sourceLoads.charCodeAt(n)]}:{repeats:t.minRepeats??t.repetitions,load:t.loadCondition??t.load};}
+function sourceFields(t){return {load:(window.BAMCO_WORKBOOK?.tests[t.sourceId]?.loads||t.loadConditions||[]).join(" / ")}}
 const categories=[...new Set(DB.tests.map(x=>x.cat))];
 const testById=new Map(DB.tests.map(x=>[x.id,x]));
 const lookupTest=testById.get.bind(testById);testById.get=id=>lookupTest(id)||lookupTest(String(id).split('@')[0])||staticCustomTests().find(t=>t.id===id);
@@ -190,7 +189,7 @@ function navigateDay(section){
 
 function renderSchedule(){
 const s=byId('schedulePanel');
-if(state.tab==='supplementary'){s.innerHTML='<div class="section-heading"><div><h2>پرسشنامه تکمیلی</h2><p>این موارد برنامه روزانه ندارند و بر اساس وضعیت خودرو قابل ارزیابی هستند.</p></div><span class="chip">بدون روز و کیلومتر</span></div>';return}
+if(state.tab==='supplementary'){s.innerHTML='<div class="section-heading"><div><h2>بررسی استاتیک</h2><p>این موارد برنامه روزانه ندارند و بر اساس وضعیت خودرو قابل ارزیابی هستند.</p></div><span class="chip">بدون روز و کیلومتر</span></div>';return}
 const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),d=state.tab==='drive'?state.driveDay:state.durDay,p=plan[d-1],milestone=state.tab==='durability'?(checksOnPlan(plan).get(d)||[]):[];
 if(!p){s.innerHTML='<div class="empty">برنامه روزانه پیدا نشد.</div>';return}
 const indexText=state.tab==='drive'?'برنامه ۲۶ روزه قابلیت رانندگی':'برنامه انعطاف‌پذیر دوام';
@@ -208,20 +207,20 @@ const q=fa(state.query).toLowerCase();
 const filtered=all.filter(t=>(state.category==='همه'||t.cat===state.category)&&(!q||fa([t.id,t.cat,t.sub,t.name].join(' ')).toLowerCase().includes(q)));
 const size=12,pages=Math.max(1,Math.ceil(filtered.length/size)),page=Math.min(state.page,pages-1);state.page=page;
 const select=filtered.slice(page*size,(page+1)*size);
-let html='<div class="section-heading"><div><h2>فهرست آزمون‌های '+(state.tab==='drive'?'قابلیت رانندگی':state.tab==='durability'?'دوام عملکردی':'تکمیلی')+'</h2><p>'+number(all.length)+' آزمون در این بخش · '+number(filtered.length)+' مورد مطابق فیلتر</p></div><input class="search" id="questionSearch" placeholder="جست‌وجوی شاخص یا عنوان آزمون" value="'+esc(state.query)+'"></div>';
+let html='<div class="section-heading"><div><h2>فهرست آزمون‌های '+(state.tab==='drive'?'قابلیت رانندگی':state.tab==='durability'?'دوام عملکردی':'استاتیک')+'</h2><p>'+number(all.length)+' آزمون در این بخش · '+number(filtered.length)+' مورد مطابق فیلتر</p></div><input class="search" id="questionSearch" placeholder="جست‌وجوی شاخص یا عنوان آزمون" value="'+esc(state.query)+'"></div>';
 if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay))html+='<p class="notice">پیش‌نمایش آزمون‌ها بر اساس برنامه است؛ برای ثبت نمره ابتدا پیمایش واقعی روز را ذخیره کنید.</p>';
 if(!select.length)html+='<div class="empty">آزمونی مطابق فیلتر یا روز انتخاب‌شده پیدا نشد.</div>';
 for(const t of select){
 const rec=record(t),colors=scoreColors;
 html+='<article class="question '+(t.id.startsWith('CUSTOM-')?'user-authored':'')+'" id="q-'+esc(t.id)+'"><div class="question-head"><div><div class="test-hierarchy"><span>شاخص: '+esc(fa(t.cat))+'</span><span>زیرشاخص: '+esc(fa(t.sub))+'</span></div><h3>'+esc(fa(t.name))+'</h3></div></div>';
-const extra=sourceFields(t);const details=[['شرایط آزمون',t.profile],['حالت بار',extra.load],['روش سنجش',t.measure]];
+const extra=sourceFields(t);const details=[['شرایط آزمون',t.profile],...(state.tab==='durability'?[['حالت بار',extra.load]]:[]),['روش سنجش',t.measure]];
 html+='<dl class="test-conditions">'+details.filter(([label,value])=>value!==undefined&&value!==null&&String(value).trim()!=='').map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(fa(value))+'</dd></div>').join('')+'</dl>';
 html+='<div class="scores" role="group" aria-label="نمره آزمون از ۱ تا ۱۰">';
 for(let i=1;i<=10;i++){let c=colors[i];html+='<button class="score '+(num(rec.score)===i?'selected':'')+'" data-score="'+i+'" data-test="'+esc(t.id)+'" title="'+esc(scoreWords[i])+'" style="--score-bg:'+c[0]+';--score-border:'+c[1]+';--score-text:'+c[2]+'"><strong>'+number(i)+'</strong><small>'+esc(scoreWords[i])+'</small></button>'}
 html+='</div><details class="assessment-attachment" '+(rec.note||rec.photo?'open':'')+'><summary><span class="attachment-plus" aria-hidden="true">+</span>افزودن یادداشت یا تصویر</summary><div class="note-wrap"><div class="note-actions"><label class="label-block" for="note-'+esc(t.id)+'">یادداشت ارزیاب</label><span class="tiny">در صورت نیاز تصویر هم پیوست کنید.</span></div><textarea id="note-'+esc(t.id)+'" data-note="'+esc(t.id)+'" placeholder="مشاهده، ایراد یا نکته قابل پیگیری را ثبت کنید...">'+esc(rec.note||'')+'</textarea><div class="note-actions"><label class="photo-picker"><input class="photo-input" type="file" accept="image/*" data-photo="'+esc(t.id)+'" aria-label="انتخاب تصویر آزمون"><span class="photo-picker-button">انتخاب تصویر</span><span class="photo-file-name">'+(rec.photo?'تصویر ثبت شده است':'تصویری انتخاب نشده است')+'</span></label>'+(rec.photo?'<img src="'+rec.photo+'" alt="تصویر ثبت‌شده برای آزمون">':'')+'</div></div></details></article>'
 }
 html+='<div class="toolbar"><button class="secondary" data-pagejump="'+(page-1)+'" '+(page===0?'disabled':'')+'>صفحه قبل</button><span class="tiny">صفحه '+number(page+1)+' از '+number(pages)+'</span><button class="secondary" data-pagejump="'+(page+1)+'" '+(page>=pages-1?'disabled':'')+'>صفحه بعد</button></div>';
-byId('questionsPanel').innerHTML=(state.tab==='supplementary'?staticTestForm():'')+html
+byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'')
 }
 
 function renderGate(){
@@ -238,12 +237,13 @@ function renderGate(){
  ['setup','۰۱','ویرایش مشخصات','ویرایش مشخصات خودرو و برنامه آزمون','◇'],
  ['drive','۰۱','قابلیت رانندگی','برنامه ۲۶ روزه، مسیرهای پیشنهادی و نمره‌دهی روزانه','↗'],
  ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],
- ['supplementary','۰۳','پرسشنامه تکمیلی','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
+ ['supplementary','۰۳','بررسی استاتیک','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
  ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗']
  ].map(x=>'<button type="button" class="gate-card" data-gate-icon="'+(x[0]==='setup'?'editSetup':x[0])+'" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
+ if(/برون.?شهری|دوطرفه/.test(v))return 'برون شهری';
  if(/شهری پرترافیک|ترافیک سنگین/.test(v))return 'شهری پرترافیک';
  if(/شهری روان|شهری کم.?ترافیک/.test(v))return 'شهری روان';
  if(/شهری|تهران/.test(v)&&!/بزرگراه|آزادراه|کوهستان|آفرود|خاکی/.test(v))return 'شهری';
@@ -257,7 +257,7 @@ function routeMixHtml(tab){
  const plan=tab==='drive'?driveProgram():dayCategoryPlan();
  const group={};const actual=state.mileage[tab]||{};let got=0;
  for(const p of plan){
-  const k=tab==='durability'?p.type:routeClassification(p.type||p.route);group[k]??={target:0,actual:0,days:0};
+  const k=p.routeId?({urban:'شهری',rural:'جاده برون‌شهری',hot:'جاده گرمسیری',offroad:'خارج‌جاده/مسیر خاکی',mountain:'جاده کوهستانی'}[p.routeId]||p.type):routeClassification(p.type||p.route);group[k]??={target:0,actual:0,days:0};
   group[k].target+=p.km;group[k].days++;
   const real=num(actual[p.day]);if(Object.prototype.hasOwnProperty.call(actual,p.day)&&Number.isFinite(real)&&real>=0){group[k].actual+=real;got+=real}
  }
@@ -271,23 +271,14 @@ function routeMixHtml(tab){
 }
 
 function renderResults(){
-let all=Object.values(state.records).filter(x=>num(x.score)>=1&&num(x.score)<=10).length;
-let html='<div class="section-heading"><div><h2>نتایج عملکرد و میانگین شاخص‌ها</h2><p>ملاک محاسبه، میانگین حسابی نمره‌های ثبت‌شده از ۱ تا ۱۰ است. آزمون‌های بدون نمره وارد میانگین نمی‌شوند.</p></div><span class="chip">'+number(all)+' نمره ثبت‌شده</span></div>';
-const sumAll=Object.values(state.records).map(x=>num(x.score)).filter(x=>x>=1&&x<=10);
-html+='<div class="kpis"><div class="kpi"><small>میانگین کل</small><strong>'+(avg(sumAll)==null?'—':number(avg(sumAll)))+'</strong></div><div class="kpi"><small>کل ارزیابی‌ها</small><strong>'+number(sumAll.length)+'</strong></div><div class="kpi"><small>آزمون‌های بانک اصلی</small><strong>'+number(DB.tests.length)+'</strong></div><div class="kpi"><small>شاخص‌های اصلی</small><strong>'+number(categories.length)+'</strong></div></div>';
-for(const section of [{key:'drive',label:'قابلیت رانندگی'},{key:'durability',label:'دوام عملکردی'},{key:'supplementary',label:'پرسشنامه تکمیلی'}]){
-let vals=scoresForTab(section.key);
-html+='<h3 style="margin:27px 0 11px;color:#1b4b70">'+section.label+' — میانگین '+(avg(vals.map(x=>x.score))==null?'—':number(avg(vals.map(x=>x.score))))+'</h3><div style="overflow-x:auto"><table class="result-table"><thead><tr><th>شاخص اصلی</th><th>تعداد نمره</th><th>میانگین از ۱۰</th><th>نمایش میانگین</th></tr></thead><tbody>';
-for(const cat of categories){const grouped=new Map();for(const x of vals){if(testById.get(x.id)?.cat!==cat)continue;const bucket=grouped.get(x.id)||[];bucket.push(x.score);grouped.set(x.id,bucket);}const a=[...grouped.values()].map(scores=>avg(scores));if(!a.length)continue;html+='<tr><td>'+esc(fa(cat))+'</td><td>'+number(a.length)+'</td><td><b>'+number(avg(a))+'</b></td><td><div class="bar"><i style="width:'+(avg(a)*10)+'%"></i></div></td></tr>'}
-html+='</tbody></table></div>';
+ byId('resultsPanel').innerHTML='<div class="toolbar"><button class="primary" data-dashboard-export>خروجی اکسل داشبورد</button><button class="secondary" data-exportcsv="1">دریافت گزارش آزمون‌ها</button><button class="secondary" data-dashboard-print>چاپ داشبورد</button></div><div id="assessmentDashboard"></div>'+routeMixHtml('drive')+routeMixHtml('durability');
+ window.BAMCO_DASHBOARD?.render();
 }
-html+='<div class="toolbar"><button class="primary" data-exportcsv="1">دریافت گزارش Excel</button><button class="secondary" data-import="1">بازیابی فایل پشتیبان JSON</button><button class="secondary" data-clear="1">پاک‌کردن نمره‌ها</button></div><p class="disclaimer">نتایج مربوط به ارزیابی فعال هستند؛ میانگین‌ها فقط از نمره‌های ثبت‌شده محاسبه می‌شوند.</p>';
-html+=routeMixHtml('drive')+routeMixHtml('durability');byId('resultsPanel').innerHTML=html
-}
+
 function render(){
 document.body.dataset.view=state.tab;
 renderGate();
-const titles={home:['',''],modules:['بخش‌های ارزیابی',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],supplementary:['پرسشنامه تکمیلی','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['نتایج و میانگین‌ها','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
+const titles={home:['',''],modules:['بخش‌های ارزیابی',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],supplementary:['بررسی استاتیک','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['داشبورد و نتایج','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
 const daily=dayContext();
 const sectionNames={menu:'',form:'فرم روزانه',route:'مسیر پیمایش',scores:'امتیازدهی'};
 byId('pageTitle').textContent=titles[state.tab][0];
@@ -350,7 +341,7 @@ function excelReportSheets(){
  const specs=[
   {tab:'drive',name:'قابلیت رانندگی',days:26},
   {tab:'durability',name:'آزمون دوام',days:dayCategoryPlan().length},
-  {tab:'supplementary',name:'آزمون تکمیلی',days:0}
+  {tab:'supplementary',name:'بررسی استاتیک',days:0}
  ];
  return specs.map(({tab,name,days})=>{
   const eligible=candidates(tab);
@@ -409,7 +400,8 @@ function buildExcelReport(sheets){
 }
 function exportCSV(){exportFile(buildExcelReport(excelReportSheets()),'BAMCO-assessment-report.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');toast('گزارش Excel آماده شد.')}
 
-function updateRating(btn){if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay)){toast('ابتدا پیمایش واقعی روز را در فرم روزانه ثبت کنید.');return}const id=btn.dataset.test,t=testById.get(id);if(!t)return;const k=ratedKey(t);const rec={...(state.records[k]||{})},selected=num(btn.dataset.score);if(num(rec.score)===selected)delete rec.score;else rec.score=selected;state.records[k]=rec;save();const sy=window.scrollY;render();window.scrollTo(0,sy)}
+function auditChange(action,details={}){state.missions??={};const old=state.missions['audit:general']||{};state.missions['audit:general']={entries:[...(old.entries||[]),{at:new Date().toISOString(),action,...details}].slice(-2000)}}
+function updateRating(btn){if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay)){toast('ابتدا پیمایش واقعی روز را در فرم روزانه ثبت کنید.');return}const id=btn.dataset.test,t=testById.get(id);if(!t)return;const k=ratedKey(t);const rec={...(state.records[k]||{})},selected=num(btn.dataset.score);if(num(rec.score)===selected)delete rec.score;else rec.score=selected;auditChange('scoreChange',{testId:id,from:state.records[k]?.score??null,to:rec.score??null});rec.updatedAt=new Date().toISOString();state.records[k]=rec;save();const sy=window.scrollY;render();window.scrollTo(0,sy)}
 function uploadPicture(file,testId){const assessment=cloudSave;if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{if(assessment!==cloudSave)return;const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(im.width,im.height));canvas.width=Math.max(1,Math.round(im.width*ratio));canvas.height=Math.max(1,Math.round(im.height*ratio));canvas.getContext('2d').drawImage(im,0,0,canvas.width,canvas.height);const data=canvas.toDataURL('image/jpeg',.55),t=testById.get(testId);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),photo:data};if(save()){toast('عکس برای این آزمون ثبت شد.');const sy=window.scrollY;render();window.scrollTo(0,sy)}};im.src=reader.result};reader.readAsDataURL(file)}
 byId('vehicleForm').addEventListener('input',updatePlannerPreview);
 byId('vehicleForm').addEventListener('change',e=>{if(e.target.id==='twoDiff'&&!byId('vehicleForm').dataset.rendering)for(const r of planner.routes)byId('share-'+r.id).value=number(r.weights[e.target.value==='yes'?1:0]);updatePlannerPreview()});
@@ -437,7 +429,7 @@ if(el.dataset.exportcsv){exportCSV();return}
 if(el.dataset.import){if(readOnly)return;byId('importBackup').click();return}
 if(el.dataset.clear){if(readOnly)return;if(confirm('تمام نمره‌ها و یادداشت‌های ثبت‌شده پاک شوند؟')){state.records={};save();render();toast('نتایج پاک شدند.')}return}
 });
-document.addEventListener('change',e=>{const el=e.target;if(readOnly)return;if(el.dataset.note){const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value};save();return}if(el.dataset.photo){uploadPicture(el.files?.[0],el.dataset.photo);return}});
+document.addEventListener('change',e=>{const el=e.target;if(readOnly)return;if(el.dataset.note){const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value,updatedAt:new Date().toISOString()};save();return}if(el.dataset.photo){uploadPicture(el.files?.[0],el.dataset.photo);return}});
 document.addEventListener('input',e=>{if(e.target.id==='questionSearch'){state.query=e.target.value;state.page=0;const field=e.target;const pos=field.selectionStart;renderQuestions();const newField=byId('questionSearch');newField.focus();newField.setSelectionRange(pos,pos)}});
 byId('importBackup').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const assessment=cloudSave;const fr=new FileReader();fr.onload=()=>{if(assessment!==cloudSave)return;try{const obj=JSON.parse(fr.result);if(!obj||!obj.records||!obj.config)throw Error('Invalid');if(!confirm('اطلاعات موجود با فایل پشتیبان جایگزین شود؟'))return;state.config=normalizeConfig(obj.config,true);state.records=obj.records;state.mileage=obj.mileage||{drive:{},durability:{}};state.missions=obj.missions||{};state.durabilitySchedule=obj.durabilitySchedule;state.checkpointAssignments=obj.checkpointAssignments||{};state.setupComplete=true;save();render();toast('بازیابی پشتیبان انجام شد.')}catch(err){toast('فایل JSON معتبر نیست.')}};fr.readAsText(file);e.target.value=''});
 window.BAMCO_ASSESSMENT={
@@ -456,7 +448,7 @@ window.BAMCO_ASSESSMENT={
     window.scrollTo(0,0);
   },
   dayContext,
-  snapshot,eligibleTests:candidates,currentTests:dayItems,drivePlan:driveProgram,refresh:render,
+  snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},
   mission(key){return state.missions?.[key]||{}},
   setMission(key,mission){if(!cloudSave||readOnly)return;state.missions[key]=mission;save()},
@@ -471,8 +463,8 @@ window.BAMCO_ASSESSMENT={
   }catch{return null}}
 };
 
-function staticTestForm(){return '<details class="static-test-builder"><summary>افزودن آزمون تکمیلی</summary><form id="staticTestForm"><div class="formgrid"><label>شاخص<select name="cat">'+categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label><label>عنوان آزمون<input name="name" required maxlength="250"></label><label>زیرشاخص<input name="sub" required maxlength="200"></label></div><label>روش اجرای آزمون<textarea name="profile" required maxlength="3000"></textarea></label><label>راهنمای ارزیابی کیفی<textarea name="measure" required maxlength="3000"></textarea></label><button class="primary" '+(readOnly?'disabled':'')+'>افزودن آزمون</button></form></details>'}
-document.addEventListener('submit',e=>{if(e.target.id!=='staticTestForm')return;e.preventDefault();if(readOnly)return;const f=new FormData(e.target),test={id:'CUSTOM-'+crypto.randomUUID(),cat:f.get('cat'),sub:f.get('sub').trim(),name:f.get('name').trim(),profile:f.get('profile').trim(),measure:f.get('measure').trim(),vehicle:{},scope:['supplementary']};if(!test.name||!test.sub||!test.profile||!test.measure)return;state.missions??={};const previous=state.missions['supplementary:general']||{};state.missions['supplementary:general']={...previous,customTests:[...(previous.customTests||[]),test]};testById.set(test.id,test);save();render();toast('آزمون تکمیلی افزوده شد.');});
+function staticTestForm(){return '<details class="static-test-builder"><summary>افزودن آزمون جدید</summary><form id="staticTestForm"><div class="formgrid"><label>شاخص<select name="cat">'+categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label><label>عنوان آزمون<input name="name" required maxlength="250"></label><label>زیرشاخص<input name="sub" required maxlength="200"></label></div><label>روش اجرای آزمون<textarea name="profile" required maxlength="3000"></textarea></label><label>راهنمای ارزیابی کیفی<textarea name="measure" required maxlength="3000"></textarea></label><button class="primary" '+(readOnly?'disabled':'')+'>افزودن آزمون</button></form></details>'}
+document.addEventListener('submit',e=>{if(e.target.id!=='staticTestForm')return;e.preventDefault();if(readOnly)return;const f=new FormData(e.target),test={id:'CUSTOM-'+crypto.randomUUID(),cat:f.get('cat'),sub:f.get('sub').trim(),name:f.get('name').trim(),profile:f.get('profile').trim(),measure:f.get('measure').trim(),vehicle:{},scope:['supplementary']};if(!test.name||!test.sub||!test.profile||!test.measure)return;state.missions??={};const previous=state.missions['supplementary:general']||{};state.missions['supplementary:general']={...previous,customTests:[...(previous.customTests||[]),test]};testById.set(test.id,test);save();render();toast('آزمون استاتیک افزوده شد.');});
 document.addEventListener('bamco:render',routeChoices);
 
 load();state.tab='home';render();

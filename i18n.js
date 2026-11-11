@@ -15,7 +15,7 @@ function text(value,lang=language){
  if(table[trim])return digits(source.replace(trim,table[trim]));
  return digits(source.replace(/روز\s+([0-9۰-۹]+)/g,(_,n)=>lang==='zh'?'第'+digits(n)+'天':'Day '+digits(n)).replace(fragments,match=>table[match]||match)).replace(/،/g,lang==='zh'?'，':',').replace(/٪/g,'%').replace(/←/g,'→').replace(/。\./g,'。');
 }
-const excluded='script,style,textarea,input,code,#assessmentName,.assessment-row-title,.assessment-map-popup strong,.bamco-summary-item strong:not([data-i18n-static]),.bamco-custom-question h3,.bamco-custom-question .test-conditions dd,.user-authored h3,.user-authored .test-conditions dd';
+const excluded='.report-user-text,script,style,textarea,input,code,#assessmentName,.assessment-row-title,.assessment-map-popup strong,.bamco-summary-item strong:not([data-i18n-static]),.bamco-custom-question h3,.bamco-custom-question .test-conditions dd,.user-authored h3,.user-authored .test-conditions dd';
 function formatDigits(value,lang=language){
  const latin=digits(value).replace(/٫/g,'.').replace(/٬/g,',');
  return lang==='fa'?latin.replace(/[0-9]/g,n=>'۰۱۲۳۴۵۶۷۸۹'[Number(n)]):latin;

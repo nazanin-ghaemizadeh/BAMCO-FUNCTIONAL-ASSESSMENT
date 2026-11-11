@@ -72,7 +72,7 @@ const interfaceText = [
   ['#pageTitle','تنظیم مشخصات خودرو و برنامه آزمون','Vehicle and test plan setup','车辆与试验计划设置'],
   ['#pageTitle','آزمون قابلیت رانندگی','Drivability testing','驾驶性能试验'],
   ['#pageTitle','آزمون دوام عملکردی','Functional durability testing','功能耐久试验'],
-  ['#pageTitle','پرسشنامه تکمیلی','Supplementary questionnaire','补充问卷'],
+  ['#pageTitle','بررسی استاتیک','Static inspection','静态检查'],
   ['#pageTitle','نتایج و میانگین‌ها','Results and averages','结果与平均值'],
   ['#pageSub','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.','Vehicle details and program length determine test selection and scheduling.','车辆信息及计划周期决定试验筛选和排程。'],
   ['#pageSub','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا','26-day program with test criteria and routes','26 天试验计划，含指标及路线'],
@@ -81,7 +81,7 @@ const interfaceText = [
   ['#pageSub','خلاصه نمره هر شاخص و هر حوزه ارزیابی','Score summary by criterion and category','各指标及类别的评分汇总'],
   ['#moduleLanding [data-open="drive"] strong','قابلیت رانندگی','Drivability','驾驶性能'],
   ['#moduleLanding [data-open="durability"] strong','آزمون دوام','Durability testing','耐久试验'],
-  ['#moduleLanding [data-open="supplementary"] strong','پرسشنامه تکمیلی','Supplementary questionnaire','补充问卷'],
+  ['#moduleLanding [data-open="supplementary"] strong','بررسی استاتیک','Static inspection','静态检查'],
   ['#moduleLanding [data-open="results"] strong','گزارش و نتایج','Reports and results','报告与结果'],
   ['#moduleLanding .gate-cta','ورود به بخش ←','Open module →','进入模块 →'],
   ['#moduleLanding [data-open="setup"] strong','ویرایش مشخصات','Edit specifications','编辑车辆信息'],
@@ -591,6 +591,11 @@ window.addEventListener('beforeunload',event => {
   if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}
 });
 
+window.BAMCO_CASES={
+ current(){return current?{id:current.id,title:current.title,status:current.status,createdAt:current.created_at,updatedAt:current.updated_at,revision:current.revision}:null},
+ async listActive(){const {data,error}=await ownerRequest('list',{status:'active'});if(error)throw error;return Array.isArray(data)?data:[]},
+ async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
+};
 window.BAMCO_WORKSPACE_READY=true;
 navigate(window.BAMCO_BOOT_SCREEN || (location.search === '?observer' ? 'observer' : 'home'));
 })();

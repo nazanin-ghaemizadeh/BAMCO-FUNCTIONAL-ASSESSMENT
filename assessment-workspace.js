@@ -54,7 +54,7 @@ const labels = {
   error:['ارتباط با سامانه برقرار نشد.','Could not connect to the service.','无法连接到服务。'],
   retry:['تلاش دوباره','Retry','重试'],
   saving:['در حال ذخیره…','Saving…','正在保存…'],
-  saved:['در دیتابیس ذخیره شد.','Saved to the database.','已保存到数据库。'],
+  saved:['','',''],
   unsaved:['تغییرات ذخیره نشد. دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. دوباره آن را باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
@@ -94,7 +94,6 @@ const interfaceText = [
   ['label[for="driveKm"]','هدف قابلیت رانندگی (کیلومتر)','Drivability distance target (km)','驾驶性能目标里程（公里）'],
   ['label[for="durKm"]','هدف پیمایش دوام (کیلومتر)','Durability distance target (km)','耐久目标里程（公里）'],
   ['label[for="durDays"]','تعداد روزهای دوام (محاسبه خودکار)','Durability days (calculated)','耐久天数（自动计算）'],
-  ['label[for="startOdo"]','کیلومترشمار شروع دوام','Initial durability odometer reading','耐久试验起始里程表读数'],
   ['#vehicleForm button[type="submit"]','تأیید و ورود به ارزیابی ←','Confirm and open assessment →','确认并进入评估 →'],
   ['#vehicleForm .toolbar .tiny','مقادیر و نمره‌ها در دیتابیس این ارزیابی ذخیره می‌شوند.','Values and scores are stored with this assessment.','数值及评分保存在本评估的数据库中。'],
   ['#workPanel .sidebar h3','شاخص‌های ارزیابی','Assessment criteria','评估指标']

@@ -6,7 +6,7 @@ const KEY='bamco-functional-assessment-v1';
 const scoreWords=['','غیرقابل قبول','بحرانی','بسیار ضعیف','ضعیف','حداقل پذیرش','مرزی','قابل قبول','رضایت‌بخش','بسیار عالی','ممتاز'];
 const planner=window.BAMCO_DURABILITY_PLANNER;
 const defaultConfig={vclass:'M1',body:'Sedan',power:'ICE',gear:'Automatic',driveType:'FWD',twoDiff:'no',driveKm:6930,durKm:5000,durDays:20,startOdo:5000,durabilityPlannerVersion:2};
-const setupKeys=['vclass','body','power','gear','driveType','twoDiff','driveKm','durKm','startOdo'];
+const setupKeys=['vclass','body','power','gear','driveType','twoDiff','driveKm','durKm'];
 function normalizeConfig(config={},complete=false){
  const result={...defaultConfig,...config,driveKm:6930,routeCaps:{...config.routeCaps}};
  if(config.twoDiff===undefined)result.twoDiff=['AWD','4WD'].includes(result.driveType)?'yes':'no';
@@ -94,7 +94,7 @@ function scoresForTab(tab){return Object.entries(state.records).filter(([k,v])=>
 function viewSummary(items){const scored=items.filter(t=>num(record(t).score)>0).length;return [items.length,scored]}
 function readSetup(){
  const config={...conf(),durabilityPlannerVersion:2,routeCaps:{},routeShares:{},startCity:byId('startCity').value};
- for(const key of setupKeys){const el=byId(key);config[key]=['driveKm','durKm','startOdo'].includes(key)?num(el.value):el.value}
+ for(const key of setupKeys){const el=byId(key);config[key]=['driveKm','durKm'].includes(key)?num(el.value):el.value}
  for(const route of planner.routes){config.routeCaps[route.id]=num(byId('cap-'+route.id).value);config.routeShares[route.id]=num(byId('share-'+route.id).value);}
  return config;
 }
@@ -109,7 +109,7 @@ function updatePlannerPreview(){
 }
 function renderSetup(){
  for(const key of setupKeys){const el=byId(key),value=conf()[key];el.value=el.dataset.numeric?(window.BAMCO_I18N?.formatDigits(String(value))??String(value).replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])):value}
- byId('durabilityCaps').innerHTML='<div class="field"><label for="startCity">شهر شروع برنامه</label><select id="startCity">'+[...new Set(DB.roadCatalog.map(r=>r.origin))].map(city=>'<option value="'+esc(city)+'" '+(city===(conf().startCity||'تهران')?'selected':'')+'>'+esc(city)+'</option>').join('')+'</select></div>'+planner.routes.map(route=>'<div class="field"><label for="cap-'+route.id+'">'+esc(route.name)+' (کیلومتر در روز)</label><input id="cap-'+route.id+'" type="text" inputmode="numeric" data-numeric="true" required value="'+number(conf().routeCaps?.[route.id]??route.cap)+'"><label for="share-'+route.id+'">سهم مسیر (درصد)</label><input id="share-'+route.id+'" type="text" inputmode="decimal" data-numeric="true" required value="'+number(conf().routeShares?.[route.id]??route.weights[twoDifferentials()?1:0])+'"></div>').join('');
+ byId('durabilityCaps').innerHTML='<div class="field start-city-field"><div class="start-city-illustration" aria-hidden="true"></div><label for="startCity">شهر شروع برنامه</label><select id="startCity">'+[...new Set(DB.roadCatalog.map(r=>r.origin))].map(city=>'<option value="'+esc(city)+'" '+(city===(conf().startCity||'تهران')?'selected':'')+'>'+esc(city)+'</option>').join('')+'</select></div>'+planner.routes.map(route=>'<div class="field"><label for="cap-'+route.id+'">'+esc(route.name)+' (کیلومتر در روز)</label><input id="cap-'+route.id+'" type="text" inputmode="numeric" data-numeric="true" required value="'+number(conf().routeCaps?.[route.id]??route.cap)+'"><label for="share-'+route.id+'">سهم مسیر (درصد)</label><input id="share-'+route.id+'" type="text" inputmode="decimal" data-numeric="true" required value="'+number(conf().routeShares?.[route.id]??route.weights[twoDifferentials()?1:0])+'"></div>').join('');
  updatePlannerPreview();
  byId('vehicleForm').dataset.rendering='true';document.querySelectorAll('#vehicleForm select').forEach(el=>el.dispatchEvent(new Event('change')));delete byId('vehicleForm').dataset.rendering;
 }
@@ -126,7 +126,7 @@ function routeChoices(){
  const el=byId('routeDestination');if(!el)return;
  const choices=planner.optionsFrom(DB.roadCatalog,byId('routeOrigin').value,byId('routeKind').value),p=dayCategoryPlan()[state.durDay-1];
  el.innerHTML=choices.map((r,i)=>'<option value="'+i+'" '+(r.destination===p.destination?'selected':'')+'>'+esc(r.destination)+'</option>').join('');
- el._choices=choices;routeChoiceInfo();
+ el._choices=choices;routeChoiceInfo();window.BAMCO_DROPDOWNS?.(byId('routeEditor'));
 }
 function routeChoiceInfo(adjust=false){const el=byId('routeDestination'),edge=el?._choices?.[num(el.value)];if(!el)return;if(adjust&&edge){const rows=targetRows(),row=rows.find(r=>r.id===edge.routeId),plan=dayCategoryPlan(),prior=plan.filter(p=>p.day<state.durDay),total=Object.fromEntries(rows.map(r=>[r.id,0]));for(const p of prior)total[p.routeId]+=(Object.hasOwn(state.mileage.durability,p.day)?state.mileage.durability[p.day]:p.km);const cycle=Math.min(4,Math.floor(Math.min(...rows.filter(r=>r.km>0).map(r=>total[r.id]/r.km))*4+.000001)+1);byId('routeDistance').value=number(Math.max(0,Math.min(edge.km||row.cap,row.cap,row.km*cycle/4-total[row.id])));}byId('routeChoiceInfo').textContent=edge?(edge.km?'فاصله مرجع در فایل مسیرها: '+number(edge.km)+' کیلومتر. ':'')+'مسافت روز با مسیر جاده‌ای و تکرار حلقه یا رفت‌وبرگشت تکمیل می‌شود.':'برای این مبدأ و نوع مسیر، مسیری در فایل ثبت نشده است.';}
 document.addEventListener('change',e=>{if(['routeOrigin','routeKind'].includes(e.target.id)){routeChoices();routeChoiceInfo(true)}if(e.target.id==='routeDestination')routeChoiceInfo(true);});
@@ -195,7 +195,7 @@ const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),d=state.tab==='d
 if(!p){s.innerHTML='<div class="empty">برنامه روزانه پیدا نشد.</div>';return}
 const indexText=state.tab==='drive'?'برنامه ۲۶ روزه قابلیت رانندگی':'برنامه انعطاف‌پذیر دوام';
 
-const remainingMeta=(state.tab==='durability'?'<span class="meta-tag">کیلومترشمار هدف: '+number(p.odo)+' km</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)+'٪').join('، ')+'</span>':'');
+const remainingMeta=(state.tab==='durability'?'<span class="meta-tag">پیمایش تجمعی برنامه: '+number(p.cum)+' کیلومتر</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)+'٪').join('، ')+'</span>':'');
 s.innerHTML='<div id="bamco-day-route" class="bamco-day-route">'+(remainingMeta?'<div class="day-meta">'+remainingMeta+'</div>':'')+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'</div>'
 
 }

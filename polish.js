@@ -16,27 +16,40 @@ icons.observer='<svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" c
 function polish(root){if(root.nodeType===3){if(root.parentElement&&!root.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName,.assessment-row-title'))root.nodeValue=digits(root.nodeValue);return;}if(root.nodeType!==1&&root!==document.body)return;root.querySelectorAll?.('.gate-card').forEach(c=>{const i=c.querySelector('.gate-illustration');if(i&&!i.querySelector('svg'))i.innerHTML=icons[c.dataset.gateIcon || c.dataset.open]||car;});const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=walk.nextNode())if(!n.parentElement.closest('script,style,textarea,input,select,option,code,#assessmentName,.assessment-row-title'))n.nodeValue=digits(n.nodeValue);}
 const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if(m.type==='characterData')polish(m.target);else m.addedNodes.forEach(polish)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});polish(document.body);
 window.BAMCO_DROPDOWNS=function(root=document){
- const selects=[...root.querySelectorAll('#vehicleForm select,select[name="temperature"],select[name="weather"]')];
+ root.querySelectorAll('.start-city-illustration:empty').forEach(el=>{el.innerHTML=icons.observer});
+ const selects=[...root.querySelectorAll('#vehicleForm select,#routeEditor select,select[name="temperature"],select[name="weather"]')];
  const closeAll=(except)=>document.querySelectorAll('.vehicle-dropdown-list').forEach(l=>{if(l!==except){l.hidden=true;l.previousElementSibling?.setAttribute('aria-expanded','false')}});
  selects.forEach(select=>{
-  if(select.dataset.customDropdown)return;
+  if(select.dataset.customDropdown){select._refreshDropdown?.();return;}
   select.dataset.customDropdown='1';select.classList.add('vehicle-native-hidden');
   const english=select.closest('#vehicleForm')&&['vclass','body','power','gear','driveType'].includes(select.id);
   select.parentElement.classList.toggle('english-dropdown',Boolean(english));
   const trigger=document.createElement('button');trigger.type='button';trigger.className='vehicle-dropdown-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
   const title=document.createElement('span');const arrow=document.createElement('span');arrow.className='vehicle-dropdown-arrow';arrow.textContent='⌄';trigger.append(title,arrow);
   const list=document.createElement('div');list.className='vehicle-dropdown-list';list.setAttribute('role','listbox');list.hidden=true;
-  const refresh=()=>{trigger.disabled=select.disabled;title.textContent=select.selectedOptions[0]?.textContent||'';list.querySelectorAll('[data-value]').forEach(x=>{x.disabled=select.disabled;x.setAttribute('aria-selected',String(x.dataset.value===select.value))})};
-  [...select.options].forEach(opt=>{const item=document.createElement('button');item.type='button';item.className='vehicle-dropdown-option';item.setAttribute('role','option');item.dataset.value=opt.value;item.textContent=opt.textContent;item.addEventListener('click',()=>{select.value=opt.value;select.dispatchEvent(new Event('change',{bubbles:true}));refresh();closeAll();trigger.focus()});list.append(item)});
+  let optionsSignature='';
+  const refresh=()=>{
+   const options=[...select.options],signature=JSON.stringify(options.map(o=>[o.value,o.textContent,o.disabled]));
+   if(signature!==optionsSignature){
+    optionsSignature=signature;list.replaceChildren();
+    options.forEach(opt=>{const item=document.createElement('button');item.type='button';item.className='vehicle-dropdown-option';item.setAttribute('role','option');item.dataset.value=opt.value;item.textContent=opt.textContent;
+     item.addEventListener('click',()=>{if(select.matches(':disabled')||opt.disabled)return;select.value=opt.value;select.dispatchEvent(new Event('change',{bubbles:true}));refresh();closeAll();trigger.focus()});list.append(item)});
+   }
+   const disabled=select.matches(':disabled');trigger.disabled=disabled||!options.length;title.textContent=select.selectedOptions[0]?.textContent||'—';
+   list.querySelectorAll('[data-value]').forEach((x,i)=>{x.disabled=disabled||options[i].disabled;x.setAttribute('aria-selected',String(x.dataset.value===select.value))});
+   if(trigger.disabled){list.hidden=true;trigger.setAttribute('aria-expanded','false');}
+  };
+  select._refreshDropdown=refresh;
   select.addEventListener('change',refresh);
   select.insertAdjacentElement('afterend',trigger);trigger.insertAdjacentElement('afterend',list);refresh();
   trigger.addEventListener('click',()=>{const opening=list.hidden;closeAll();refresh();list.hidden=!opening;trigger.setAttribute('aria-expanded',String(opening))});
   trigger.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();return}if(['ArrowDown','Enter',' '].includes(e.key)&&list.hidden){e.preventDefault();trigger.click();list.querySelector('[aria-selected=true]')?.focus()}});
-  list.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();trigger.focus()}});
+  list.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();trigger.focus()}if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const items=[...list.querySelectorAll('button:not(:disabled)')],i=items.indexOf(document.activeElement),next=e.key==='Home'?0:e.key==='End'?items.length-1:(i+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus()}});
  });
 
 };
 window.BAMCO_DROPDOWNS();
+document.addEventListener('bamco:render',()=>window.BAMCO_DROPDOWNS());
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.vehicle-dropdown-trigger,.vehicle-dropdown-list'))document.querySelectorAll('.vehicle-dropdown-list').forEach(list=>{list.hidden=true;list.previousElementSibling?.setAttribute('aria-expanded','false')})});
 observer.observe(document.body,{childList:true,subtree:true,characterData:true});
 })();

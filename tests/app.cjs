@@ -18,11 +18,18 @@ click('[data-open="durability"]');click('[data-day="2"]');click('[data-daysectio
 set('routeDistance','50');submit('routeEditor');
 assert.deepEqual(saved.missions,before.missions);assert.deepEqual(saved.mileage,before.mileage);assert.deepEqual(saved.records,before.records);assert.deepEqual(saved.durabilitySchedule[0],planBefore[0]);assert.equal(saved.durabilitySchedule[1].km,50);assert.notDeepEqual(saved.durabilitySchedule.slice(2),planBefore.slice(2));
 const after=structuredClone(saved);api.open(after,v=>saved=structuredClone(v),false);assert.deepEqual(JSON.parse(JSON.stringify(api.durabilityPlan())),after.durabilitySchedule);
-click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="route"]');assert(d.querySelector('#routeEditor fieldset').disabled);
+click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="route"]');assert(d.querySelector('#routeEditor fieldset').disabled);assert([...d.querySelectorAll('#routeEditor .vehicle-dropdown-trigger')].every(b=>b.disabled));
 api.open(initial,v=>saved=structuredClone(v),false);click('[data-open="supplementary"]');
 const f=d.getElementById('staticTestForm');f.elements.name.value='USER TEST';f.elements.sub.value='USER SUB';f.elements.profile.value='USER METHOD';f.elements.measure.value='USER EVIDENCE';submit('staticTestForm');assert(api.eligibleTests('supplementary').some(t=>t.name==='USER TEST'));
 const custom=api.eligibleTests('supplementary').find(t=>t.name==='USER TEST');set('questionSearch','USER TEST');d.getElementById('questionSearch').dispatchEvent(new w.Event('input',{bubbles:true}));click('[data-test="'+custom.id+'"][data-score="8"]');assert.equal(saved.records['supplementary:general:'+custom.id].score,8);
 api.open(saved,v=>saved=structuredClone(v),false);assert(api.eligibleTests('supplementary').some(t=>t.id===custom.id));
 const legacy={setupComplete:true,config:{durabilityPlannerVersion:1,durKm:45000,durDays:107,twoDiff:'yes'},records:{'durability:1:CR-0002':{score:9}},missions:{'durability:1':{driver:'KEEP'}},mileage:{drive:{},durability:{1:250}}};
 api.open(legacy,v=>saved=structuredClone(v),false);const old=JSON.stringify(api.durabilityPlan());click('[data-open="setup"]');submit('vehicleForm');assert.equal(JSON.stringify(api.durabilityPlan()),old);assert.equal(saved.records['durability:1:CR-0002'].score,9);
+// Changing origin/type must rebuild the same dropdown component, without saving a route.
+api.open(initial,v=>saved=structuredClone(v),false);click('[data-open="durability"]');click('[data-day="2"]');click('[data-daysection="route"]');
+const persisted=JSON.stringify(saved);set('routeOrigin','قم');set('routeKind','rural');
+const destination=d.getElementById('routeDestination'),menu=()=>destination.nextElementSibling.nextElementSibling;
+assert.deepEqual([...menu().querySelectorAll('[data-value]')].map(x=>x.textContent),[...destination.options].map(x=>x.textContent));
+assert(destination.options.length>1);destination.nextElementSibling.click();const chosen=menu().querySelectorAll('[data-value]')[1],chosenValue=chosen.dataset.value,chosenText=chosen.textContent;chosen.click();assert.equal(destination.value,chosenValue);assert.equal(destination.nextElementSibling.firstElementChild.textContent,chosenText);assert(menu().hidden);assert.equal(JSON.stringify(saved),persisted);
+set('routeKind','urban');assert.equal(destination.options.length,0);assert(destination.nextElementSibling.disabled);assert.equal(menu().children.length,0);
 assert.deepEqual(errors,[]);console.log('PASS app: setup, final drive program, Excel vehicle filters, route editing with frozen history, database snapshot reopen, actual/preview separation, custom static test scoring, legacy preservation.');dom.window.close();

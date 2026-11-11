@@ -1,0 +1,10 @@
+const {JSDOM}=require('jsdom'),fs=require('fs'),assert=require('assert');
+(async()=>{const w=new JSDOM('<body><div class="map-grid"><div id="roadMap"></div><div id="roadStatus"></div><ol></ol><a class="map-link" href="https://www.google.com/maps/dir/?api=1"></a></div></body>',{url:'https://example.test',runScripts:'outside-only'}).window;
+for(const f of ['data.js','durability-planner.js','route-map.js'])w.eval(fs.readFileSync('./'+f,'utf8'));
+const calls=[],lines=[];w.fetch=async url=>{calls.push(url);const coords=url.split('/driving/')[1].split('?')[0].split(';').map(s=>s.split(',').map(Number));return {ok:true,json:async()=>({code:'Ok',routes:[{distance:coords.length===2?100000:220000,duration:7200,geometry:{coordinates:coords}}]})}};
+const chain=()=>({addTo(){return this},bindPopup(){return this}});w.L={map:()=>({setView(){return this},remove(){},fitBounds(){},invalidateSize(){}}),tileLayer:chain,marker:chain,circleMarker:chain,latLngBounds:x=>x,polyline:(x,o)=>{lines.push(x);return chain()}};
+let ps=w.BAMCO_ROUTE_MAP.points({name:'یزد → تهران',routeId:'rural'});assert.equal(ps[0].name,'یزد');assert.equal(ps.at(-1).name,'تهران');
+ps=w.BAMCO_ROUTE_MAP.points({name:'تهران ـ کوهستان',routeId:'mountain'});assert(ps.length>=3);assert.notEqual(ps[1].name,'تهران');
+await w.BAMCO_ROUTE_MAP.mount({origin:'تهران',destination:'قم',routeId:'rural',km:500});assert.equal(calls.length,2);assert.equal(calls[1].split('/driving/')[1].split('?')[0].split(';').length,3);assert.equal(w.BAMCO_ROUTE_MAP.last.laps,2);assert.equal(w.BAMCO_ROUTE_MAP.last.remainder,60);assert(lines.length>=2);
+await w.BAMCO_ROUTE_MAP.mount({origin:'تهران',destination:'قم',routeId:'offroad',km:200});assert.equal(w.BAMCO_ROUTE_MAP.last,null);assert(w.document.getElementById('roadStatus').textContent.includes('خارج‌جاده'));
+w.close();console.log('PASS routing: ordered endpoints, mountain circuit, router-supplied return leg, laps and partial distance, honest off-road failure.');})();

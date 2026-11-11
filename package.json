@@ -1,0 +1,1 @@
+{"name":"bamco-functional-assessment","private":true,"scripts":{"test":"node tests/planner.cjs && node tests/app.cjs && node tests/map.cjs && node tests/language.cjs"},"devDependencies":{"jsdom":"31.0.0"}}

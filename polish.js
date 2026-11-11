@@ -21,7 +21,7 @@ window.BAMCO_DROPDOWNS=function(root=document){
  selects.forEach(select=>{
   if(select.dataset.customDropdown)return;
   select.dataset.customDropdown='1';select.classList.add('vehicle-native-hidden');
-  const english=[...select.options].some(o=>/[A-Za-z]/.test(o.textContent))&&select.closest('#vehicleForm');
+  const english=select.closest('#vehicleForm')&&['vclass','body','power','gear','driveType'].includes(select.id);
   select.parentElement.classList.toggle('english-dropdown',Boolean(english));
   const trigger=document.createElement('button');trigger.type='button';trigger.className='vehicle-dropdown-trigger';trigger.setAttribute('aria-haspopup','listbox');trigger.setAttribute('aria-expanded','false');
   const title=document.createElement('span');const arrow=document.createElement('span');arrow.className='vehicle-dropdown-arrow';arrow.textContent='⌄';trigger.append(title,arrow);

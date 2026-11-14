@@ -354,10 +354,15 @@ function updateCustom(c,id,patch){
 }
 
 function uploadPicture(c,id,file){
-  if(!file||!file.type.startsWith('image/'))return;
-  const reader=new FileReader();
-  reader.onload=()=>{const image=new Image();image.onload=()=>{if(context()?.key!==c.key)return;const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(image.width,image.height));canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);updateCustom(c,id,{photo:canvas.toDataURL('image/jpeg',.55)});renderFinal(c)};image.src=reader.result};
-  reader.readAsDataURL(file);
+ if(!file||!file.type.startsWith('image/'))return;
+ const task=new Promise((resolve,reject)=>{
+  const reader=new FileReader();reader.onerror=()=>reject(Error('Image read failed'));
+  reader.onload=()=>{const image=new Image();image.onerror=()=>reject(Error('Image decode failed'));image.onload=()=>{try{
+   if(context()?.key!==c.key){resolve();return}
+   const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(image.width,image.height));canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);updateCustom(c,id,{photo:canvas.toDataURL('image/jpeg',.55)});renderFinal(c);resolve();
+  }catch(error){reject(error)}};image.src=reader.result};reader.readAsDataURL(file);
+ });
+ app.trackPicture(task).catch(()=>window.alert('ثبت تصویر انجام نشد؛ دوباره تصویر را انتخاب کنید.'));
 }
 
 document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
@@ -393,7 +398,7 @@ document.addEventListener('change',event=>{
     const c=context();if(c)uploadPicture(c,field.dataset.customPhoto,field.files?.[0]);
   }
 });
-document.addEventListener('input',event=>applyScriptFont(event.target));
+document.addEventListener('input',event=>{applyScriptFont(event.target);const field=event.target;if(field.dataset.customNote&&!app.isReadOnly()){const c=context();if(c)updateCustom(c,field.dataset.customNote,{note:field.value})}});
 
 const observer=new MutationObserver(()=>{
   const c=context();

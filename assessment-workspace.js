@@ -592,6 +592,11 @@ window.addEventListener('beforeunload',event => {
 });
 
 window.BAMCO_CASES={
+ async saveNow(snapshot){
+  if(!current||current.status!=='active'||app.isReadOnly())return false;
+  const row=current;pending=structuredClone(snapshot);await flush();
+  return current===row&&!pending&&syncState==='saved';
+ },
  current(){return current?{id:current.id,title:current.title,status:current.status,createdAt:current.created_at,updatedAt:current.updated_at,revision:current.revision}:null},
  async listActive(){const {data,error}=await ownerRequest('list',{status:'active'});if(error)throw error;return Array.isArray(data)?data:[]},
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}

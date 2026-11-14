@@ -405,7 +405,20 @@ function exportCSV(){exportFile(buildExcelReport(excelReportSheets()),'BAMCO-ass
 
 function auditChange(action,details={}){state.missions??={};const old=state.missions['audit:general']||{};state.missions['audit:general']={entries:[...(old.entries||[]),{at:new Date().toISOString(),action,...details}].slice(-2000)}}
 function updateRating(btn){if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay)){toast('ابتدا پیمایش واقعی روز را در فرم روزانه ثبت کنید.');return}const id=btn.dataset.test,t=testById.get(id);if(!t)return;const k=ratedKey(t);const rec={...(state.records[k]||{})},selected=num(btn.dataset.score);if(num(rec.score)===selected)delete rec.score;else rec.score=selected;rec.band=window.BAMCO_REVIEW_CONTRACT.band(rec.score);auditChange('scoreChange',{testId:id,from:state.records[k]?.score??null,to:rec.score??null});rec.updatedAt=new Date().toISOString();state.records[k]=rec;save();const sy=window.scrollY;render();window.scrollTo(0,sy)}
-function uploadPicture(file,testId){const assessment=cloudSave;if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=()=>{const im=new Image();im.onload=()=>{if(assessment!==cloudSave)return;const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(im.width,im.height));canvas.width=Math.max(1,Math.round(im.width*ratio));canvas.height=Math.max(1,Math.round(im.height*ratio));canvas.getContext('2d').drawImage(im,0,0,canvas.width,canvas.height);const data=canvas.toDataURL('image/jpeg',.55),t=testById.get(testId);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),photo:data};if(save()){toast('عکس برای این آزمون ثبت شد.');const sy=window.scrollY;render();window.scrollTo(0,sy)}};im.src=reader.result};reader.readAsDataURL(file)}
+const pendingPictures=new Set();
+function trackPicture(task){pendingPictures.add(task);task.finally(()=>pendingPictures.delete(task)).catch(()=>{});return task}
+function uploadPicture(file,testId){
+ const assessment=cloudSave,t=testById.get(testId);if(!file||!file.type.startsWith('image/')||!t)return;const k=ratedKey(t);
+ trackPicture(new Promise((resolve,reject)=>{
+  const reader=new FileReader();reader.onerror=()=>reject(Error('Image read failed'));
+  reader.onload=()=>{const im=new Image();im.onerror=()=>reject(Error('Image decode failed'));im.onload=()=>{try{
+   if(assessment!==cloudSave){resolve();return}
+   const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(im.width,im.height));canvas.width=Math.max(1,Math.round(im.width*ratio));canvas.height=Math.max(1,Math.round(im.height*ratio));canvas.getContext('2d').drawImage(im,0,0,canvas.width,canvas.height);
+   const data=canvas.toDataURL('image/jpeg',.55);
+   state.records[k]={...(state.records[k]||{}),photo:data};if(save()){toast('عکس برای این آزمون ثبت شد.');const sy=window.scrollY;render();window.scrollTo(0,sy)}resolve();
+  }catch(error){reject(error)}};im.src=reader.result};reader.readAsDataURL(file);
+ })).catch(()=>toast('ثبت تصویر انجام نشد؛ دوباره تصویر را انتخاب کنید.'));
+}
 byId('vehicleForm').addEventListener('input',updatePlannerPreview);
 byId('vehicleForm').addEventListener('change',e=>{if(e.target.id==='twoDiff'&&!byId('vehicleForm').dataset.rendering)for(const r of planner.routes)byId('share-'+r.id).value=number(r.weights[e.target.value==='yes'?1:0]);updatePlannerPreview()});
 byId('vehicleForm').addEventListener('submit',e=>{
@@ -432,6 +445,7 @@ if(el.dataset.exportcsv){exportCSV();return}
 if(el.dataset.import){if(readOnly)return;byId('importBackup').click();return}
 if(el.dataset.clear){if(readOnly)return;if(confirm('تمام نمره‌ها و یادداشت‌های ثبت‌شده پاک شوند؟')){state.records={};save();render();toast('نتایج پاک شدند.')}return}
 });
+document.addEventListener('input',e=>{const el=e.target;if(readOnly||!el.dataset.note)return;const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value,updatedAt:new Date().toISOString()};save()});
 document.addEventListener('change',e=>{const el=e.target;if(readOnly)return;if(el.dataset.note){const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value,updatedAt:new Date().toISOString()};save();return}if(el.dataset.photo){uploadPicture(el.files?.[0],el.dataset.photo);return}});
 document.addEventListener('input',e=>{if(e.target.id==='questionSearch'){state.query=e.target.value;state.page=0;const field=e.target;const pos=field.selectionStart;renderQuestions();const newField=byId('questionSearch');newField.focus();newField.setSelectionRange(pos,pos)}});
 byId('importBackup').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const assessment=cloudSave;const fr=new FileReader();fr.onload=()=>{if(assessment!==cloudSave)return;try{const obj=JSON.parse(fr.result);if(!obj||!obj.records||!obj.config)throw Error('Invalid');if(!confirm('اطلاعات موجود با فایل پشتیبان جایگزین شود؟'))return;state.config=normalizeConfig(obj.config,true);state.records=obj.records;state.mileage=obj.mileage||{drive:{},durability:{}};state.missions=obj.missions||{};state.durabilitySchedule=obj.durabilitySchedule;state.checkpointAssignments=obj.checkpointAssignments||{};state.setupComplete=true;save();render();toast('بازیابی پشتیبان انجام شد.')}catch(err){toast('فایل JSON معتبر نیست.')}};fr.readAsText(file);e.target.value=''});
@@ -450,6 +464,7 @@ window.BAMCO_ASSESSMENT={
     render();
     window.scrollTo(0,0);
   },
+  saveNow:save,trackPicture,async waitForImages(){while(pendingPictures.size)await Promise.all([...pendingPictures])},
   dayContext,
   snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},

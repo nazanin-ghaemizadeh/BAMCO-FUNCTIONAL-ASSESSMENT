@@ -1,0 +1,22 @@
+#assessmentPageActions #dayQuestionsPdf{order:20;flex:0 0 40px;width:40px;min-height:40px;height:40px;padding:8px;margin-inline-start:auto;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #c7ddd3;background:#f5faf7;color:#276e59;cursor:pointer}
+html[dir=ltr] #assessmentPageActions #dayQuestionsPdf{order:-1;margin-inline-start:0;margin-inline-end:auto}
+#dayQuestionsPdf svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#dayQuestionsPdf:focus-visible{outline:3px solid #9ccfbd;outline-offset:3px}#dayQuestionsPdf:disabled{opacity:.55;cursor:progress}
+.day-pdf-status{order:19;font-size:14px;color:#35745f;max-width:280px;text-align:center;line-height:1.6}.day-pdf-status:empty{display:none}
+.day-pdf-stage{position:absolute;left:-100000px;top:0;width:1120px;padding:16px;background:#fff;color:#244c43;pointer-events:none;box-sizing:border-box;font-size:20px;line-height:1.8}
+.day-pdf-stage *{box-sizing:border-box;animation:none!important;transition:none!important}
+.day-pdf-stage .day-pdf-header{padding:12px 0 18px;background:#fff}
+.day-pdf-stage .day-pdf-brand{display:flex;align-items:center;justify-content:center;gap:26px;padding:15px 24px;border-radius:17px;background:linear-gradient(115deg,#143546,#206158);color:#fff}
+.day-pdf-brand img{width:135px;height:65px;object-fit:contain}.day-pdf-brand>div{text-align:center}.day-pdf-brand strong{display:block;font-size:27px;color:white}.day-pdf-brand small{font-size:20px;color:white}
+.day-pdf-stage .day-pdf-identity{text-align:center!important;font-size:25px;line-height:1.6;margin:15px 0 6px;color:#164957;overflow-wrap:anywhere}
+.day-pdf-stage .day-pdf-meta{text-align:center!important;color:#597b70;font-size:19px;line-height:1.7;margin:0}
+.day-pdf-stage .question{width:100%;margin:0;padding:24px;border-radius:18px;background:#fff;box-shadow:none;overflow:visible}
+.day-pdf-stage .question-head{margin-bottom:15px}.day-pdf-stage h3{text-align:center!important;font-size:25px;line-height:1.7;margin:12px 0;color:#204f41}
+.day-pdf-stage .test-hierarchy{justify-content:center;flex-wrap:wrap;text-align:center;line-height:1.8}
+.day-pdf-stage .test-conditions{margin:15px 0;line-height:1.85;font-size:19px}.day-pdf-stage .test-conditions dt{font-size:20px}.day-pdf-stage .test-conditions dd{white-space:pre-wrap}
+.day-pdf-stage .scores{display:grid!important;grid-template-columns:repeat(10,minmax(0,1fr))!important;gap:8px;margin:18px 0 8px}
+.day-pdf-stage .score{opacity:1!important;min-width:0;min-height:100px;padding:9px 3px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center!important;line-height:1.6}
+.day-pdf-stage .score strong{font-size:30px;text-align:center!important}.day-pdf-stage .score small{font-size:14px;text-align:center!important;white-space:normal}
+.day-pdf-stage .day-pdf-note{white-space:pre-wrap;overflow-wrap:anywhere;font-size:19px;line-height:1.9;margin:0;padding:14px;text-align:start!important;background:#f7fbf9;border:1px solid #dce9e2;border-radius:12px}
+.day-pdf-stage .day-pdf-note-title{font-size:19px;margin:12px 0 6px;text-align:start!important}
+.day-pdf-stage .day-pdf-evidence{display:block;max-width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin:12px auto}

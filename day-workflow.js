@@ -364,6 +364,7 @@ const observer=new MutationObserver(()=>{
   if(c.section==='form'&&!$('bamco-day-workflow')){lastStamp='';paint()}
 });
 observer.observe($('schedulePanel'),{childList:true});
+app.customQuestionCards=()=>{const c=context();return c?.section==='scores'?customTests(normalize(app.mission(c.key))).map(t=>({id:t.id,html:customCard(t)})):[]};
 paint();
 })();
 

@@ -199,6 +199,17 @@ s.innerHTML='<div id="bamco-day-route" class="bamco-day-route">'+(remainingMeta?
 
 }
 const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#be304a'],['#fae8e1','#f5b49d','#c84c33'],['#fff0df','#f5c09a','#cf752a'],['#fff4df','#f5ce8f','#cb8a1d'],['#fff7dd','#e9d075','#b79817'],['#eff6df','#bdd889','#619825'],['#e4f4e8','#9fd5ad','#22834e'],['#def1eb','#93ceb6','#167d55'],['#dcefe8','#85c1aa','#0e7451']];
+function questionCard(t){
+let html='';
+const rec=record(t),colors=scoreColors;
+html+='<article class="question '+(t.id.startsWith('CUSTOM-')?'user-authored':'')+'" id="q-'+esc(t.id)+'"><div class="question-head"><div><div class="test-hierarchy"><span>شاخص: '+esc(fa(t.cat))+'</span><span>زیرشاخص: '+esc(fa(t.sub))+'</span></div><h3>'+esc(fa(t.name))+'</h3></div></div>';
+const extra=sourceFields(t);const details=[['شرایط آزمون',t.profile],...(state.tab==='durability'?[['حالت بار',extra.load]]:[]),['روش سنجش',t.measure]];
+html+='<dl class="test-conditions">'+details.filter(([label,value])=>value!==undefined&&value!==null&&String(value).trim()!=='').map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(fa(value))+'</dd></div>').join('')+'</dl>';
+html+='<div class="scores" role="group" aria-label="نمره آزمون از ۱ تا ۱۰">';
+for(let i=1;i<=10;i++){let c=colors[i];html+='<button class="score '+(num(rec.score)===i?'selected':'')+'" data-score="'+i+'" data-test="'+esc(t.id)+'" title="'+esc(scoreWords[i])+'" style="--score-bg:'+c[0]+';--score-border:'+c[1]+';--score-text:'+c[2]+'"><strong>'+number(i)+'</strong><small>'+esc(scoreWords[i])+'</small></button>'}
+html+='</div><details class="assessment-attachment" '+(rec.note||rec.photo?'open':'')+'><summary><span class="attachment-plus" aria-hidden="true">+</span>افزودن یادداشت یا تصویر</summary><div class="note-wrap"><div class="note-actions"><label class="label-block" for="note-'+esc(t.id)+'">یادداشت ارزیاب</label><span class="tiny">در صورت نیاز تصویر هم پیوست کنید.</span></div><textarea id="note-'+esc(t.id)+'" data-note="'+esc(t.id)+'" placeholder="مشاهده، ایراد یا نکته قابل پیگیری را ثبت کنید...">'+esc(rec.note||'')+'</textarea><div class="note-actions"><label class="photo-picker"><input class="photo-input" type="file" accept="image/*" data-photo="'+esc(t.id)+'" aria-label="انتخاب تصویر آزمون"><span class="photo-picker-button">انتخاب تصویر</span><span class="photo-file-name">'+(rec.photo?'تصویر ثبت شده است':'تصویری انتخاب نشده است')+'</span></label>'+(rec.photo?'<img src="'+rec.photo+'" alt="تصویر ثبت‌شده برای آزمون">':'')+'</div></div></details></article>'
+return html;
+}
 function renderQuestions(){
 const all=dayItems();
 if(state.category!=='همه'&&!all.some(t=>t.cat===state.category))state.category='همه';
@@ -210,15 +221,7 @@ const select=filtered.slice(page*size,(page+1)*size);
 let html='<div class="section-heading"><div><h2>فهرست آزمون‌های '+(state.tab==='drive'?'قابلیت رانندگی':state.tab==='durability'?'دوام عملکردی':'استاتیک')+'</h2><p>'+number(all.length)+' آزمون در این بخش · '+number(filtered.length)+' مورد مطابق فیلتر</p></div><input class="search" id="questionSearch" placeholder="جست‌وجوی شاخص یا عنوان آزمون" value="'+esc(state.query)+'"></div>';
 if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay))html+='<p class="notice">پیش‌نمایش آزمون‌ها بر اساس برنامه است؛ برای ثبت نمره ابتدا پیمایش واقعی روز را ذخیره کنید.</p>';
 if(!select.length)html+='<div class="empty">آزمونی مطابق فیلتر یا روز انتخاب‌شده پیدا نشد.</div>';
-for(const t of select){
-const rec=record(t),colors=scoreColors;
-html+='<article class="question '+(t.id.startsWith('CUSTOM-')?'user-authored':'')+'" id="q-'+esc(t.id)+'"><div class="question-head"><div><div class="test-hierarchy"><span>شاخص: '+esc(fa(t.cat))+'</span><span>زیرشاخص: '+esc(fa(t.sub))+'</span></div><h3>'+esc(fa(t.name))+'</h3></div></div>';
-const extra=sourceFields(t);const details=[['شرایط آزمون',t.profile],...(state.tab==='durability'?[['حالت بار',extra.load]]:[]),['روش سنجش',t.measure]];
-html+='<dl class="test-conditions">'+details.filter(([label,value])=>value!==undefined&&value!==null&&String(value).trim()!=='').map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(fa(value))+'</dd></div>').join('')+'</dl>';
-html+='<div class="scores" role="group" aria-label="نمره آزمون از ۱ تا ۱۰">';
-for(let i=1;i<=10;i++){let c=colors[i];html+='<button class="score '+(num(rec.score)===i?'selected':'')+'" data-score="'+i+'" data-test="'+esc(t.id)+'" title="'+esc(scoreWords[i])+'" style="--score-bg:'+c[0]+';--score-border:'+c[1]+';--score-text:'+c[2]+'"><strong>'+number(i)+'</strong><small>'+esc(scoreWords[i])+'</small></button>'}
-html+='</div><details class="assessment-attachment" '+(rec.note||rec.photo?'open':'')+'><summary><span class="attachment-plus" aria-hidden="true">+</span>افزودن یادداشت یا تصویر</summary><div class="note-wrap"><div class="note-actions"><label class="label-block" for="note-'+esc(t.id)+'">یادداشت ارزیاب</label><span class="tiny">در صورت نیاز تصویر هم پیوست کنید.</span></div><textarea id="note-'+esc(t.id)+'" data-note="'+esc(t.id)+'" placeholder="مشاهده، ایراد یا نکته قابل پیگیری را ثبت کنید...">'+esc(rec.note||'')+'</textarea><div class="note-actions"><label class="photo-picker"><input class="photo-input" type="file" accept="image/*" data-photo="'+esc(t.id)+'" aria-label="انتخاب تصویر آزمون"><span class="photo-picker-button">انتخاب تصویر</span><span class="photo-file-name">'+(rec.photo?'تصویر ثبت شده است':'تصویری انتخاب نشده است')+'</span></label>'+(rec.photo?'<img src="'+rec.photo+'" alt="تصویر ثبت‌شده برای آزمون">':'')+'</div></div></details></article>'
-}
+for(const t of select)html+=questionCard(t);
 html+='<div class="toolbar"><button class="secondary" data-pagejump="'+(page-1)+'" '+(page===0?'disabled':'')+'>صفحه قبل</button><span class="tiny">صفحه '+number(page+1)+' از '+number(pages)+'</span><button class="secondary" data-pagejump="'+(page+1)+'" '+(page>=pages-1?'disabled':'')+'>صفحه بعد</button></div>';
 byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'')
 }
@@ -448,7 +451,7 @@ window.BAMCO_ASSESSMENT={
     window.scrollTo(0,0);
   },
   dayContext,
-  snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,drivePlan:driveProgram,refresh:render,
+  snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},
   mission(key){return state.missions?.[key]||{}},
   setMission(key,mission){if(!cloudSave||readOnly)return;state.missions[key]=mission;save()},

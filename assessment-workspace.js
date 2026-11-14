@@ -136,7 +136,6 @@ const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-lan
 
 labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
 labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
-labels.historyHint=['ارزیابی‌های خاتمه‌یافته را برای مرور نتایج انتخاب کنید.','Select a completed assessment to review its results.','选择已完成的评估以查看结果。'];
 labels.created=['ایجاد','Created','创建时间'];
 labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
@@ -316,7 +315,6 @@ function renderRows() {
     createPanel.append(createHeading,form);
     hub.append(createPanel);
   }
-  if (screen === 'history') hub.append(node('p',tr('historyHint'),'assessment-screen-hint'));
 
   const list = node('section','','assessment-list-section');
   const listHeading = node('div','','assessment-list-heading');

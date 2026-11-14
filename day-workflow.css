@@ -375,3 +375,6 @@
 #bamco-time-picker .vehicle-dropdown-list{max-height:min(260px,30vh)}
 
 #bamco-time-picker select.vehicle-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;overflow:hidden!important}
+
+#bamco-day-form label:has(>select[name="fuelType"]){position:relative}
+#bamco-day-form select[name="fuelType"].vehicle-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;overflow:hidden!important}

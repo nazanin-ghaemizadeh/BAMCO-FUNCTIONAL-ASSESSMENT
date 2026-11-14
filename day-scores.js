@@ -172,10 +172,9 @@ function addFormSheets(book, info, values) {
   for (const [category,entries] of fields) for (const [field,value] of entries) add(category,field,value);
   const checklist = [];
   for (const group of window.BAMCO_PRE_DRIVE) {
-    const title = group.number.toLocaleString('fa-IR') + '. ' + group.title;
     group.items.forEach((item,i) => {
       const checked = values.preDrive.reviewed[item.key] === true;
-      checklist.push([checklist.length+1,title,item.title,checked ? '✓ بررسی شده' : '× بررسی نشده',!i ? values.preDrive.comments[group.id] || '' : '']);
+      checklist.push([checklist.length+1,group.title,item.title,checked ? '✓ بررسی شده' : '× بررسی نشده',!i ? values.preDrive.comments[group.id] || '' : '']);
     });
   }
   addDailyTable(book, info, 'فرم روزانه', 'DailyForm', ['ردیف','بخش','عنوان','مقدار'], [8.88671875,32,48,70], rows);

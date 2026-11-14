@@ -61,6 +61,15 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
     assert.equal(ws.getCell('B2').fill.fgColor.argb,'FF216C56');assert.equal(ws.getCell('B3').font.name,'B Nazanin');
     assert.equal(ws.getCell('B3').border.bottom.style,'thin');
   }
+  let serial=1;
+  for (const group of w.BAMCO_PRE_DRIVE) {
+    for (const item of group.items) {
+      const row=list.getRow(serial+2);
+      assert.equal(row.getCell(1).value,serial++);
+      assert.equal(row.getCell(2).value,group.title);
+      assert.equal(row.getCell(3).value,item.title);
+    }
+  }
   assert.equal(list.rowCount,73);assert.equal(list.getCell('E3').value,'<با توضیح>');
   assert.match(list.getCell('D3').value,/✓/);assert.match(list.getCell('D4').value,/×/);
   assert.notEqual(list.getCell('A3').fill.fgColor.argb,list.getCell('A13').fill.fgColor.argb);

@@ -17,7 +17,7 @@ function polish(root){if(root.nodeType===3){if(root.parentElement&&!root.parentE
 const observer=new MutationObserver(ms=>{observer.disconnect();ms.forEach(m=>{if(m.type==='characterData')polish(m.target);else m.addedNodes.forEach(polish)});observer.observe(document.body,{childList:true,subtree:true,characterData:true});});polish(document.body);
 window.BAMCO_DROPDOWNS=function(root=document){
  root.querySelectorAll('.start-city-illustration:empty').forEach(el=>{el.innerHTML=icons.observer});
- const selects=[...root.querySelectorAll('#vehicleForm select,#routeEditor select,#assessmentDashboard select,#staticTestForm select,select[name="temperature"],select[name="weather"]')];
+ const selects=[...root.querySelectorAll('#vehicleForm select,#routeEditor select,#assessmentDashboard select,#staticTestForm select,select[name="temperature"],select[name="weather"],#bamco-time-picker select')];
  const closeAll=(except)=>document.querySelectorAll('.vehicle-dropdown-list').forEach(l=>{if(l!==except){l.hidden=true;l.previousElementSibling?.setAttribute('aria-expanded','false')}});
  selects.forEach(select=>{
   if(select.dataset.customDropdown){select._refreshDropdown?.();return;}

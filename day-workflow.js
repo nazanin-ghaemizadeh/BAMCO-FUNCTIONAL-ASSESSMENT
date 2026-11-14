@@ -38,6 +38,7 @@ function openTimePicker(field){
   dialog.querySelector('[data-time-cancel]').addEventListener('click',close);
   dialog.addEventListener('cancel',event=>{event.preventDefault();close()});
   document.body.append(dialog);dialog.showModal();
+  window.BAMCO_DROPDOWNS?.(dialog);
 }
 function wireTimePickers(form){
   for(const name of ['startTime','endTime','breakdownTime']){

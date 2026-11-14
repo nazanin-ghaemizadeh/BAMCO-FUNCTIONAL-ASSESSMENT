@@ -369,3 +369,7 @@
     margin: -22px -22px 16px;
   }
 }
+
+#bamco-time-picker{overflow:visible;font-family:inherit}
+#bamco-time-picker label{position:relative;display:grid;gap:8px;min-width:0}
+#bamco-time-picker .vehicle-dropdown-list{max-height:min(260px,30vh)}

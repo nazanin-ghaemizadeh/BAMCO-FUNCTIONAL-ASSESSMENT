@@ -395,7 +395,7 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   background:#e0f2e7; color:#205e43; text-align:center;
   font-size:1.06rem; font-variant-numeric:tabular-nums;
 }
-.day-road-meter {position:relative; margin-top:5px; height:48px; isolation:isolate}
+.day-road-meter {position:relative; margin-top:5px; height:clamp(52px, 7vw, 68px); isolation:isolate}
 .day-road-asphalt {
   position:absolute; inset: auto 0 1px; height:14px; overflow:hidden;
   border-radius:20px; background:#a5bbb1; box-shadow:inset 0 -2px #00000012;
@@ -409,15 +409,15 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   background:repeating-linear-gradient(90deg,#ffffffe0 0 10px,transparent 10px 22px);
 }
 .day-road-journey {
-  --truck-width:clamp(82px, 12vw, 108px);
+  --truck-width:clamp(108px, 18vw, 148px);
   position:absolute; inset:0 calc(var(--truck-width) / 2); pointer-events:none;
 }
 .day-road-car {
-  display:block; position:absolute; bottom:6px; inset-inline-start:var(--road-progress);
-  width:var(--truck-width); height:auto; aspect-ratio:8/3; margin-inline-start:calc(var(--truck-width) / -2);
+  display:block; position:absolute; bottom:5px; inset-inline-start:var(--road-progress);
+  width:var(--truck-width); height:auto; aspect-ratio:237/97; margin-inline-start:calc(var(--truck-width) / -2);
   transition:inset-inline-start .55s ease;
 }
-[dir=rtl] .day-road-car {transform:scaleX(-1)}
+[dir=ltr] .day-road-car {transform:scaleX(-1)}
 .day-road-flag {
   position:absolute; inset-inline-end:6px; bottom:14px; width:2px; height:29px;
   border-radius:2px; background:#41574d;
@@ -436,8 +436,8 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
     animation:day-road-suspension .8s ease-in-out infinite alternate;
   }
   .day-road-meter:not([aria-valuenow="100"]) .day-road-spokes {
-    transform-box:fill-box; transform-origin:center;
-    animation:day-road-wheels 1.4s linear infinite;
+    transform-box:view-box;
+    animation:day-road-wheels 1.4s linear infinite reverse;
   }
   @keyframes day-road-lanes {to {transform:translateX(-22px)}}
   @keyframes day-road-suspension {to {transform:translateY(-1.4px)}}

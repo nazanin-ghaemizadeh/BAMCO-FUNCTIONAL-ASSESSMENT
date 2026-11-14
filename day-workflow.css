@@ -395,31 +395,41 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   background:#e0f2e7; color:#205e43; text-align:center;
   font-size:1.06rem; font-variant-numeric:tabular-nums;
 }
-.day-road-meter {position:relative; margin-top:5px; height:clamp(52px, 7vw, 68px); isolation:isolate}
-.day-road-asphalt {
-  position:absolute; inset: auto 0 1px; height:14px; overflow:hidden;
-  border-radius:20px; background:#a5bbb1; box-shadow:inset 0 -2px #00000012;
+.day-road-meter {
+  position:relative; isolation:isolate; overflow:hidden;
+  margin-top:9px; height:clamp(83px, 10vw, 108px); border-radius:12px;
+  background:linear-gradient(#f5f9f6, #faf1df 76%, #e9d7ba);
+}
+.day-road-meter::before {
+  content:""; position:absolute; inset:0 0 7px; pointer-events:none;
+  background:url("./assets/trail-foothills.svg") repeat-x center bottom / auto 100%;
+}
+.day-road-trail {
+  position:absolute; inset:auto 0 0; height:18px; overflow:hidden;
+  background:linear-gradient(#b89569, #a58158 45%, #907554);
+  clip-path:polygon(0 10%,4% 17%,9% 6%,14% 14%,20% 5%,27% 18%,34% 9%,40% 21%,46% 7%,53% 14%,60% 4%,67% 12%,74% 20%,81% 7%,87% 15%,94% 6%,100% 12%,100% 100%,0 100%);
 }
 .day-road-distance {
-  height:100%; width:var(--road-progress); background:#4d9176;
-  transition:width .55s ease;
+  height:100%; width:var(--road-progress);
+  background:linear-gradient(#80946b, #697e58); transition:width .55s ease;
 }
-.day-road-asphalt::after {
-  content:""; position:absolute; inset:6px -22px auto; height:2px;
-  background:repeating-linear-gradient(90deg,#ffffffe0 0 10px,transparent 10px 22px);
+.day-road-trail::after {
+  content:""; position:absolute; inset:0 -112px 0 0;
+  background:url("./assets/trail-gravel.svg") repeat-x left bottom / 112px 18px;
 }
+.day-road-dust {opacity:0}
 .day-road-journey {
   --truck-width:clamp(108px, 18vw, 148px);
   position:absolute; inset:0 calc(var(--truck-width) / 2); pointer-events:none;
 }
 .day-road-car {
-  display:block; position:absolute; bottom:5px; inset-inline-start:var(--road-progress);
-  width:var(--truck-width); height:auto; aspect-ratio:237/97; margin-inline-start:calc(var(--truck-width) / -2);
+  display:block; position:absolute; bottom:9px; inset-inline-start:var(--road-progress);
+  width:var(--truck-width); overflow:visible; height:auto; aspect-ratio:237/97; margin-inline-start:calc(var(--truck-width) / -2);
   transition:inset-inline-start .55s ease;
 }
 [dir=ltr] .day-road-car {transform:scaleX(-1)}
 .day-road-flag {
-  position:absolute; inset-inline-end:6px; bottom:14px; width:2px; height:29px;
+  position:absolute; inset-inline-end:9px; bottom:17px; width:2px; height:29px;
   border-radius:2px; background:#41574d;
 }
 .day-road-flag::before {
@@ -428,19 +438,33 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   background:repeating-conic-gradient(#3e5a50 0 25%,#fff 0 50%) 0 0 / 7px 7px;
 }
 @media (prefers-reduced-motion:no-preference) {
-  .day-road-meter:not([aria-valuenow="100"]) .day-road-asphalt::after {
-    animation:day-road-lanes 1.1s linear infinite;
+  .day-road-meter:not([aria-valuenow="100"]) .day-road-trail::after {
+    animation:day-road-gravel 4.4s linear infinite;
   }
-  [dir=rtl] .day-road-meter .day-road-asphalt::after {animation-direction:reverse}
+  [dir=rtl] .day-road-meter .day-road-trail::after {animation-direction:reverse}
   .day-road-meter:not([aria-valuenow="100"]) .day-road-body {
-    animation:day-road-suspension .8s ease-in-out infinite alternate;
+    transform-box:fill-box; transform-origin:center bottom;
+    animation:day-road-suspension 1.24s ease-in-out infinite;
+  }
+  .day-road-meter:not([aria-valuenow="100"]) .day-road-dust {
+    transform-box:fill-box; transform-origin:left bottom;
+    animation:day-road-dust 1.3s ease-out infinite;
   }
   .day-road-meter:not([aria-valuenow="100"]) .day-road-spokes {
     transform-box:view-box;
     animation:day-road-wheels 1.4s linear infinite reverse;
   }
-  @keyframes day-road-lanes {to {transform:translateX(-22px)}}
-  @keyframes day-road-suspension {to {transform:translateY(-1.4px)}}
+  @keyframes day-road-gravel {to {transform:translateX(-112px)}}
+  @keyframes day-road-suspension {
+    0%, 54%, 100% {transform:translateY(0) rotate(0)}
+    22% {transform:translateY(-2px) rotate(-.9deg)}
+    76% {transform:translateY(-1px) rotate(.65deg)}
+  }
+  @keyframes day-road-dust {
+    0% {opacity:0; transform:translate(0,0) scale(.65)}
+    28% {opacity:.58}
+    100% {opacity:0; transform:translate(28px,-9px) scale(1.4)}
+  }
   @keyframes day-road-wheels {to {transform:rotate(1turn)}}
 }
 @media (prefers-reduced-motion:reduce) {

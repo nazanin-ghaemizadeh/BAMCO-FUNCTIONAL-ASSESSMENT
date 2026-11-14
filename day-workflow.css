@@ -378,7 +378,9 @@
 
 #bamco-day-form label:has(>select[name="fuelType"]){position:relative}
 #bamco-day-form select[name="fuelType"].vehicle-native-hidden{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;overflow:hidden!important}
-.day-scores-save{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:20px}.day-scores-save [role=status]{flex:1;min-width:200px;color:#216c56}
+#dayScoresSave{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:100%}
+#dayScoresSave [role=status]{color:#245641;font-size:.85rem;overflow-wrap:anywhere}
+#dayScoresSave [role=status]:empty{display:none}
 #assessmentPageActions #dayScoresExcel{order:21;flex:0 0 40px;width:40px;min-height:40px;height:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #c7ddd3;background:#f5faf7;color:#276e59;cursor:pointer}
 #dayScoresExcel svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}#dayScoresExcel:disabled{opacity:.55;cursor:progress}
 html[dir=ltr] #assessmentPageActions #dayScoresExcel{order:0}

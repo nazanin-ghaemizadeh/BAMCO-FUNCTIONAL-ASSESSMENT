@@ -57,6 +57,11 @@ const labels = {
   saved:['','',''],
   unsaved:['تغییرات ذخیره نشد. دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
   conflict:['این ارزیابی در جای دیگری تغییر کرده است. دوباره آن را باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
+  overlap:['همین اطلاعات در دو نسخه ویرایش شده‌اند. برای موارد زیر نسخه دلخواه را انتخاب کنید.','These fields changed in both copies. Choose which values to save.','这些字段已同时修改。请选择要保存的值。'],
+  confirmed:['تغییرات انتخاب‌شده ذخیره شدند.','Selected changes saved.','所选更改已保存。'],
+  mine:['ثبت مقادیر من','Save my values','保存我的值'],
+  theirs:['پذیرش مقادیر سرور','Use server values','使用服务器值'],
+  unavailable:['این ارزیابی دیگر برای ویرایش در دسترس نیست.','This assessment is no longer editable.','此评估已不可编辑。'],
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
   share:['اشتراک موقعیت مکانی','Share location','共享位置'],
   stop:['توقف موقعیت مکانی','Stop sharing','停止共享'],
@@ -230,6 +235,7 @@ function render() {
   for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
   if (current) {
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
+    if (syncState === 'overlap' && overlapReview) showOverlaps($('assessmentSync'));
     if (pending && !saving && syncState === 'unsaved') $('assessmentSync').append(' ',button('retry',flush));
     return;
   }
@@ -376,7 +382,8 @@ async function openAssessment(id) {
   const {data,error} = await ownerRequest('open',{id});
   if (generation !== syncGeneration) return;
   if (error || !data) {report(error || tr('conflict'));return}
-  current = data;
+  current = {...data,snapshot:structuredClone(data.snapshot)};
+  overlapReview=null;
   pending = null;
   syncState = '';
   $('assessmentName').textContent = data.title;
@@ -392,31 +399,87 @@ async function openAssessment(id) {
 
 function queueSave(snapshot) {
   pending = structuredClone(snapshot);
-  flush();
+  if(syncState!=='overlap' && syncState!=='unavailable') flush();
 }
 
-async function flush() {
-  if (saving) return saving;
-  if (!current || !pending || syncState === 'conflict') return;
-  const row = current;
-  saving = (async () => {
-    while (pending) {
-      const snapshot = pending;
-      pending = null;
-      syncState = 'saving';
+let overlapReview=null;
+
+function showOverlaps(host) {
+  const review=overlapReview;
+  const fieldNames={score:['نمره','Score','评分'],note:['یادداشت','Note','备注'],photo:['تصویر','Photo','图片']};
+  const valueText=value=>{
+    if(typeof value==='string' && value.startsWith('data:image/'))return '📷';
+    if(value && typeof value==='object')return Array.isArray(value) ? '('+value.length+')' : Object.keys(value).join('، ');
+    return value===undefined ? '—' : String(value);
+  };
+  for(const {path,mine,theirs} of review.conflicts){
+    const line=document.createElement('div');
+    line.dir='auto';
+    const testId=path[0]==='records'?path[1].split(':').slice(2).join(':'):null;
+    const test=testId && app.currentTests?.().find(t=>t.id===testId);
+    const field=fieldNames[path.at(-1)]?.[['fa','en','zh'].indexOf(language)] || path.at(-1);
+    line.textContent=[test?.name || path.slice(0,-1).join(' / '),field].join(' · ')+' · '+tr('mine')+' («'+valueText(mine)+'») · '+tr('theirs')+' («'+valueText(theirs)+'»)';
+    host.append(line);
+  }
+  for(const choice of ['mine','theirs'])host.append(button(choice,async()=>{
+    if(current!==review.row || saving)return;
+    await flush({...review,choice});
+    if(current===review.row && syncState==='saved'){
+      const status=$('dayScoresSave')?.querySelector('[role=status]') || $('assessmentSync');
+      status.textContent=tr('confirmed');
+    }
+  }));
+}
+
+async function flush(decision) {
+  if(saving)return saving;
+  if(!current || !pending || syncState==='unavailable')return;
+  if(syncState==='overlap' && !decision?.choice)return;
+  const row=current;
+  saving=(async()=>{
+    let retries=0;
+    while(current===row && pending){
+      const snapshot=pending;
+      pending=null;
+      syncState='saving';
       render();
-      const {data,error} = await ownerRequest('save',{id:row.id,revision:row.revision,snapshot});
-      if (error || !data) {
-        console.error(error || 'Revision changed');
-        pending ||= snapshot;
-        syncState = error ? 'unsaved' : 'conflict';
-        break;
+      const {data,error}=await ownerRequest('save',{id:row.id,revision:row.revision,snapshot});
+      if(current!==row)return;
+      if(!error && Number.isInteger(data?.revision)){
+        row.snapshot=snapshot;
+        row.revision=data.revision;
+        overlapReview=null;
+        syncState='saved';
+        retries=0;
+        continue;
       }
-      row.revision = data.revision;
-      syncState = 'saved';
+      pending??=snapshot;
+      if(error || ++retries>3){syncState='unsaved';return}
+      const latest=await ownerRequest('open',{id:row.id});
+      if(current!==row)return;
+      if(latest.error){syncState='unsaved';return}
+      const server=latest.data;
+      if(!server || server.id!==row.id || server.status!=='active' || !server.snapshot || !Number.isInteger(server.revision)){
+        syncState='unavailable';return;
+      }
+      const merged=window.BAMCO_RECONCILE(row.snapshot||{},pending,server.snapshot,decision?.choice==='theirs');
+      if(merged.conflicts.length){
+        const approved=decision?.choice && decision.row===row && decision.revision===server.revision &&
+          JSON.stringify(decision.conflicts)===JSON.stringify(merged.conflicts);
+        if(!approved){
+          overlapReview={row,revision:server.revision,conflicts:merged.conflicts};
+          syncState='overlap';return;
+        }
+      }
+      decision=null;
+      overlapReview=null;
+      row.snapshot=server.snapshot;
+      row.revision=server.revision;
+      pending=structuredClone(merged.snapshot);
+      app.applyReconciledSnapshot(structuredClone(merged.snapshot));
     }
   })();
-  try {await saving} finally {saving = null;render()}
+  try{await saving}finally{saving=null;render()}
 }
 
 $('assessmentBack').onclick = async () => {
@@ -594,9 +657,10 @@ window.addEventListener('beforeunload',event => {
 window.BAMCO_CASES={
  async saveNow(snapshot){
   if(!current||current.status!=='active'||app.isReadOnly())return false;
-  const row=current;pending=structuredClone(snapshot);await flush();
+  const row=current;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
   return current===row&&!pending&&syncState==='saved';
  },
+ saveStatus(){return syncState},
  current(){return current?{id:current.id,title:current.title,status:current.status,createdAt:current.created_at,updatedAt:current.updated_at,revision:current.revision}:null},
  async listActive(){const {data,error}=await ownerRequest('list',{status:'active'});if(error)throw error;return Array.isArray(data)?data:[]},
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}

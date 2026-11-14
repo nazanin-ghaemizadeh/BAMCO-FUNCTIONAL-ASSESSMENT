@@ -3,7 +3,7 @@ const {JSDOM,VirtualConsole}=require('jsdom'),Excel=require('exceljs'),fs=requir
 const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));const w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}).window,d=w.document;w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.structuredClone=structuredClone;w.fetch=async()=>{throw Error('offline')};
 for(const f of ['translations-en.js','translations-zh.js','planning-translations.js','dashboard-translations.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','polish.js','day-workflow.js','day-pdf.js','day-scores.js'])w.eval(fs.readFileSync(f,'utf8'));
 const api=w.BAMCO_ASSESSMENT,feature=w.BAMCO_DAY_SCORES,click=s=>{assert(d.querySelector(s),s);d.querySelector(s).click()};let snapshot;
-api.open({setupComplete:true},v=>snapshot=structuredClone(v),false);click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="scores"]');assert(d.getElementById('dayScoresSave'));assert.equal(d.getElementById('dayQuestionsPdf').nextElementSibling.id,'dayScoresExcel');
+api.open({setupComplete:true},v=>snapshot=structuredClone(v),false);click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="scores"]');assert.equal(d.getElementById('dayScoresSave').parentElement.id,'assessmentPageActions');assert.equal(d.getElementById('dayQuestionsPdf').nextElementSibling.id,'dayScoresExcel');
 // The language observer is active in production. The page must yield to user input
 // after entering scores. Stop a feedback loop explicitly so CI cannot hang.
 let labelChanges=0;

@@ -464,6 +464,24 @@ window.BAMCO_ASSESSMENT={
     render();
     window.scrollTo(0,0);
   },
+  applyReconciledSnapshot(data){
+    state.config=normalizeConfig(data.config||{},Boolean(data.setupComplete));
+    state.records=data.records||{};
+    state.missions=data.missions||{};
+    state.mileage=data.mileage||{drive:{},durability:{}};
+    state.setupComplete=Boolean(data.setupComplete);
+    state.durabilitySchedule=data.durabilitySchedule;
+    state.checkpointAssignments=data.checkpointAssignments||{};
+    // The daily and setup forms may contain drafts that have not been submitted.
+    if(dayContext()?.section==='scores'){
+      const focus=document.activeElement;
+      const editingNote=focus?.matches('textarea[data-note],textarea[data-custom-note]');
+      const cursor=editingNote?[focus.selectionStart,focus.selectionEnd]:null;
+      render();
+      const replacement=editingNote && document.getElementById(focus.id);
+      if(replacement){replacement.focus({preventScroll:true});replacement.setSelectionRange(...cursor)}
+    }
+  },
   saveNow:save,trackPicture,async waitForImages(){while(pendingPictures.size)await Promise.all([...pendingPictures])},
   dayContext,
   snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,

@@ -1,23 +1,30 @@
 (()=>{'use strict';
 const app=window.BAMCO_ASSESSMENT,$=id=>document.getElementById(id);
-const copy={save:['ذخیره امتیازها و یادداشت‌ها','Save scores and notes','保存评分和备注'],saving:['در حال ذخیره…','Saving…','正在保存…'],saved:['امتیازها و یادداشت‌ها در سرور ذخیره شدند.','Scores and notes saved to server.','评分和备注已保存到服务器。'],local:['اطلاعات در این مرورگر ذخیره شد.','Saved in this browser.','已保存在此浏览器。'],failed:['ذخیره تأیید نشد. از صفحه خارج نشوید و دوباره ذخیره را بزنید.','Save was not confirmed. Stay on this page and retry.','保存未确认，请留在此页并重试。'],excel:['دانلود اکسل امتیازهای این روز','Download this day’s scores as Excel','下载当天评分Excel'],exportFailed:['ساخت اکسل انجام نشد؛ دوباره تلاش کنید.','Excel export failed. Please retry.','Excel导出失败，请重试。']};
+const copy={save:['ذخیره امتیازها','Save scores','保存评分'],saving:['در حال ذخیره…','Saving…','正在保存…'],saved:['امتیازها و یادداشت‌ها در سرور ذخیره شدند.','Scores and notes saved to server.','评分和备注已保存到服务器。'],local:['اطلاعات در این مرورگر ذخیره شد.','Saved in this browser.','已保存在此浏览器。'],failed:['ذخیره تأیید نشد. از صفحه خارج نشوید و دوباره ذخیره را بزنید.','Save was not confirmed. Stay on this page and retry.','保存未确认，请留在此页并重试。'],excel:['دانلود اکسل امتیازهای این روز','Download this day’s scores as Excel','下载当天评分Excel'],exportFailed:['ساخت اکسل انجام نشد؛ دوباره تلاش کنید.','Excel export failed. Please retry.','Excel导出失败，请重试。']};
 const lang=()=>window.BAMCO_I18N?.language||'fa',tr=k=>copy[k][lang()==='fa'?0:lang()==='zh'?2:1];
 let saving=false,exporting=false,library;
-function captureNotes(){if(app.isReadOnly())return;document.querySelectorAll('#questionsPanel textarea[data-note],.bamco-day-extra textarea[data-custom-note]').forEach(field=>field.dispatchEvent(new Event('input',{bubbles:true})))}
 function collect(){const c=app.dayContext?.();if(c?.section!=='scores')return null;const snap=app.snapshot(),meta=snap.missions?.[c.key]||{},items=app.currentTests().map(t=>({...t,...snap.records?.[c.key+':'+t.id],custom:false}));for(const t of meta.customTests||[])items.push({...t,custom:true});return {context:{...c},title:window.BAMCO_CASES?.current()?.title||$('assessmentName')?.textContent||'BAMCO',date:meta.date||'',items:structuredClone(items)}}
 function sync(){const c=app.dayContext?.(),active=c?.section==='scores',bar=$('assessmentPageActions');let icon=$('dayScoresExcel');if(!active){icon?.remove();$('dayScoresSave')?.remove();return}
  if(bar&&!icon){icon=document.createElement('button');icon.id='dayScoresExcel';icon.type='button';icon.className='secondary';icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7zM17 3v5h4M3 8h11v11H3zM6 11l5 5m0-5-5 5"/></svg>';icon.onclick=download;const pdf=$('dayQuestionsPdf');if(pdf)pdf.insertAdjacentElement('afterend',icon);else bar.append(icon)}
  if(icon){icon.title=tr('excel');icon.setAttribute('aria-label',tr('excel'));icon.disabled=exporting;icon.setAttribute('aria-busy',String(exporting))}
- let footer=$('dayScoresSave');if(app.isReadOnly()){footer?.remove();return}
- if(!footer){footer=document.createElement('div');footer.id='dayScoresSave';footer.className='surface panel day-scores-save';const button=document.createElement('button');button.type='button';button.className='primary';button.onclick=save;const status=document.createElement('span');status.setAttribute('role','status');footer.append(button,status)}
- const anchor=document.querySelector('.bamco-day-extra')||$('questionsPanel');if(anchor&&anchor.nextElementSibling!==footer)anchor.insertAdjacentElement('afterend',footer);
- const saveButton=footer.firstElementChild;
+ let controls=$('dayScoresSave');
+ if(app.isReadOnly()){controls?.remove();return}
+ if(bar&&!controls){
+   controls=document.createElement('div');
+   controls.id='dayScoresSave';
+   const button=document.createElement('button');button.type='button';button.className='primary';button.onclick=save;
+   const status=document.createElement('span');status.setAttribute('role','status');
+   controls.append(button,status);
+   bar.insertBefore(controls,$('dayQuestionsPdf')||icon||null);
+ }
+ if(!controls)return;
+ const saveButton=controls.firstElementChild;
  const label=tr(saving?'saving':'save');
  if(saveButton.textContent!==label)saveButton.textContent=label;
  saveButton.disabled=saving;
  saveButton.setAttribute('aria-busy',String(saving));
 }
-async function save(){if(saving||app.isReadOnly())return;captureNotes();const c=app.dayContext?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if(app.dayContext?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if(app.dayContext?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=tr('failed')}finally{saving=false;sync()}}
+async function save(){if(saving||app.isReadOnly())return;const c=app.dayContext?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if(app.dayContext?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if(app.dayContext?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed')}finally{saving=false;sync()}}
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;if(!library)library=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=()=>resolve(window.ExcelJS);s.onerror=()=>{library=null;s.remove();reject(Error('Excel unavailable'))};document.head.append(s)});return library}
 const palette=['FFE5F2EB','FFE6EFF9','FFF7EBD9','FFEFE7F7','FFF9E4E8','FFE1F2F3','FFF0F1DA','FFE8E9F7','FFF5E7DC','FFDDEEE3','FFE3EDF2','FFF3E3F1','FFDFE8E0','FFF4EFDC','FFE3E3E3'];
 async function build(Excel,data){const book=new Excel.Workbook();book.creator='BAMCO';book.created=new Date();book.title=data.title+' | '+data.context.tab+' | '+data.context.day;const colors=new Map([...new Set(data.items.map(t=>t.cat))].map((cat,i)=>[cat,palette[i%palette.length]]));
@@ -32,6 +39,6 @@ async function build(Excel,data){const book=new Excel.Workbook();book.creator='B
  for(let i=0;i<evidence.length;i++){const t=evidence[i];if(!t.photo)continue;const match=t.photo.match(/^data:image\/(png|jpeg|jpg);base64,/i);if(!match)throw Error('Unsupported evidence image');const image=book.addImage({base64:t.photo,extension:match[1].toLowerCase()==='png'?'png':'jpeg'});const row=i+5;attachments.getRow(row).height=Math.max(112,Math.min(360,Math.ceil(String(t.note||'').length/65)*15));attachments.addImage(image,{tl:{col:5.08,row:row-1+.08},ext:{width:200,height:135},editAs:'oneCell'})}
  return new Blob([await book.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
-async function download(){if(exporting)return;captureNotes();const data=collect();if(!data)return;exporting=true;sync();try{await app.waitForImages?.();const latest=collect();if(latest?.context.key!==data.context.key)throw Error('Page changed');const Excel=await excelLibrary(),blob=await build(Excel,latest);app.exportFile(blob,'BAMCO-'+data.context.tab+'-day-'+data.context.day+'-scores.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}catch(error){console.error('Day Excel failed',error?.message);window.alert(tr('exportFailed'))}finally{exporting=false;sync()}}
+async function download(){if(exporting)return;const data=collect();if(!data)return;exporting=true;sync();try{await app.waitForImages?.();const latest=collect();if(latest?.context.key!==data.context.key)throw Error('Page changed');const Excel=await excelLibrary(),blob=await build(Excel,latest);app.exportFile(blob,'BAMCO-'+data.context.tab+'-day-'+data.context.day+'-scores.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}catch(error){console.error('Day Excel failed',error?.message);window.alert(tr('exportFailed'))}finally{exporting=false;sync()}}
 document.addEventListener('bamco:render',sync);new MutationObserver(sync).observe($('questionsPanel'),{childList:true});new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.BAMCO_DAY_SCORES={collect,build,save};sync();
 })();

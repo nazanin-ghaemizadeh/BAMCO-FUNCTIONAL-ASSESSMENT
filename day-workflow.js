@@ -120,7 +120,7 @@ function checklistMarkup(check = {}) {
   const groups = window.BAMCO_PRE_DRIVE.map(group => {
     const items = group.items.map(({key,title}) =>
       '<label class="pre-drive-item"><input type="checkbox" data-inspection="'+key+'" '+(check.reviewed?.[key]===true?'checked':'')+'>'+
-      '<span class="pre-drive-mark" aria-hidden="true"></span><span>'+esc(title)+'</span></label>').join('');
+      '<svg class="pre-drive-mark" aria-hidden="true" focusable="false" viewBox="0 0 32 32"><path class="mark-badge" d="M16 2.5c2.5 0 3.7 1.5 5.6 1.9 3 .6 4.7 1.1 5.4 4.2.6 2.5 3 4.2 2.5 7.4.5 3.2-1.9 4.9-2.5 7.4-.7 3.1-2.4 3.6-5.4 4.2-1.9.4-3.1 1.9-5.6 1.9s-3.7-1.5-5.6-1.9c-3-.6-4.7-1.1-5.4-4.2-.6-2.5-3-4.2-2.5-7.4C2 12.8 4.4 11.1 5 8.6c.7-3.1 2.4-3.6 5.4-4.2 1.9-.4 3.1-1.9 5.6-1.9Z"/><path class="mark-highlight" d="M7.8 11.2c.5-1.6 1.5-2.7 3.2-3"/><path class="mark-cross" d="m12.5 12.5 7 7m0-7-7 7"/><path class="mark-check" d="m9.8 16.2 4.1 4.2 8.4-9"/><g class="mark-blush"><ellipse cx="8.8" cy="20" rx="1.7" ry="1.1"/><ellipse cx="23.2" cy="20" rx="1.7" ry="1.1"/></g></svg><span>'+esc(title)+'</span></label>').join('');
     const headingId='pre-drive-'+group.id;
     return '<section class="pre-drive-group" aria-labelledby="'+headingId+'">'+
       '<div class="pre-drive-category"><svg aria-hidden="true" focusable="false" viewBox="0 0 48 48"><use href="./checklist-icons.svg#'+group.id+'"></use></svg>'+
@@ -129,8 +129,7 @@ function checklistMarkup(check = {}) {
       '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></section>';
   }).join('');
   return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><h3 id="preDriveTitle">چک‌لیست پیش از پیمایش</h3>'+
-    '<p>ضربدر یعنی هنوز بررسی نشده است. پس از بررسی، روی مورد بزنید تا تیک سبز بگیرد.</p><div class="pre-drive-grid">'+groups+'</div>'+
-    '<label class="bamco-full-label pre-drive-note">توضیحات کلی چک‌لیست (اختیاری)<textarea name="preDriveNote" rows="3">'+esc(check.note)+'</textarea></label></section>';
+    '<div class="pre-drive-grid">'+groups+'</div></section>';
 }
 
 function formData(form) {
@@ -153,7 +152,7 @@ function formData(form) {
     refueled:Boolean(fuelType || fuelStation || fuelLiters!=='' || fuelOdometer!==''), fuelType, fuelStation, fuelLiters, fuelOdometer,
     breakdown, breakdownCause:breakdown?text('breakdownCause'):'', correctiveAction:breakdown?text('correctiveAction'):'',
     breakdownTime:breakdown?persianTime(text('breakdownTime')):'', otherNotes:text('otherNotes'),
-    preDrive:{reviewed, comments, note:text('preDriveNote')}
+    preDrive:{reviewed, comments}
   };
 }
 
@@ -281,7 +280,7 @@ async function begin(c,form){
   const complete = [...form.querySelectorAll('[required]')].every(field => field.value.trim() !== '');
   const previous = app.mission(c.key);
   const now = new Date().toISOString();
-  const mission = {...previous, preDrive, updatedAt:now};
+  const mission = {...previous, preDrive:{...previous.preDrive, ...preDrive}, updatedAt:now};
   if (complete) {
     Object.assign(mission, values, {dailyInfoSavedAt:now, startedAt:previous.startedAt||now});
     delete mission.dailyFormDraft;

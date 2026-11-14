@@ -92,9 +92,7 @@
   ];
   const labels = [
     ['چک‌لیست پیش از پیمایش','Pre-drive checklist','出发前检查清单'],
-    ['ضربدر یعنی هنوز بررسی نشده است. پس از بررسی، روی مورد بزنید تا تیک سبز بگیرد.','A cross means unchecked. Select an item after inspecting it to show a green tick.','叉号表示尚未检查。检查后点选该项即可显示绿色勾号。'],
     ['توضیحات این دسته (اختیاری)','Category comment (optional)','本类别备注（选填）'],
-    ['توضیحات کلی چک‌لیست (اختیاری)','Checklist notes (optional)','清单总备注（选填）'],
     ['ذخیره فرم روزانه','Save daily form','保存每日表单'],
     ['دانلود اکسل فرم روزانه','Download daily form as Excel','下载每日表单 Excel'],
     ['پیش‌نویس فرم روزانه ذخیره شد.','Daily form draft saved.','每日表单草稿已保存。'],

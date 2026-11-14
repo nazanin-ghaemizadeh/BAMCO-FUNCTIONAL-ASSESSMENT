@@ -17,7 +17,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   let confirmed=true, stored, writes=0;
   w.BAMCO_CASES={current:()=>({title:'Case A',id:'test'}),saveNow:async snapshot=>{writes++;if(confirmed)stored=structuredClone(snapshot);return confirmed}};
   const save=async()=>{saveButton.click();await tick()};
-  app.open({setupComplete:true},()=>{},false);assert(controls.hidden);enter();
+  app.open({setupComplete:true,missions:{'drive:1':{preDrive:{note:'یادداشت قدیمی'}}}},()=>{},false);assert(controls.hidden);enter();
   assert.equal(saveButton.form,form());assert.equal(saveButton.closest('nav').id,'assessmentPageActions');assert(!controls.hidden);
   assert.equal(form().lastElementChild.className,'bamco-day-block pre-drive');
   assert.equal(d.querySelectorAll('[data-inspection]').length,71);
@@ -36,7 +36,8 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   assert(!form().querySelector('.pre-drive details,.pre-drive summary,[data-inspection-count]'));
   click('[data-inspection="engine-oil-level"]');assert(find('[data-inspection="engine-oil-level"]').checked);
   find('[data-inspection-comment="engine"]').value='<با توضیح>';
-  form().elements.preDriveNote.value='یادداشت کلی';
+  assert.equal(form().elements.preDriveNote,undefined);
+  assert.equal(controls.previousElementSibling.id,'assessmentStop');assert.equal(controls.nextElementSibling.id,'dayFormExcel');
   form().elements.startTime.value='۰۸:۳۰';form().elements.startKm.value='120';
   await save();assert(stored);assert.match(id('bamco-live-state').textContent,/پیش‌نویس/);
   assert.equal(stored.missions['drive:1'].preDrive.reviewed['engine-oil-level'],true);
@@ -44,7 +45,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   app.open(stored,()=>{},false);enter();assert(find('[data-inspection="engine-oil-level"]').checked);
   assert.equal(form().elements.startTime.value,'۰۸:۳۰');assert.equal(form().elements.endKm.value,'');
   assert.equal(find('[data-inspection-comment="engine"]').value,'<با توضیح>');
-  assert.equal(form().elements.preDriveNote.value,'یادداشت کلی');
+  assert.equal(stored.missions['drive:1'].preDrive.note,'یادداشت قدیمی');
   async function exportBook(){
     const next=new Promise(resolve=>{app.exportFile=(blob,name)=>{const reader=new w.FileReader();reader.onload=()=>resolve({bytes:Buffer.from(reader.result),name});reader.readAsArrayBuffer(blob)}});
     const before=writes;click('#dayFormExcel');const {bytes,name}=await next;assert.equal(writes,before);
@@ -64,13 +65,13 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   assert.match(list.getCell('D3').value,/✓/);assert.match(list.getCell('D4').value,/×/);
   assert.notEqual(list.getCell('A3').fill.fgColor.argb,list.getCell('A13').fill.fgColor.argb);
   const values=Object.fromEntries(report.getRows(3,report.rowCount-2).map(r=>[r.getCell(3).value,r.getCell(4).value]));
-  assert.equal(values['توضیحات کلی چک‌لیست'],'یادداشت کلی');assert.equal(values['کیلومتر طی‌شده'],10);assert.equal(values['دمای هوا (درجه سانتی‌گراد)'],0);
+  assert(!Object.hasOwn(values,'توضیحات کلی چک‌لیست'));assert.equal(values['کیلومتر طی‌شده'],10);assert.equal(values['دمای هوا (درجه سانتی‌گراد)'],0);
   confirmed=false;await save();assert.match(id('bamco-live-state').textContent,/تأیید نشد/);
   confirmed=true;await save();assert.equal(stored.missions['drive:1'].dailyFormDraft,undefined);assert.equal(stored.mileage.drive[1],10);assert.equal(stored.missions['drive:1'].driver,'Driver A');
   click('[data-inspection="engine-oil-level"]');find('[data-inspection-comment="engine"]').value='';await save();
   assert.equal(stored.missions['drive:1'].preDrive.reviewed['engine-oil-level'],undefined);
   assert.equal(stored.missions['drive:1'].preDrive.comments.engine,undefined);
-  app.open(stored,()=>{},false);enter('drive',2);assert.equal(form().elements.preDriveNote.value,'');assert.equal(d.querySelectorAll('[data-inspection]:checked').length,0);
+  app.open(stored,()=>{},false);enter('drive',2);assert.equal(form().elements.preDriveNote,undefined);assert.equal(d.querySelectorAll('[data-inspection]:checked').length,0);
   app.open(stored,()=>{},true);enter('durability');assert(controls.hidden);assert(find('[data-inspection]').disabled);assert(!id('dayFormExcel').hidden);
   assert.equal((await exportBook()).name,'Case A-durability-day-1-daily-form.xlsx');
   click('#assessmentTabActions button');assert(id('dayFormExcel').hidden);assert(controls.hidden);

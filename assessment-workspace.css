@@ -1,6 +1,6 @@
-html[lang="fa"] body, html[lang="fa"] button, html[lang="fa"] input, html[lang="fa"] select, html[lang="fa"] textarea {font-family:"B Nazanin","BNazanin",Tahoma,serif}
+html[lang="fa"] body, html[lang="fa"] .leaflet-container, html[lang="fa"] button, html[lang="fa"] input, html[lang="fa"] select, html[lang="fa"] textarea {font-family:var(--assessment-fa)}
 html[lang="en"] body, html[lang="en"] button, html[lang="en"] input, html[lang="en"] select, html[lang="en"] textarea {font-family:"Times New Roman",Times,serif}
-html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea {font-family:"Ma Shan Zheng","KaiTi","STKaiti",serif}
+html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea {font-family:'Assessment Latin',"Ma Shan Zheng","KaiTi","STKaiti",serif}
 #assessmentEditorBar {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
 #assessmentEditorBar {background:#fff;border:1px solid #dceae3;border-radius:20px;padding:1rem;margin-block:.65rem;text-align:start}
 #assessmentGps {display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;width:100%}
@@ -33,7 +33,7 @@ body[data-view="home"] #landing {grid-template-rows:max-content max-content}
 .assessment-readonly #editSetupBtn,.assessment-readonly [data-import],.assessment-readonly [data-clear] {display:none}
 body[data-view="home"] .app-header .header-right {display:flex!important}
 html[lang="en"] .app-header .brand b {font-family:"Times New Roman",Times,serif}
-html[lang="zh"] .app-header .brand b {font-family:"Ma Shan Zheng","KaiTi",serif}
+html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zheng","KaiTi",serif}
 #assessmentGps {padding-top:.85rem;border-top:1px solid #e3eee9}
 #assessmentGpsLabel {font-weight:700;color:#254c3e;margin-inline-end:auto}
 #assessmentLanguages {display:inline-flex;direction:ltr;align-items:center;gap:4px}
@@ -278,7 +278,7 @@ html[dir=ltr] body :is(#durabilityCaps label,#durabilityCaps input,.planner-metr
 html[lang=zh] .gate-card strong {font-size:26px}
 html[dir=ltr] .test-hierarchy,html[dir=ltr] .test-conditions {direction:ltr}
 
-html[lang=zh] body #vehicleForm .english-dropdown :is(select,option,.vehicle-dropdown-trigger,.vehicle-dropdown-option,.vehicle-dropdown-trigger span) {font-family:"Ma Shan Zheng","KaiTi","STKaiti",serif!important}
+html[lang=zh] body #vehicleForm .english-dropdown :is(select,option,.vehicle-dropdown-trigger,.vehicle-dropdown-option,.vehicle-dropdown-trigger span) {font-family:'Assessment Latin',"Ma Shan Zheng","KaiTi","STKaiti",serif!important}
 html[lang=zh] .assessment-day-tile strong::after {content:"天"}
 html[lang=en] body {font-family:"Times New Roman",Times,serif}
 

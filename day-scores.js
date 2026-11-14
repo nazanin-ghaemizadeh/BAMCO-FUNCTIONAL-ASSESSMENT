@@ -167,7 +167,7 @@ function addFormSheets(book, info, values) {
     ['شرایط محیطی',[['دمای هوا (درجه سانتی‌گراد)',values.temperature],['نوع آب‌وهوا',values.weather]]],
     ['سوخت‌گیری',[['سوخت‌گیری ثبت شده',values.refueled?'بله':'خیر'],['نوع بنزین',values.fuelType],['جایگاه سوخت',values.fuelStation],['لیتر بنزین زده‌شده',values.fuelLiters],['کیلومتر خودرو هنگام سوخت‌گیری',values.fuelOdometer]]],
     ['خرابی خودرو',[['خرابی ثبت شده',values.breakdown?'بله':'خیر'],['علت خرابی',values.breakdownCause],['اقدام اصلاحی صورت‌گرفته',values.correctiveAction],['ساعت رخداد',values.breakdownTime]]],
-    ['توضیحات',[['سایر توضیحات',values.otherNotes],['توضیحات کلی چک‌لیست',values.preDrive.note]]]
+    ['توضیحات',[['سایر توضیحات',values.otherNotes]]]
   ];
   for (const [category,entries] of fields) for (const [field,value] of entries) add(category,field,value);
   const checklist = [];

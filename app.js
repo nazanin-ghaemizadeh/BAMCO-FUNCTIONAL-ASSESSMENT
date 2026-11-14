@@ -33,7 +33,7 @@ let tm;function toast(s){const t=byId('toast');t.textContent=s;t.classList.remov
 function conf(){return state.config}
 function parts(s){return String(s||'').split(/\s*\/\s*|\s*\|\s*/).map(x=>x.trim()).filter(Boolean)}
 function allowed(rule,value){if(Array.isArray(rule))return rule.includes(String(value));if(rule==='None')return false;if(!rule||rule==='All')return true;return parts(rule).includes(String(value))}
-function applicable(t){const v=t.vehicle||{},c=conf();return allowed(v.cls,c.vclass)&&allowed(v.body,c.body)&&allowed(v.power,c.power)&&allowed(v.gear,c.gear)&&allowed(v.drive,c.driveType)}
+function applicable(t){const v=t.vehicle||{},c=conf();return allowed(v.cls,c.vclass)&&allowed(v.body,c.body==='Station Wagon'?'Station':c.body)&&allowed(v.power,c.power)&&allowed(v.gear,c.gear)&&allowed(v.drive,c.driveType)}
 function staticCustomTests(){return (state.missions?.['supplementary:general']?.customTests||[]).map(t=>({...t,scope:['supplementary']}))}
 const candidates=tab=>[...DB.tests,...(tab==='supplementary'?staticCustomTests():[])].filter(t=>t.scope.includes(tab==='drive'?'drive':tab==='durability'?'durability':'supplementary')&&applicable(t));
 function plannerConfig(c=conf()){return {target:num(c.durKm),twoDiff:c.twoDiff,caps:c.routeCaps,startOdo:num(c.startOdo),shares:c.routeShares,origin:c.startCity||'تهران',catalog:DB.roadCatalog}}
@@ -74,8 +74,13 @@ function durabilityTestsForDay(day,plan){
   const clone={...t,id:t.id+'@'+c.routeId+'-'+c.quarter,baseId:t.id,checkpoint:c,name:t.name+' · '+c.percent+'٪ · '+name+' · '+(t.stationary?'حین توقف':'حین حرکت')};
   testById.set(clone.id,clone);items.push(clone);
  }
- // Previously saved assessments keep their original score cards accessible.
- for(const key of Object.keys(state.records).filter(k=>k.startsWith('durability:'+day+':'))){const id=key.split(':').pop();if(!items.some(t=>t.id===id)){const t=testById.get(id);if(t){const historical={...t,id};testById.set(id,historical);items.push(historical)}}}
+ // Older assessments used plain test IDs before route-specific checkpoints existed.
+ const prefix='durability:'+day+':';
+ for(const [key,record] of Object.entries(state.records)){
+  if(!key.startsWith(prefix)||!(record.score||record.note||record.photo))continue;
+  const id=key.slice(prefix.length),test=lookupTest(id);
+  if(test&&applicable(test)&&!items.some(item=>item.id===id))items.push(test);
+ }
  return items;
 }
 
@@ -94,7 +99,7 @@ function updateDayMileage(tab, day, km) {
   state.checkpointAssignments ??= {};
   state.checkpointAssignments[day] = planner.checkpoints(dayCategoryPlan(),state.mileage.durability,targetRows(),day);
   const plan = dayCategoryPlan();
-  const last = Math.max(day,...plan.filter(p=>protectedDay(p.day)).map(p=>p.day));
+  const last = Math.max(day,lastRecordedDurabilityDay(plan));
   state.durabilitySchedule = planner.replan({plan,fromDay:last+1,rows:targetRows(),mileage:state.mileage.durability,startOdo:num(conf().startOdo),catalog:DB.roadCatalog});
   state.config.durDays = state.durabilitySchedule.length;
   state.config.durabilityPlannerVersion = 2;
@@ -110,9 +115,40 @@ function readSetup(){
  for(const route of planner.routes){config.routeCaps[route.id]=num(byId('cap-'+route.id).value);config.routeShares[route.id]=num(byId('share-'+route.id).value);}
  return config;
 }
+function planForSetup(config) {
+ const plan=planner.calculate(plannerConfig(config));
+ if(!state.setupComplete)return plan;
+ const previous=dayCategoryPlan();
+ const old=conf();
+ const targetsChanged=num(old.durKm)!==plan.target||planner.routes.some(r=>
+  num(old.routeShares?.[r.id]??r.weights[twoDifferentials()?1:0])!==config.routeShares[r.id]
+ );
+ const originChanged=config.startCity!==(old.startCity||'تهران');
+ const routeSettingsChanged=targetsChanged||originChanged||planner.routes.some(r=>num(old.routeCaps?.[r.id]??r.cap)!==config.routeCaps[r.id]);
+ let schedule=previous;
+ if(routeSettingsChanged){
+  const last=lastRecordedDurabilityDay(previous);
+  schedule=last===0 ? plan.schedule : planner.replan({
+   plan:previous.map(p=>p.routeId?p:{...p,routeId:dayRouteAppearance(p).kind}),
+   fromDay:last+1, rows:plan.rows, mileage:state.mileage.durability,
+   startOdo:num(config.startOdo), catalog:DB.roadCatalog,
+   origin:originChanged?config.startCity:undefined
+  });
+ }
+ // The setup preview and the saved plan use the same retained days and remaining routes.
+ const byRoute=new Map(plan.rows.map(row=>{
+  row.days=0;row.lastKm=0;
+  return [row.id,row];
+ }));
+ for(const day of schedule){
+  const row=byRoute.get(day.routeId||dayRouteAppearance(day).kind);
+  if(row){row.days++;row.lastKm=day.km}
+ }
+ return {...plan,schedule,days:schedule.length,targetsChanged};
+}
 function updatePlannerPreview(){
  try{
-  const config=readSetup(),plan=planner.calculate(plannerConfig(config));
+  const config=readSetup(),plan=planForSetup(config);
   byId('durDays').value=number(plan.days);
   byId('durabilityPreview').innerHTML='<div class="planner-summary"><div class="planner-metric"><span>هدف پیمایش دوام</span><strong>'+number(plan.target)+' <small>کیلومتر</small></strong></div><div class="planner-metric"><span>مدت برنامه دوام</span><strong>'+number(plan.days)+' <small>روز</small></strong></div></div><div class="route-table-scroll"><table class="result-table"><thead><tr><th>نوع مسیر</th><th>سهم مسیر</th><th>کیلومتر تخصیصی</th><th>سقف روزانه</th><th>تعداد روزها</th><th>پیمایش روز آخر</th></tr></thead><tbody>'+plan.rows.map(row=>'<tr><th scope="row">'+esc(row.name)+'</th><td>'+number(row.weight)+'٪</td><td>'+number(row.km)+'</td><td>'+number(row.cap)+'</td><td>'+number(row.days)+'</td><td>'+number(row.lastKm)+'</td></tr>').join('')+'</tbody><tfoot><tr><th>جمع</th><td>۱۰۰٪</td><td>'+number(plan.target)+'</td><td>—</td><td>'+number(plan.days)+'</td><td>—</td></tr></tfoot></table></div>';
   byId('setupInfo').textContent='برنامه در چهار چرخه اجرا می‌شود؛ در هر چرخه یک‌چهارم سهم هر نوع مسیر پیمایش می‌شود.';
@@ -127,8 +163,17 @@ function renderSetup(){
 }
 
 function mapHtml(p){return (state.tab==='durability'?routeEditor(p)+progressBars(p):'')+window.BAMCO_ROUTE_MAP.html(p)}
-function protectedDay(day){return Object.hasOwn(state.mileage.durability||{},day)||Object.keys(state.records).some(k=>k.startsWith('durability:'+day+':'))||Object.keys(state.missions?.['durability:'+day]||{}).length>0}
-function hasProtectedDay(fromDay){return dayCategoryPlan().some(p=>p.day>=fromDay&&protectedDay(p.day))}
+function lastRecordedDurabilityDay(plan){
+ const days=new Set(Object.keys(state.mileage.durability||{}).map(Number));
+ for(const key of Object.keys(state.records)){
+  if(key.startsWith('durability:'))days.add(Number(key.split(':')[1]));
+ }
+ for(const [key,mission] of Object.entries(state.missions||{})){
+  if(key.startsWith('durability:')&&Object.keys(mission||{}).length)days.add(Number(key.split(':')[1]));
+ }
+ return plan.findLast(day=>days.has(day.day))?.day||0;
+}
+function hasProtectedDay(fromDay){return lastRecordedDurabilityDay(dayCategoryPlan())>=fromDay}
 function progressBars(p){const rows=targetRows(),actual=planner.totals(dayCategoryPlan(),state.mileage.durability);return '<section class="route-progress"><h3>پیشرفت پیمایش مسیرها</h3><p>پیمایش ثبت‌شده / انتخاب فعلی / باقی‌مانده</p>'+rows.filter(r=>r.km>0).map(r=>{const got=actual[r.id]||0,preview=r.id===p.routeId&&!Object.hasOwn(state.mileage.durability,p.day)?p.km:0;return '<div class="route-progress-row"><span>'+esc(r.name)+'</span><div class="route-progress-track"><i style="width:'+Math.min(100,got/r.km*100)+'%"></i><b style="width:'+Math.max(0,Math.min(100-got/r.km*100,preview/r.km*100))+'%"></b></div><small>'+number(got)+' / '+number(preview)+' / '+number(Math.max(0,r.km-got-preview))+' <span>کیلومتر</span></small></div>'}).join('')+'</section>'}
 function routeEditor(p){
  const locked=hasProtectedDay(p.day),cities=[...new Set([p.origin||conf().startCity||'تهران',...DB.roadCatalog.map(r=>r.origin)])];
@@ -434,13 +479,48 @@ function uploadPicture(file,testId){
 }
 byId('vehicleForm').addEventListener('input',updatePlannerPreview);
 byId('vehicleForm').addEventListener('change',e=>{if(e.target.id==='twoDiff'&&!byId('vehicleForm').dataset.rendering)for(const r of planner.routes)byId('share-'+r.id).value=number(r.weights[e.target.value==='yes'?1:0]);updatePlannerPreview()});
-byId('vehicleForm').addEventListener('submit',e=>{
- e.preventDefault();if(readOnly)return;
+byId('vehicleForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const form=e.currentTarget,button=form.querySelector('[type="submit"]');
+ if(readOnly||button.disabled)return;
  const result=updatePlannerPreview();if(!result){toast('هدف و سقف‌های پیمایش را بررسی کنید.');return}
  const {config,plan}=result;
  if(!Number.isInteger(config.driveKm)||config.driveKm<1||config.driveKm>20000){toast('هدف قابلیت رانندگی باید عدد صحیح بین ۱ تا ۲۰٬۰۰۰ باشد.');return}
  if(!['yes','no'].includes(config.twoDiff)){toast('وضعیت دو دیفرانسیل را انتخاب کنید.');return}
- if(hasProtectedDay(1)){const before=JSON.stringify(targetRows().map(r=>[r.id,r.km,r.cap])),after=JSON.stringify(plan.rows.map(r=>[r.id,r.km,r.cap]));if(before!==after||num(conf().startOdo)!==config.startOdo||conf().twoDiff!==config.twoDiff){toast('برای حفظ اطلاعات ثبت‌شده، سهم‌ها و هدف برنامه آغازشده ثابت هستند؛ مسیر روزهای انجام‌نشده را از نقشه تغییر دهید.');return}config.durDays=dayCategoryPlan().length;}else{state.durabilitySchedule=plan.schedule;config.durDays=plan.days;}state.config=config;state.setupComplete=true;save();changeTab('modules');toast('مشخصات خودرو ثبت و برنامه دوام محاسبه شد.');
+ config.durDays=plan.days;
+ state.config=config;
+ state.durabilitySchedule=plan.schedule;
+ state.durDay=Math.min(state.durDay,plan.days);
+ state.setupComplete=true;
+ if(plan.targetsChanged){
+  const mileage=state.mileage.durability||{};
+  state.checkpointAssignments=Object.fromEntries(Object.keys(mileage).map(day=>[
+   day,planner.checkpoints(plan.schedule,mileage,plan.rows,Number(day))
+  ]));
+ }
+ // Confirm the same snapshot that will be used to select the assessment's questions.
+ const confirmation=window.BAMCO_CASES;
+ if(cloudSave&&confirmation?.saveNow){
+  const id=confirmation.current?.()?.id;
+  let edited=false;
+  const onEdit=()=>{edited=true};
+  form.addEventListener('input',onEdit);
+  form.addEventListener('change',onEdit);
+  button.disabled=true;
+  let saved=false;
+  try{saved=await confirmation.saveNow(snapshot())}
+  catch{saved=false}
+  finally{
+   form.removeEventListener('input',onEdit);
+   form.removeEventListener('change',onEdit);
+   if(confirmation.current?.()?.id===id)button.disabled=readOnly;
+  }
+  if(confirmation.current?.()?.id!==id||state.tab!=='setup')return;
+  if(!saved){toast('ذخیره تأیید نشد. دوباره ذخیره را بزنید.');return}
+  if(edited)return;
+ }else if(!save())return;
+ changeTab('modules');
+ toast('مشخصات خودرو ثبت و برنامه دوام محاسبه شد.');
 });
 document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
 if(el.id==='editSetupBtn'){changeTab('setup');return}

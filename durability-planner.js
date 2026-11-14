@@ -17,14 +17,14 @@ function calculate({target,twoDiff=false,caps={},startOdo=0,shares,origin='ته�
 }
 function totals(plan,mileage={},beforeDay=Infinity){const sums=Object.fromEntries(routes.map(r=>[r.id,0]));for(const p of plan)if(p.day<beforeDay){const actual=Number(mileage[p.day]);if(Number.isFinite(actual)&&actual>=0)sums[p.routeId]=precision((sums[p.routeId]||0)+actual)}return sums}
 function checkpoints(plan,mileage,targets,day){const before=totals(plan,mileage,day),after=totals(plan,mileage,day+1),result=[];for(const r of targets)if(r.km>0)for(let quarter=1;quarter<=4;quarter++){const km=r.km*quarter/4;if(before[r.id]<km-0.00001&&after[r.id]>=km-0.00001)result.push({routeId:r.id,quarter,km,percent:quarter*25})}return result}
-function replan({plan,fromDay,replacement,mileage={},rows,startOdo=0,catalog=[]}){
+function replan({plan,fromDay,replacement,mileage={},rows,startOdo=0,catalog=[],origin}){
  if(!Number.isInteger(fromDay)||fromDay<1||fromDay>plan.length+1)throw Error('روز معتبر نیست.');
  if(plan.some(p=>p.day>=fromDay&&Object.hasOwn(mileage,p.day)))throw Error('برای این روز یا روزهای بعد پیمایش ثبت شده است؛ بازبرنامه‌ریزی را از اولین روز انجام‌نشده آغاز کنید.');
  const prefix=plan.slice(0,fromDay-1).map(p=>({...p})),tot=Object.fromEntries(rows.map(r=>[r.id,0]));for(const p of prefix)tot[p.routeId]=precision(tot[p.routeId]+(Object.hasOwn(mileage,p.day)?Number(mileage[p.day]):p.km));
  const selected=replacement&&rows.find(r=>r.id===replacement.routeId);if(replacement&&!selected)throw Error('نوع مسیر معتبر نیست.');
  const remaining=selected?precision(selected.km-tot[selected.id]):0,currentCycle=Math.min(4,Math.floor(Math.min(...rows.filter(r=>r.km>0).map(r=>tot[r.id]/r.km))*4+0.000001)+1),cycleRemaining=selected?precision(selected.km*currentCycle/4-tot[selected.id]):0;
  if(replacement&&(!(replacement.km>0)||replacement.km>selected.cap+0.001||replacement.km>remaining+0.001||replacement.km>cycleRemaining+0.001))throw Error('مسافت انتخابی از سهم باقی‌مانده چرخه یا سقف روزانه بیشتر است.');
- let cum=Object.values(tot).reduce((a,b)=>a+b,0),city=replacement?.origin||prefix.at(-1)?.destination||plan[0]?.origin||'تهران';
+ let cum=Object.values(tot).reduce((a,b)=>a+b,0),city=replacement?.origin||origin||prefix.at(-1)?.destination||plan[0]?.origin||'تهران';
  const append=(r,km,extra={})=>{cum=precision(cum+km);const edge=suggestedEdge(catalog,city,r.id),destination=extra.destination||edge?.destination||city,day=prefix.length+1;prefix.push({day,cycle:extra.cycle||currentCycle,routeId:r.id,type:r.name,origin:city,destination,route:city===destination?city+' ـ '+r.name:city+' → '+destination,roadId:edge?.id||null,km,cum,odo:precision(startOdo+cum),cap:r.cap,needsRoute:!edge&&r.id!=='urban',...extra});city=destination;tot[r.id]=precision(tot[r.id]+km)};
  if(replacement)append(selected,replacement.km,{...replacement,cycle:currentCycle});
  for(let cycle=currentCycle;cycle<=4;cycle++)while(rows.some(r=>tot[r.id]<r.km*cycle/4-0.001))for(const r of rows){const left=precision(r.km*cycle/4-tot[r.id]);if(left>0.001)append(r,Math.min(left,r.cap),{cycle})}

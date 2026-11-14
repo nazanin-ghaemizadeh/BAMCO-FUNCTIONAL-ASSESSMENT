@@ -1,4 +1,5 @@
 const {JSDOM,VirtualConsole}=require('jsdom'),fs=require('fs'),assert=require('assert');
+(async()=>{
 const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
 const dom=new JSDOM(fs.readFileSync('./index.html','utf8'),{url:'https://preview.example',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window,d=w.document;
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.structuredClone=structuredClone;w.fetch=async()=>{throw Error('offline test')};
@@ -25,6 +26,40 @@ const custom=api.eligibleTests('supplementary').find(t=>t.name==='USER TEST');se
 api.open(saved,v=>saved=structuredClone(v),false);assert(api.eligibleTests('supplementary').some(t=>t.id===custom.id));
 const legacy={setupComplete:true,config:{durabilityPlannerVersion:1,durKm:45000,durDays:107,twoDiff:'yes'},records:{'durability:1:CR-0002':{score:9}},missions:{'durability:1':{driver:'KEEP'}},mileage:{drive:{},durability:{1:250}}};
 api.open(legacy,v=>saved=structuredClone(v),false);const old=JSON.stringify(api.durabilityPlan());click('[data-open="setup"]');submit('vehicleForm');assert.equal(JSON.stringify(api.durabilityPlan()),old);assert.equal(saved.records['durability:1:CR-0002'].score,9);
+// Edit an assessment with mileage, scores and notes, then close and reopen the confirmed snapshot.
+const started=structuredClone(after);
+started.records['durability:1:CR-0241@urban-4']={score:6,note:'Historic checkpoint'};
+started.records['drive:1:CR-0443']={score:9,note:'Manual gearbox'};
+let server=structuredClone(started),online=false;
+const editSaved=()=>{api.open(structuredClone(server),()=>assert.fail('Explicit setup save expected'),false);click('[data-open="setup"]')};
+const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
+w.BAMCO_CASES={current:()=>({id:'active'}),saveNow:async snapshot=>{
+ if(online)server=structuredClone(snapshot);
+ return online;
+}};
+editSaved();
+set('gear','Automatic');set('twoDiff','no');set('driveType','FWD');
+set('durKm','۱۰۰۰');set('cap-urban','۴۰');set('startCity','قم');
+submit('vehicleForm');await tick();
+assert.deepEqual(server,started);assert.match(d.getElementById('toast').textContent,/تأیید نشد/);
+assert(!d.getElementById('setupPanel').classList.contains('hidden'));
+online=true;submit('vehicleForm');await tick();
+assert(!d.getElementById('moduleLanding').classList.contains('hidden'));assert.equal(server.config.durKm,1000);
+assert.equal(server.config.routeCaps.urban,40);assert.equal(server.config.routeShares.offroad,0);assert.equal(server.config.gear,'Automatic');
+assert.deepEqual(server.durabilitySchedule[0],started.durabilitySchedule[0]);assert.equal(server.durabilitySchedule[1].origin,'قم');
+assert.equal(server.durabilitySchedule.slice(1).reduce((n,day)=>n+day.km,100),1000);
+assert.deepEqual(server.records,started.records);assert.deepEqual(server.mileage,started.mileage);assert.deepEqual(server.missions,started.missions);
+assert.deepEqual(server.checkpointAssignments[1].map(c=>c.quarter),[1]);
+api.open(structuredClone(server),()=>{},false);click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="scores"]');
+assert(api.currentTests().some(t=>t.id==='CR-0241@urban-1'));assert(!api.currentTests().some(t=>t.id==='CR-0241@urban-4'));
+api.open(structuredClone(server),()=>{},false);click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="scores"]');
+assert(!api.currentTests().some(t=>t.id==='CR-0443'));assert(api.currentTests().some(t=>t.id==='CR-0447'));
+editSaved();set('gear','Manual');set('body','Station Wagon');set('durKm','۵۰۰۰');set('share-urban','15');set('share-rural','50');
+submit('vehicleForm');await tick();assert.equal(server.config.routeShares.urban,15);
+assert.deepEqual(server.checkpointAssignments[1],[]);assert.deepEqual(server.records,started.records);
+click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="scores"]');
+assert(d.querySelector('[data-test="CR-0443"][data-score="9"].selected'));assert.equal(d.querySelector('[data-note="CR-0443"]').value,'Manual gearbox');
+delete w.BAMCO_CASES;
 // Changing origin/type must rebuild the same dropdown component, without saving a route.
 api.open(initial,v=>saved=structuredClone(v),false);click('[data-open="durability"]');click('[data-day="2"]');click('[data-daysection="route"]');
 const persisted=JSON.stringify(saved);set('routeOrigin','قم');set('routeKind','rural');
@@ -33,3 +68,5 @@ assert.deepEqual([...menu().querySelectorAll('[data-value]')].map(x=>x.textConte
 assert(destination.options.length>1);destination.nextElementSibling.click();const chosen=menu().querySelectorAll('[data-value]')[1],chosenValue=chosen.dataset.value,chosenText=chosen.textContent;chosen.click();assert.equal(destination.value,chosenValue);assert.equal(destination.nextElementSibling.firstElementChild.textContent,chosenText);assert(menu().hidden);assert.equal(JSON.stringify(saved),persisted);
 set('routeKind','urban');assert.equal(destination.options.length,0);assert(destination.nextElementSibling.disabled);assert.equal(menu().children.length,0);
 assert.deepEqual(errors,[]);console.log('PASS app: setup, final drive program, Excel vehicle filters, route editing with frozen history, database snapshot reopen, actual/preview separation, custom static test scoring, legacy preservation.');dom.window.close();
+
+})().catch(error=>{console.error(error);process.exitCode=1});

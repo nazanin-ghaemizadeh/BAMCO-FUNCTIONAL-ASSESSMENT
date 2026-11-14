@@ -172,18 +172,6 @@
   display: none;
 }
 
-.bamco-day-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
-}
-
-.bamco-day-actions button {
-  border-radius: 12px;
-  padding: 12px 20px;
-}
-
 #bamco-live-state {
   color: #2a7158;
   font-weight: 650;
@@ -381,9 +369,9 @@
 #dayScoresSave{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;max-width:100%}
 #dayScoresSave [role=status]{color:#245641;font-size:.85rem;overflow-wrap:anywhere}
 #dayScoresSave [role=status]:empty{display:none}
-#assessmentPageActions #dayScoresExcel{order:21;flex:0 0 40px;width:40px;min-height:40px;height:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #c7ddd3;background:#f5faf7;color:#276e59;cursor:pointer}
-#dayScoresExcel svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}#dayScoresExcel:disabled{opacity:.55;cursor:progress}
-html[dir=ltr] #assessmentPageActions #dayScoresExcel{order:0}
+#assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:21;flex:0 0 40px;width:40px;min-height:40px;height:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #c7ddd3;background:#f5faf7;color:#276e59;cursor:pointer}
+:is(#dayScoresExcel,#dayFormExcel) svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}:is(#dayScoresExcel,#dayFormExcel):disabled{opacity:.55;cursor:progress}
+html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
 
 #dayProgressRoad {
   --road-progress: 0%;
@@ -434,3 +422,27 @@ html[dir=ltr] #assessmentPageActions #dayScoresExcel{order:0}
 @media (prefers-reduced-motion:reduce) {
   .day-road-car,.day-road-distance {transition:none}
 }
+
+#dayFormActions {display:inline-flex; flex-wrap:wrap; align-items:center; gap:8px}
+#dayFormActions[hidden] {display:none}
+#dayFormActions [role=status]:empty {display:none}
+.pre-drive > p {margin:-4px 0 16px; color:#557267; font-size:.9rem}
+.pre-drive-group {border:1px solid #dce9e1; border-radius:12px; margin:8px 0; background:white; overflow:hidden}
+.pre-drive-group > summary {display:flex; gap:10px; align-items:center; padding:11px 14px; min-height:44px; cursor:pointer; color:#264c3f; font-weight:700; list-style:none}
+.pre-drive-group > summary::-webkit-details-marker {display:none}
+.pre-drive-group > summary::after {content:''; width:8px; height:8px; border:solid #59826f; border-width:0 1.5px 1.5px 0; transform:rotate(45deg); flex:none; margin:-4px 2px 0}
+.pre-drive-group[open] > summary {background:#f0f7f2}
+.pre-drive-group[open] > summary::after {transform:rotate(225deg); margin-top:4px}
+.pre-drive-count {margin-inline-start:auto; white-space:nowrap; border-radius:8px; padding:1px 7px; background:#e8f2ec; color:#385d49; font-size:.84rem; font-variant-numeric:tabular-nums}
+.pre-drive-items {padding:0 14px}
+.pre-drive-item {position:relative; display:flex; gap:10px; align-items:center; padding:7px 0; min-height:44px; cursor:pointer; line-height:1.6; color:#2c463d}
+.pre-drive-item + .pre-drive-item {border-top:1px solid #e9f0ec}
+.pre-drive-item input {position:absolute; width:1px; height:1px; margin:0; opacity:0}
+.pre-drive-mark {width:23px; height:23px; flex:none; display:grid; place-items:center; background:#fff0ed; border:1px solid #efc7c0; border-radius:8px}
+.pre-drive-mark::after {content:'×'; color:#a95048; font:bold 19px/1 sans-serif}
+.pre-drive-item input:checked + .pre-drive-mark {background:#e1f4e9; border-color:#acd5ba}
+.pre-drive-item input:checked + .pre-drive-mark::after {content:'✓'; color:#187647; font-size:16px}
+.pre-drive-item input:focus-visible + .pre-drive-mark,.pre-drive-group > summary:focus-visible {outline:2px solid #256e50; outline-offset:-2px}
+.pre-drive-comment {margin:8px 14px 14px; font-size:.92rem}
+.pre-drive-note {margin-top:16px}
+.pre-drive textarea {resize:vertical; box-sizing:border-box}

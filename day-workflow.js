@@ -116,6 +116,53 @@ function temperatureOptions(value){
  return values.sort((a,b)=>a-b).map(n=>'<option value="'+n+'" '+(value!==''&&Number(value)===n?'selected':'')+'>'+number(n)+' درجه سانتی‌گراد</option>').join('');
 }
 
+function checklistMarkup(check = {}) {
+  const groups = window.BAMCO_PRE_DRIVE.map(group => {
+    const items = group.items.map(({key,title}) =>
+      '<label class="pre-drive-item"><input type="checkbox" data-inspection="'+key+'" '+(check.reviewed?.[key]===true?'checked':'')+'>'+
+      '<span class="pre-drive-mark" aria-hidden="true"></span><span>'+esc(title)+'</span></label>').join('');
+    const reviewed = group.items.filter(item => check.reviewed?.[item.key]===true).length;
+    return '<details class="pre-drive-group"><summary><span class="pre-drive-category"><span>'+number(group.number)+'. </span><span>'+esc(group.title)+'</span></span>'+
+      '<span class="pre-drive-count" dir="ltr" data-inspection-count>'+number(reviewed)+' / '+number(group.items.length)+'</span></summary>'+
+      '<div class="pre-drive-items">'+items+'</div><label class="bamco-full-label pre-drive-comment">توضیحات این دسته (اختیاری)'+
+      '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></details>';
+  }).join('');
+  return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><h3 id="preDriveTitle">چک‌لیست پیش از پیمایش</h3>'+
+    '<p>ضربدر یعنی هنوز بررسی نشده است. پس از بررسی، روی مورد بزنید تا تیک سبز بگیرد.</p>'+groups+
+    '<label class="bamco-full-label pre-drive-note">توضیحات کلی چک‌لیست (اختیاری)<textarea name="preDriveNote" rows="3">'+esc(check.note)+'</textarea></label></section>';
+}
+
+function formData(form) {
+  const fields = form.elements;
+  const numeric = name => fields[name].value === '' ? '' : Number(fields[name].value);
+  const text = name => fields[name].value.trim();
+  const breakdown = fields.breakdown.checked;
+  const fuelType=text('fuelType'), fuelStation=text('fuelStation'), fuelLiters=numeric('fuelLiters'), fuelOdometer=numeric('fuelOdometer');
+  const reviewed = {}, comments = {};
+  for (const item of form.querySelectorAll('[data-inspection]:checked')) reviewed[item.dataset.inspection] = true;
+  for (const field of form.querySelectorAll('[data-inspection-comment]')) {
+    if (field.value.trim()) comments[field.dataset.inspectionComment] = field.value.trim();
+  }
+  updateDistance(form);
+  return {
+    date:toFaDigits(text('date')), startTime:persianTime(text('startTime')), endTime:persianTime(text('endTime')),
+    startKm:numeric('startKm'), endKm:numeric('endKm'), distanceKm:numeric('distanceKm'),
+    driver:text('driver'), passengers:[...form.querySelectorAll('[name^="passenger"]')].map(field=>field.value.trim()).filter(Boolean),
+    temperature:numeric('temperature'), weather:text('weather'),
+    refueled:Boolean(fuelType || fuelStation || fuelLiters!=='' || fuelOdometer!==''), fuelType, fuelStation, fuelLiters, fuelOdometer,
+    breakdown, breakdownCause:breakdown?text('breakdownCause'):'', correctiveAction:breakdown?text('correctiveAction'):'',
+    breakdownTime:breakdown?persianTime(text('breakdownTime')):'', otherNotes:text('otherNotes'),
+    preDrive:{reviewed, comments, note:text('preDriveNote')}
+  };
+}
+
+function syncFormActions() {
+  const active = context()?.section === 'form';
+  $('dayFormActions').hidden = !active || app.isReadOnly();
+  $('dayFormExcel').hidden = !active;
+  if (!active) $('bamco-live-state').textContent = '';
+}
+
 function formMarkup(c,meta){
   const passengerCount=Math.max(1,meta.passengers.length);
   return '<div class="section-heading"><div><h2>گزارش پیمایش روز '+number(c.day)+'</h2><p>اطلاعات پیمایش، شرایط روز و رخدادهای خودرو را ثبت کنید.</p></div><span class="chip">فرم روزانه</span></div>'+
@@ -132,7 +179,7 @@ function formMarkup(c,meta){
     '<details class="bamco-day-block bamco-optional-section"><summary>سوخت‌گیری</summary><div class="bamco-day-fields"><label>نوع بنزین<select name="fuelType"><option value="">انتخاب کنید</option>'+['معمولی','سوپر','یورو ۴','یورو ۵','سایر'].map(item=>'<option '+(meta.fuelType===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label>جایگاه سوخت<input name="fuelStation" value="'+esc(meta.fuelStation)+'" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="fuelLiters" type="number" min="0" step="0.01" value="'+esc(meta.fuelLiters)+'"></label><label>کیلومتر خودرو هنگام سوخت‌گیری<input name="fuelOdometer" type="number" min="0" step="0.1" value="'+esc(meta.fuelOdometer)+'"></label></div></details>'+
     '<details class="bamco-day-block bamco-optional-section"><summary>خرابی خودرو</summary><label class="bamco-switch bamco-switch-alert"><input name="breakdown" type="checkbox" '+(meta.breakdown?'checked':'')+'><span>در این روز خرابی خودرو رخ داده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="breakdown" '+(meta.breakdown?'':'hidden')+'><label class="bamco-span-2">علت خرابی<textarea name="breakdownCause" rows="3" placeholder="شرح علت یا نشانه خرابی">'+esc(meta.breakdownCause)+'</textarea></label><label class="bamco-span-2">اقدام اصلاحی صورت‌گرفته<textarea name="correctiveAction" rows="3" placeholder="اقدام انجام‌شده یا تصمیم پیگیری">'+esc(meta.correctiveAction)+'</textarea></label><label>ساعت رخداد<input name="breakdownTime" type="text" inputmode="numeric" dir="ltr" value="'+esc(meta.breakdownTime)+'" placeholder="۱۴:۳۰"></label></div></details>'+
     '<div class="bamco-day-block"><label class="bamco-full-label">سایر توضیحات<textarea name="otherNotes" rows="4" placeholder="هر توضیح دیگری که باید در گزارش این روز ثبت شود...">'+esc(meta.otherNotes)+'</textarea></label></div>'+
-    '<div class="bamco-day-actions"><button type="submit" id="bamco-day-start" class="primary">ذخیره فرم روزانه</button></div><p id="bamco-live-state" role="status"></p></form>';
+    checklistMarkup(meta.preDrive)+'</form>';
 }
 
 function setConditional(form,name,active){
@@ -162,7 +209,8 @@ function paint(){
   if($('bamco-day-workflow')&&lastStamp===c.key){renderFinal(c);return}
   lastStamp=c.key;
   document.querySelectorAll('#bamco-day-workflow,.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
-  const meta=normalize(app.mission(c.key));
+  const saved=app.mission(c.key);
+  const meta=normalize({...saved,...saved.dailyFormDraft});
   const section=document.createElement('section');
   section.id='bamco-day-workflow';
   section.className='bamco-day-workflow';
@@ -171,8 +219,14 @@ function paint(){
   const form=$('bamco-day-form');
   setConditional(form,'breakdown',meta.breakdown);
   updateDistance(form);
-  $('bamco-live-state').textContent=meta.dailyInfoSavedAt?'فرم روزانه ذخیره شده است.':'اطلاعات این روز را تکمیل و ذخیره کنید.';
+  $('bamco-live-state').textContent='';
+  $('bamco-day-start').disabled=app.isReadOnly();
   form.addEventListener('submit',event=>{event.preventDefault();begin(c,form)});
+  form.addEventListener('input',()=>{
+    if (form.dataset.saving) form.dataset.changedDuringSave='true';
+    const status=$('bamco-live-state');
+    if(status.textContent) status.textContent='';
+  });
   form.elements.startKm.addEventListener('input',()=>updateDistance(form));
   form.elements.endKm.addEventListener('input',()=>updateDistance(form));
   for(const name of ['date','startTime','endTime','breakdownTime'])form.elements[name]?.addEventListener('input',event=>{event.target.value=toFaDigits(event.target.value);event.target.setCustomValidity('')});
@@ -209,55 +263,46 @@ function removePassenger(){
   updatePassengerButtons(form);
 }
 
-function begin(c,form){
-  if(app.isReadOnly())return;
-  updateDistance(form);
-  if(!form.reportValidity())return;
-  form.elements.date.value=toFaDigits(form.elements.date.value.trim());
-  form.elements.startTime.value=persianTime(form.elements.startTime.value);
-  form.elements.endTime.value=persianTime(form.elements.endTime.value);
-  if(!validPersianDate(form.elements.date.value)){form.elements.date.setCustomValidity('تاریخ شمسی را به‌صورت ۱۴۰۵/۰۸/۱۹ وارد کنید.');form.elements.date.reportValidity();return}
-  if(!validTime(form.elements.startTime.value)){openTimePicker(form.elements.startTime);form.elements.startTime.setCustomValidity('ساعت را به‌صورت ۰۸:۳۰ وارد کنید.');form.elements.startTime.reportValidity();return}
-  if(!validTime(form.elements.endTime.value)){openTimePicker(form.elements.endTime);form.elements.endTime.setCustomValidity('ساعت را به‌صورت ۱۷:۳۰ وارد کنید.');form.elements.endTime.reportValidity();return}
-  const startKm=Number(form.elements.startKm.value),endKm=Number(form.elements.endKm.value);
-  if(endKm<startKm){form.elements.endKm.setCustomValidity('کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.');form.elements.endKm.reportValidity();return}
-  form.elements.endKm.setCustomValidity('');
-  const breakdown=form.elements.breakdown.checked;
-  if(breakdown){form.elements.breakdownTime.value=persianTime(form.elements.breakdownTime.value);if(!validTime(form.elements.breakdownTime.value)){openTimePicker(form.elements.breakdownTime);form.elements.breakdownTime.setCustomValidity('ساعت رخداد را به‌صورت ۱۴:۳۰ وارد کنید.');form.elements.breakdownTime.reportValidity();return}}
-  const fuelType=form.elements.fuelType.value,fuelStation=form.elements.fuelStation.value.trim(),fuelLitersRaw=form.elements.fuelLiters.value,fuelOdometerRaw=form.elements.fuelOdometer.value;
-  const refueled=Boolean(fuelType||fuelStation||fuelLitersRaw||fuelOdometerRaw);
-  const passengers=[...form.querySelectorAll('[name^="passenger"]')].map(field=>field.value.trim()).filter(Boolean).slice(0,4);
-  const previous=app.mission(c.key);
-  const data={
-    ...previous,
-    date:form.elements.date.value,
-    startTime:form.elements.startTime.value,
-    endTime:form.elements.endTime.value,
-    startKm,
-    endKm,
-    distanceKm:Number(form.elements.distanceKm.value),
-    driver:form.elements.driver.value.trim(),
-    passengers,
-    temperature:Number(form.elements.temperature.value),
-    weather:form.elements.weather.value,
-    refueled,
-    fuelType,
-    fuelStation,
-    fuelLiters:fuelLitersRaw!==''?Number(fuelLitersRaw):'',
-    fuelOdometer:fuelOdometerRaw!==''?Number(fuelOdometerRaw):'',
-    breakdown,
-    breakdownCause:breakdown?form.elements.breakdownCause.value.trim():'',
-    correctiveAction:breakdown?form.elements.correctiveAction.value.trim():'',
-    breakdownTime:breakdown?form.elements.breakdownTime.value:'',
-    otherNotes:form.elements.otherNotes.value.trim(),
-    startedAt:previous.startedAt||new Date().toISOString(),
-    dailyInfoSavedAt:new Date().toISOString(),
-    updatedAt:new Date().toISOString()
-  };
-  app.setMission(c.key,data);
-  app.setDayMileage(c.tab,c.day,data.distanceKm);
-  renderRoad(c);
-  $('bamco-live-state').textContent='فرم روزانه ذخیره شد.';
+async function begin(c,form){
+  if (app.isReadOnly() || form.dataset.saving) return;
+  const fields = form.elements;
+  const {preDrive, ...values} = formData(form);
+  fields.date.setCustomValidity(values.date && !validPersianDate(values.date) ? 'تاریخ شمسی را به‌صورت ۱۴۰۵/۰۸/۱۹ وارد کنید.' : '');
+  fields.endKm.setCustomValidity(values.startKm!=='' && values.endKm!=='' && values.endKm<values.startKm ? 'کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.' : '');
+  for (const name of ['startTime','endTime','breakdownTime']) {
+    if (values[name] && !validTime(values[name])) {openTimePicker(fields[name]);return}
+  }
+  // A pre-drive inspection can be saved before end time and final mileage exist.
+  // Still reject malformed entries instead of accepting an invalid reading as a draft.
+  for (const field of form.querySelectorAll('input,select,textarea')) {
+    if (!field.validity.valid && !field.validity.valueMissing) {field.reportValidity();return}
+  }
+  const complete = [...form.querySelectorAll('[required]')].every(field => field.value.trim() !== '');
+  const previous = app.mission(c.key);
+  const now = new Date().toISOString();
+  const mission = {...previous, preDrive, updatedAt:now};
+  if (complete) {
+    Object.assign(mission, values, {dailyInfoSavedAt:now, startedAt:previous.startedAt||now});
+    delete mission.dailyFormDraft;
+  } else {
+    mission.dailyFormDraft = values;
+  }
+  const status = $('bamco-live-state'), button = $('bamco-day-start');
+  form.dataset.saving = 'true';
+  delete form.dataset.changedDuringSave;
+  button.disabled = true;
+  status.textContent = 'در حال ذخیره…';
+  try {
+    const ok = await app.saveDailyForm(c,mission,complete ? values.distanceKm : null);
+    if (form.isConnected) renderRoad(c);
+    if (!ok) throw Error('Unconfirmed save');
+    if (form.isConnected && !form.dataset.changedDuringSave) status.textContent = complete ? 'فرم روزانه ذخیره شد.' : 'پیش‌نویس فرم روزانه ذخیره شد.';
+  } catch {
+    if (form.isConnected) status.textContent = 'ذخیره تأیید نشد. دوباره ذخیره را بزنید.';
+  } finally {
+    delete form.dataset.saving;
+    if (form.isConnected) button.disabled = false;
+  }
 }
 
 function taxonomy(){
@@ -392,6 +437,7 @@ function uploadPicture(c,id,file){
 }
 
 document.addEventListener('bamco:render', () => {
+  syncFormActions();
   const c = app.dayContext();
   if (c?.section !== 'scores') renderRoad(c);
 });
@@ -421,6 +467,10 @@ document.addEventListener('click',event=>{
 
 document.addEventListener('change',event=>{
   const field=event.target;
+  if(field.hasAttribute('data-inspection')){
+    const group=field.closest('.pre-drive-group');
+    group.querySelector('[data-inspection-count]').textContent=number(group.querySelectorAll('[data-inspection]:checked').length)+' / '+number(group.querySelectorAll('[data-inspection]').length);
+  }
   if(field.matches('#bamco-day-form [name="breakdown"]'))setConditional($('bamco-day-form'),field.name,field.checked);
   if(field.dataset.customNote&&!app.isReadOnly()){
     const c=context();if(c)updateCustom(c,field.dataset.customNote,{note:field.value.trim()});
@@ -437,6 +487,11 @@ const observer=new MutationObserver(()=>{
   if(c.section==='form'&&!$('bamco-day-workflow')){lastStamp='';paint()}
 });
 observer.observe($('schedulePanel'),{childList:true});
+app.currentDayForm = () => {
+  const c = context(), form = $('bamco-day-form');
+  if (c?.section !== 'form' || !form) return null;
+  return {context:{...c}, values:formData(form), title:window.BAMCO_CASES?.current()?.title || $('assessmentName')?.textContent || 'BAMCO'};
+};
 app.customQuestionCards=()=>{const c=context();return c?.section==='scores'?customTests(normalize(app.mission(c.key))).map(t=>({id:t.id,html:customCard(t)})):[]};
 paint();
 })();

@@ -86,6 +86,19 @@ if(state.tab==='supplementary')return candidates('supplementary');
 if(state.tab==='drive')return candidates('drive').filter(t=>t.days.includes(state.driveDay));
 return durabilityTestsForDay(state.durDay,dayCategoryPlan())
 }
+function updateDayMileage(tab, day, km) {
+  state.mileage[tab] ??= {};
+  state.mileage[tab][day] = km;
+  if(tab !== 'durability') return;
+  state.durabilitySchedule ??= dayCategoryPlan();
+  state.checkpointAssignments ??= {};
+  state.checkpointAssignments[day] = planner.checkpoints(dayCategoryPlan(),state.mileage.durability,targetRows(),day);
+  const plan = dayCategoryPlan();
+  const last = Math.max(day,...plan.filter(p=>protectedDay(p.day)).map(p=>p.day));
+  state.durabilitySchedule = planner.replan({plan,fromDay:last+1,rows:targetRows(),mileage:state.mileage.durability,startOdo:num(conf().startOdo),catalog:DB.roadCatalog});
+  state.config.durDays = state.durabilitySchedule.length;
+  state.config.durabilityPlannerVersion = 2;
+}
 function ratedKey(t){return state.tab+':'+(state.tab==='supplementary'?'general':currentDay())+':'+t.id}
 function record(t){return state.records[ratedKey(t)]||{}}
 function avg(items){if(!items.length)return null;return items.reduce((a,b)=>a+b,0)/items.length}
@@ -488,7 +501,19 @@ window.BAMCO_ASSESSMENT={
   durabilityPlan(){return dayCategoryPlan()},
   mission(key){return state.missions?.[key]||{}},
   setMission(key,mission){if(!cloudSave||readOnly)return;state.missions[key]=mission;save()},
-  setDayMileage(tab,day,value){if(!cloudSave||readOnly||!['drive','durability'].includes(tab))return;const n=num(value);if(!Number.isFinite(n)||n<0)return;state.mileage[tab]=state.mileage[tab]||{};state.mileage[tab][day]=n;if(tab==='durability'){state.durabilitySchedule??=dayCategoryPlan();state.checkpointAssignments??={};state.checkpointAssignments[day]=planner.checkpoints(dayCategoryPlan(),state.mileage.durability,targetRows(),day);const plan=dayCategoryPlan(),last=Math.max(day,...plan.filter(p=>protectedDay(p.day)).map(p=>p.day));state.durabilitySchedule=planner.replan({plan,fromDay:last+1,rows:targetRows(),mileage:state.mileage.durability,startOdo:num(conf().startOdo),catalog:DB.roadCatalog});state.config.durDays=state.durabilitySchedule.length;state.config.durabilityPlannerVersion=2;}save()},
+  setDayMileage(tab,day,value){
+    if(!cloudSave || readOnly || !['drive','durability'].includes(tab)) return;
+    const km = num(value);
+    if(!Number.isFinite(km) || km<0) return;
+    updateDayMileage(tab, day, km);
+    save();
+  },
+  async saveDailyForm(context, mission, distance){
+    if(!cloudSave || readOnly || dayContext()?.key !== context.key) return false;
+    if(distance !== null) updateDayMileage(context.tab, context.day, distance);
+    state.missions[context.key] = mission;
+    return window.BAMCO_CASES?.saveNow ? window.BAMCO_CASES.saveNow(snapshot()) : save();
+  },
   dayProgress(){const items=dayItems(),scored=items.filter(t=>num(record(t).score)>=1&&num(record(t).score)<=10).length;return {total:items.length,scored,remaining:Math.max(0,items.length-scored),complete:items.length===0||scored===items.length}},
   isReadOnly(){return readOnly},
   home(){document.dispatchEvent(new Event('bamco:assessment-close'));cloudSave=null;readOnly=false;state.tab='home';render()},

@@ -60,22 +60,20 @@ function groupByCategory(items) {
   return Array.from(categories.values()).flatMap(subcategories => Array.from(subcategories.values()).flat());
 }
 
-function exportName(data) {
+function exportName(data,kind='scores') {
   const title = [...String(data.title || '')].map(c =>
     c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '-' : c
   ).join('').trim() || 'BAMCO';
   const module = data.context.tab === 'drive' ? 'driveability' : 'durability';
-  return title + '-' + module + '-day-' + data.context.day + '-scores.xlsx';
+  return title + '-' + module + '-day-' + data.context.day + '-' + kind + '.xlsx';
 }
 
-async function build(Excel, data) {
-  const book = new Excel.Workbook();
+function reportTitle(data,date) {
   const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
-  const info = [data.title, moduleName, 'روز ' + data.context.day, reportDate(data.date)].filter(Boolean).join(' | ');
-  book.creator = 'BAMCO';
-  book.title = info;
-  const items = groupByCategory(data.items);
-  const colors = new Map([...new Set(items.map(t => t.cat))].map((cat,i) => [cat,palette[i % palette.length]]));
+  return [data.title, moduleName, 'روز ' + data.context.day, reportDate(date)].filter(Boolean).join(' | ');
+}
+
+function addDailyTable(book, info, name, tableName, headers, widths, rows, colors, redRows) {
   const edge = {style:'thin', color:{argb:'FFD2E2DA'}};
   const border = {top:edge, bottom:edge, left:edge, right:edge};
   const fill = color => ({type:'pattern', pattern:'solid', fgColor:{argb:color}});
@@ -83,60 +81,67 @@ async function build(Excel, data) {
   const centered = {...middle, horizontal:'center'};
   const right = {...middle, horizontal:'right'};
 
-  function sheet(name, tableName, headers, widths, tests, values) {
-    const scores = tableName === 'DayScores';
-    const face = scores ? 'B Nazanin' : 'Tahoma';
-    const headingFont = size => ({name:face, size, bold:true, color:{argb:'FFFFFFFF'}});
-    const ws = book.addWorksheet(name, {
-      views:[{rightToLeft:true, state:'frozen', ySplit:headerRow}],
-      properties:{defaultRowHeight:34.05}
-    });
-    ws.columns = widths.map(width => ({width, style:{font:{name:face, size:11}}}));
-    ws.mergeCells(1, 1, 1, headers.length);
-    const banner = ws.getCell('A1');
-    banner.value = info;
-    banner.font = headingFont(scores ? 14 : 11);
-    banner.fill = fill(headerGreen);
-    banner.alignment = centered;
-    banner.border = scores ? {left:edge, right:edge, top:edge} : border;
-    ws.getRow(1).height = 36;
+  colors ??= new Map([...new Set(rows.map(row => row[1]))].map((cat,i) => [cat,palette[i % palette.length]]));
 
-    const rows = tests.map((t,i) => [i+1,t.cat || '',t.sub || '',t.name || '',...values(t)]);
-    ws.addTable({
-      name:tableName, ref:'A'+headerRow, headerRow:true,
-      style:{theme:null, showRowStripes:false}, columns:headers.map(name => ({name, filterButton:true})), rows
-    });
-    const headings = ws.getRow(headerRow);
-    headings.height = 31.95;
-    headings.eachCell(cell => {
-      cell.font = headingFont(11);
-      cell.fill = fill(headerGreen);
-      cell.alignment = scores ? centered : right;
+  const primary = tableName !== 'DayEvidence';
+  const face = primary ? 'B Nazanin' : 'Tahoma';
+  const headingFont = size => ({name:face, size, bold:true, color:{argb:'FFFFFFFF'}});
+  const ws = book.addWorksheet(name, {
+    views:[{rightToLeft:true, state:'frozen', ySplit:headerRow}],
+    properties:{defaultRowHeight:34.05}
+  });
+  ws.columns = widths.map(width => ({width, style:{font:{name:face, size:11}}}));
+  ws.mergeCells(1, 1, 1, headers.length);
+  const banner = ws.getCell('A1');
+  banner.value = info;
+  banner.font = headingFont(primary ? 14 : 11);
+  banner.fill = fill(headerGreen);
+  banner.alignment = centered;
+  banner.border = primary ? {left:edge, right:edge, top:edge} : border;
+  ws.getRow(1).height = 36;
+
+  ws.addTable({
+    name:tableName, ref:'A'+headerRow, headerRow:true,
+    style:{theme:null, showRowStripes:false}, columns:headers.map(name => ({name, filterButton:true})), rows
+  });
+  const headings = ws.getRow(headerRow);
+  headings.height = 31.95;
+  headings.eachCell(cell => {
+    cell.font = headingFont(11);
+    cell.fill = fill(headerGreen);
+    cell.alignment = primary ? centered : right;
+    cell.border = border;
+  });
+  rows.forEach((values,i) => {
+    const row = ws.getRow(firstDataRow+i);
+    const lines = Math.max(...values.map((v,col) => String(v ?? '').split('\n')
+      .reduce((n,line) => n + Math.max(1, Math.ceil(line.length / widths[col])), 0)));
+    row.height = Math.min(409, Math.max(54, lines*15+6));
+    headers.forEach((_,col) => {
+      const cell = row.getCell(col+1);
+      cell.font = {name:face, size:primary ? 12 : 11, color:{argb:redRows?.[i] ? 'FFFF0000' : 'FF214439'}};
+      cell.fill = fill(colors.get(values[1]));
+      cell.alignment = primary ? (col === 0 || (tableName === 'DayScores' && col === 4) || (tableName === 'PreDriveChecklist' && col === 3) ? centered : middle) : right;
       cell.border = border;
     });
-    rows.forEach((values,i) => {
-      const row = ws.getRow(firstDataRow+i);
-      const test = tests[i];
-      const lines = Math.max(...values.map((v,col) => String(v ?? '').split('\n')
-        .reduce((n,line) => n + Math.max(1, Math.ceil(line.length / widths[col])), 0)));
-      row.height = Math.min(409, Math.max(54, lines*15+6));
-      headers.forEach((_,col) => {
-        const cell = row.getCell(col+1);
-        cell.font = {name:face, size:scores ? 12 : 11, color:{argb:test.custom ? 'FFFF0000' : 'FF214439'}};
-        cell.fill = fill(colors.get(test.cat));
-        cell.alignment = scores ? (col === 0 || col === 4 ? centered : middle) : right;
-        cell.border = border;
-      });
-    });
-    ws.pageSetup = {orientation:'landscape', paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:'1:'+headerRow};
-    return ws;
-  }
+  });
+  ws.pageSetup = {orientation:'landscape', paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:'1:'+headerRow};
+  return ws;
+}
 
-  sheet('امتیازها', 'DayScores', ['ردیف','شاخص','زیرشاخص','آزمون','نمره از ۱۰'], [8.88671875,32,38,80,16], items,
-    t => [Number(t.score)>=1 && Number(t.score)<=10 ? Number(t.score) : null]);
+async function build(Excel, data) {
+  const book = new Excel.Workbook();
+  const info = reportTitle(data,data.date);
+  book.creator = 'BAMCO';
+  book.title = info;
+  const items = groupByCategory(data.items);
+  const colors = new Map([...new Set(items.map(t => t.cat))].map((cat,i) => [cat,palette[i % palette.length]]));
+  const rows = (tests,values) => tests.map((t,i) => [i+1,t.cat || '',t.sub || '',t.name || '',...values(t)]);
+  addDailyTable(book, info, 'امتیازها', 'DayScores', ['ردیف','شاخص','زیرشاخص','آزمون','نمره از ۱۰'], [8.88671875,32,38,80,16],
+    rows(items,t => [Number(t.score)>=1 && Number(t.score)<=10 ? Number(t.score) : null]), colors, items.map(t=>t.custom));
   const evidence = items.filter(t => t.note || t.photo);
-  const attachments = sheet('توضیحات و تصاویر', 'DayEvidence', ['ردیف','شاخص','زیرشاخص','آزمون','یادداشت ارزیاب','تصویر'],
-    [8.88671875,32,38,65,80,36], evidence, t => [t.note || '', t.photo ? 'تصویر پیوست' : '']);
+  const attachments = addDailyTable(book, info, 'توضیحات و تصاویر', 'DayEvidence', ['ردیف','شاخص','زیرشاخص','آزمون','یادداشت ارزیاب','تصویر'],
+    [8.88671875,32,38,65,80,36], rows(evidence,t => [t.note || '', t.photo ? 'تصویر پیوست' : '']), colors, evidence.map(t=>t.custom));
   evidence.forEach((test,i) => {
     if (!test.photo) return;
     const match = test.photo.match(/^data:image\/(png|jpe?g);base64,/i);
@@ -153,6 +158,53 @@ async function build(Excel, data) {
   });
   return new Blob([await book.xlsx.writeBuffer()], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
+function addFormSheets(book, info, values) {
+  const rows = [];
+  const add = (category,field,value) => rows.push([rows.length+1,category,field,value ?? '']);
+  const fields = [
+    ['زمان و پیمایش',[['تاریخ شمسی',reportDate(values.date)],['ساعت شروع پیمایش',values.startTime],['ساعت پایان پیمایش',values.endTime],['کیلومتر شروع پیمایش',values.startKm],['کیلومتر پایان پیمایش',values.endKm],['کیلومتر طی‌شده',values.distanceKm]]],
+    ['افراد حاضر در خودرو',[['نام و نام خانوادگی راننده',values.driver],['سرنشینان',values.passengers.join('، ')]]],
+    ['شرایط محیطی',[['دمای هوا (درجه سانتی‌گراد)',values.temperature],['نوع آب‌وهوا',values.weather]]],
+    ['سوخت‌گیری',[['سوخت‌گیری ثبت شده',values.refueled?'بله':'خیر'],['نوع بنزین',values.fuelType],['جایگاه سوخت',values.fuelStation],['لیتر بنزین زده‌شده',values.fuelLiters],['کیلومتر خودرو هنگام سوخت‌گیری',values.fuelOdometer]]],
+    ['خرابی خودرو',[['خرابی ثبت شده',values.breakdown?'بله':'خیر'],['علت خرابی',values.breakdownCause],['اقدام اصلاحی صورت‌گرفته',values.correctiveAction],['ساعت رخداد',values.breakdownTime]]],
+    ['توضیحات',[['سایر توضیحات',values.otherNotes],['توضیحات کلی چک‌لیست',values.preDrive.note]]]
+  ];
+  for (const [category,entries] of fields) for (const [field,value] of entries) add(category,field,value);
+  const checklist = [];
+  for (const group of window.BAMCO_PRE_DRIVE) {
+    const title = group.number.toLocaleString('fa-IR') + '. ' + group.title;
+    group.items.forEach((item,i) => {
+      const checked = values.preDrive.reviewed[item.key] === true;
+      checklist.push([checklist.length+1,title,item.title,checked ? '✓ بررسی شده' : '× بررسی نشده',!i ? values.preDrive.comments[group.id] || '' : '']);
+    });
+  }
+  addDailyTable(book, info, 'فرم روزانه', 'DailyForm', ['ردیف','بخش','عنوان','مقدار'], [8.88671875,32,48,70], rows);
+  addDailyTable(book, info, 'چک‌لیست پیش از پیمایش', 'PreDriveChecklist', ['ردیف','دسته','مورد بازرسی','وضعیت بررسی','توضیحات دسته'], [8.88671875,44,80,22,54], checklist);
+}
+
+async function downloadForm() {
+  const data = app.currentDayForm?.();
+  if (!data || this.disabled) return;
+  this.disabled = true;
+  try {
+    const Excel = await excelLibrary();
+    const book = new Excel.Workbook();
+    const info = reportTitle(data,data.values.date);
+    book.creator = 'BAMCO';
+    book.title = info;
+    addFormSheets(book,info,data.values);
+    const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const blob = new Blob([await book.xlsx.writeBuffer()], {type:mime});
+    app.exportFile(blob, exportName(data,'daily-form'), mime);
+  } catch(error) {
+    console.error('Daily form Excel failed', error?.message);
+    window.alert(tr('exportFailed'));
+  } finally {
+    this.disabled = false;
+  }
+}
+
 async function download(){if(exporting)return;const data=collect();if(!data)return;exporting=true;sync();try{await app.waitForImages?.();const latest=collect();if(latest?.context.key!==data.context.key)throw Error('Page changed');const Excel=await excelLibrary(),blob=await build(Excel,latest);app.exportFile(blob,exportName(latest),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}catch(error){console.error('Day Excel failed',error?.message);window.alert(tr('exportFailed'))}finally{exporting=false;sync()}}
+$('dayFormExcel').addEventListener('click',downloadForm);
 document.addEventListener('bamco:render',sync);new MutationObserver(sync).observe($('questionsPanel'),{childList:true});new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.BAMCO_DAY_SCORES={collect,build,save};sync();
 })();

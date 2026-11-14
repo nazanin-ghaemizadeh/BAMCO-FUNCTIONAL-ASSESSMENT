@@ -13,6 +13,41 @@ const faDigits='۰۱۲۳۴۵۶۷۸۹';
 const toFaDigits=value=>window.BAMCO_I18N?.formatDigits(value)??String(value??'').replace(/\d/g,digit=>faDigits[Number(digit)]);
 const toLatinDigits=value=>String(value??'').replace(/[۰-۹]/g,digit=>String(faDigits.indexOf(digit)));
 const persianTime=value=>toFaDigits(String(value??'').trim().replace(/[٫.]/g,':'));
+// Keep the stored HH:mm contract; use explicit controls on mobile instead of a numeric keyboard.
+function openTimePicker(field){
+  if(app.isReadOnly()||field.disabled)return;
+  const old=document.getElementById('bamco-time-picker');if(old)old.remove();
+  const match=toLatinDigits(field.value).match(/^(\d{1,2}):([0-5]\d)$/);
+  const hours=match?Number(match[1]):null;
+  const dialog=document.createElement('dialog');dialog.id='bamco-time-picker';dialog.dir='rtl';
+  dialog.style.cssText='border:0;border-radius:18px;padding:24px;width:min(360px,90vw);box-sizing:border-box;color:#153a60;box-shadow:0 16px 70px #153a6055';
+  const options=(count,start)=>Array.from({length:count},(_,i)=>{const n=i+start;return '<option value="'+n+'">'+toFaDigits(String(n).padStart(2,'0'))+'</option>'}).join('');
+  dialog.innerHTML='<form method="dialog"><h3 id="bamco-time-title" style="margin-top:0">انتخاب ساعت</h3><div style="display:flex;gap:12px;flex-wrap:wrap"><label style="flex:1">ساعت<select name="hour" required style="width:100%;min-height:44px"><option value="">—</option>'+options(12,1)+'</select></label><label style="flex:1">دقیقه<select name="minute" required style="width:100%;min-height:44px"><option value="">—</option>'+options(60,0)+'</select></label><label style="width:100%">بازه زمانی<select name="period" required style="width:100%;min-height:44px"><option value="am">قبل‌ازظهر</option><option value="pm">بعدازظهر</option></select></label></div><div style="display:flex;gap:12px;margin-top:20px"><button class="primary" type="submit">تأیید ساعت</button><button class="secondary" type="button" data-time-cancel>انصراف</button></div></form>';
+  dialog.setAttribute('aria-labelledby','bamco-time-title');
+  const picker=dialog.querySelector('form');
+  picker.elements.hour.value=hours===null?'':String(hours%12||12);
+  picker.elements.minute.value=match?String(Number(match[2])):'';
+  picker.elements.period.value=hours!==null&&hours>=12?'pm':'am';
+  const close=()=>{dialog.close();dialog.remove();field.focus()};
+  picker.addEventListener('submit',event=>{
+    event.preventDefault();if(!picker.reportValidity())return;
+    const hour=Number(picker.elements.hour.value)%12+(picker.elements.period.value==='pm'?12:0);
+    field.value=toFaDigits(String(hour).padStart(2,'0')+':'+String(picker.elements.minute.value).padStart(2,'0'));
+    field.setCustomValidity('');field.dispatchEvent(new Event('input',{bubbles:true}));field.dispatchEvent(new Event('change',{bubbles:true}));close();
+  });
+  dialog.querySelector('[data-time-cancel]').addEventListener('click',close);
+  dialog.addEventListener('cancel',event=>{event.preventDefault();close()});
+  document.body.append(dialog);dialog.showModal();
+}
+function wireTimePickers(form){
+  for(const name of ['startTime','endTime','breakdownTime']){
+    const field=form.elements[name];field.readOnly=true;field.removeAttribute('inputmode');
+    field.placeholder='انتخاب ساعت';field.setAttribute('aria-haspopup','dialog');
+    field.style.cursor='pointer';
+    field.addEventListener('click',()=>openTimePicker(field));
+    field.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();openTimePicker(field)}});
+  }
+}
 function persianDate(value){
   const raw=String(value??'').trim();
   if(raw&&/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(toLatinDigits(raw))&&!raw.includes('-'))return toFaDigits(toLatinDigits(raw));
@@ -140,6 +175,7 @@ function paint(){
   form.elements.startKm.addEventListener('input',()=>updateDistance(form));
   form.elements.endKm.addEventListener('input',()=>updateDistance(form));
   for(const name of ['date','startTime','endTime','breakdownTime'])form.elements[name]?.addEventListener('input',event=>{event.target.value=toFaDigits(event.target.value);event.target.setCustomValidity('')});
+  wireTimePickers(form);
   wireScriptFonts(section);
   if(app.isReadOnly())form.querySelectorAll('input,select,textarea,button').forEach(element=>element.disabled=true);
   window.BAMCO_DROPDOWNS?.(section);
@@ -180,13 +216,13 @@ function begin(c,form){
   form.elements.startTime.value=persianTime(form.elements.startTime.value);
   form.elements.endTime.value=persianTime(form.elements.endTime.value);
   if(!validPersianDate(form.elements.date.value)){form.elements.date.setCustomValidity('تاریخ شمسی را به‌صورت ۱۴۰۵/۰۸/۱۹ وارد کنید.');form.elements.date.reportValidity();return}
-  if(!validTime(form.elements.startTime.value)){form.elements.startTime.setCustomValidity('ساعت را به‌صورت ۰۸:۳۰ وارد کنید.');form.elements.startTime.reportValidity();return}
-  if(!validTime(form.elements.endTime.value)){form.elements.endTime.setCustomValidity('ساعت را به‌صورت ۱۷:۳۰ وارد کنید.');form.elements.endTime.reportValidity();return}
+  if(!validTime(form.elements.startTime.value)){openTimePicker(form.elements.startTime);form.elements.startTime.setCustomValidity('ساعت را به‌صورت ۰۸:۳۰ وارد کنید.');form.elements.startTime.reportValidity();return}
+  if(!validTime(form.elements.endTime.value)){openTimePicker(form.elements.endTime);form.elements.endTime.setCustomValidity('ساعت را به‌صورت ۱۷:۳۰ وارد کنید.');form.elements.endTime.reportValidity();return}
   const startKm=Number(form.elements.startKm.value),endKm=Number(form.elements.endKm.value);
   if(endKm<startKm){form.elements.endKm.setCustomValidity('کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.');form.elements.endKm.reportValidity();return}
   form.elements.endKm.setCustomValidity('');
   const breakdown=form.elements.breakdown.checked;
-  if(breakdown){form.elements.breakdownTime.value=persianTime(form.elements.breakdownTime.value);if(!validTime(form.elements.breakdownTime.value)){form.elements.breakdownTime.setCustomValidity('ساعت رخداد را به‌صورت ۱۴:۳۰ وارد کنید.');form.elements.breakdownTime.reportValidity();return}}
+  if(breakdown){form.elements.breakdownTime.value=persianTime(form.elements.breakdownTime.value);if(!validTime(form.elements.breakdownTime.value)){openTimePicker(form.elements.breakdownTime);form.elements.breakdownTime.setCustomValidity('ساعت رخداد را به‌صورت ۱۴:۳۰ وارد کنید.');form.elements.breakdownTime.reportValidity();return}}
   const fuelType=form.elements.fuelType.value,fuelStation=form.elements.fuelStation.value.trim(),fuelLitersRaw=form.elements.fuelLiters.value,fuelOdometerRaw=form.elements.fuelOdometer.value;
   const refueled=Boolean(fuelType||fuelStation||fuelLitersRaw||fuelOdometerRaw);
   const passengers=[...form.querySelectorAll('[name^="passenger"]')].map(field=>field.value.trim()).filter(Boolean).slice(0,4);

@@ -27,7 +27,6 @@ function sync(){const c=app.dayContext?.(),active=c?.section==='scores',bar=$('a
 async function save(){if(saving||app.isReadOnly())return;const c=app.dayContext?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if(app.dayContext?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if(app.dayContext?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed')}finally{saving=false;sync()}}
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;if(!library)library=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=()=>resolve(window.ExcelJS);s.onerror=()=>{library=null;s.remove();reject(Error('Excel unavailable'))};document.head.append(s)});return library}
 const palette=['FFE5F2EB','FFE6EFF9','FFF7EBD9','FFEFE7F7','FFF9E4E8','FFE1F2F3','FFF0F1DA','FFE8E9F7','FFF5E7DC','FFDDEEE3','FFE3EDF2','FFF3E3F1','FFDFE8E0','FFF4EFDC','FFE3E3E3'];
-const reportFont = 'B Nazanin';
 const headerGreen = 'FF216C56';
 const headerRow = 2;
 const firstDataRow = headerRow + 1;
@@ -50,63 +49,108 @@ function reportDate(value) {
     .replace(/\d/g, digit => '۰۱۲۳۴۵۶۷۸۹'[digit]);
 }
 
-async function build(Excel,data){const book=new Excel.Workbook();book.creator='BAMCO';book.created=new Date();book.title=data.title+' | '+data.context.tab+' | '+data.context.day;const colors=new Map([...new Set(data.items.map(t=>t.cat))].map((cat,i)=>[cat,palette[i%palette.length]]));
- const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
- const info = [data.title, moduleName, 'روز ' + data.context.day, reportDate(data.date)].filter(Boolean).join(' | ');
- const scored=data.items.map((t,i)=>[i+1,t.cat||'',t.sub||'',t.name||'',Number(t.score)>=1&&Number(t.score)<=10?Number(t.score):null,t.custom?'تکمیلی':'برنامه روز']);
- const evidence=data.items.filter(t=>t.note||t.photo);
- function sheet(name, headers, widths, rows, categories) {
-   const ws = book.addWorksheet(name, {
-     views: [{rightToLeft:true, state:'frozen', ySplit:headerRow, showGridLines:false}],
-     properties: {defaultRowHeight:26, tabColor:{argb:headerGreen}}
-   });
-   ws.columns = widths.map(width => ({width, style:{font:{name:reportFont, size:14}}}));
-   const fill = color => ({type:'pattern', pattern:'solid', fgColor:{argb:color}});
-   const headingFont = size => ({name:reportFont, size, bold:true, color:{argb:'FFFFFFFF'}});
-   const centered = {horizontal:'center', vertical:'middle', readingOrder:'rtl', wrapText:true};
-   ws.mergeCells(1, 1, 1, headers.length);
-   const banner = ws.getCell(1, 1);
-   banner.value = info;
-   banner.font = headingFont(17);
-   banner.fill = fill(headerGreen);
-   banner.alignment = centered;
-   ws.getRow(1).height = 34;
-
-   ws.addTable({
-     name: name === 'امتیازها' ? 'DayScores' : 'DayEvidence', ref:'A'+headerRow, headerRow:true,
-     style:{theme:null, showRowStripes:false}, columns:headers.map(name => ({name, filterButton:true})), rows
-   });
-   const edge = {style:'thin', color:{argb:'FFD2E2DA'}};
-   const border = {top:edge, bottom:edge, left:edge, right:edge};
-   const headings = ws.getRow(headerRow);
-   headings.height = 29;
-   headings.eachCell(cell => {
-     cell.font = headingFont(14);
-     cell.fill = fill(headerGreen);
-     cell.alignment = centered;
-     cell.border = {bottom:{style:'thin',color:{argb:'FF174A3C'}}};
-   });
-   rows.forEach((values, i) => {
-     const row = ws.getRow(firstDataRow + i);
-     const lines = Math.max(...values.map((value, col) => String(value ?? '').split('\n')
-       .reduce((count,line) => count + Math.max(1, Math.ceil(line.length / (widths[col] * 0.85))), 0)));
-     row.height = Math.min(400, Math.max(32, lines * 19 + 8));
-     headers.forEach((_, col) => {
-       const cell = row.getCell(col + 1);
-       cell.font = {name:reportFont, size:14, color:{argb:'FF214439'}};
-       cell.fill = fill(colors.get(categories[i]) || 'FFF8FBF9');
-       cell.alignment = {...centered, horizontal:col === 0 || typeof values[col] === 'number' ? 'center' : 'right'};
-       cell.border = border;
-     });
-   });
-   ws.pageSetup = {orientation:'landscape', paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:'1:'+headerRow};
-   return ws;
- }
- sheet('امتیازها',['ردیف','شاخص','زیرشاخص','آزمون','نمره از ۱۰','نوع آزمون'],[9,32,38,80,16,20],scored,data.items.map(t=>t.cat));
- const attachments=sheet('توضیحات و تصاویر',['ردیف','شاخص','زیرشاخص','آزمون','یادداشت ارزیاب','تصویر'],[9,32,38,65,80,36],evidence.map((t,i)=>[i+1,t.cat||'',t.sub||'',t.name||'',t.note||'',t.photo?'تصویر پیوست':'']),evidence.map(t=>t.cat));
- for(let i=0;i<evidence.length;i++){const t=evidence[i];if(!t.photo)continue;const match=t.photo.match(/^data:image\/(png|jpeg|jpg);base64,/i);if(!match)throw Error('Unsupported evidence image');const image=book.addImage({base64:t.photo,extension:match[1].toLowerCase()==='png'?'png':'jpeg'});const row=firstDataRow+i;attachments.getRow(row).height=Math.max(120,attachments.getRow(row).height);attachments.addImage(image,{tl:{col:5.08,row:row-1+.08},ext:{width:200,height:135},editAs:'oneCell'})}
- return new Blob([await book.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+function groupByCategory(items) {
+  const categories = new Map();
+  for (const test of items) {
+    if (!categories.has(test.cat)) categories.set(test.cat, new Map());
+    const subcategories = categories.get(test.cat);
+    if (!subcategories.has(test.sub)) subcategories.set(test.sub, []);
+    subcategories.get(test.sub).push(test);
+  }
+  return Array.from(categories.values()).flatMap(subcategories => Array.from(subcategories.values()).flat());
 }
-async function download(){if(exporting)return;const data=collect();if(!data)return;exporting=true;sync();try{await app.waitForImages?.();const latest=collect();if(latest?.context.key!==data.context.key)throw Error('Page changed');const Excel=await excelLibrary(),blob=await build(Excel,latest);app.exportFile(blob,'BAMCO-'+data.context.tab+'-day-'+data.context.day+'-scores.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}catch(error){console.error('Day Excel failed',error?.message);window.alert(tr('exportFailed'))}finally{exporting=false;sync()}}
+
+function exportName(data) {
+  const title = [...String(data.title || '')].map(c =>
+    c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '-' : c
+  ).join('').trim() || 'BAMCO';
+  const module = data.context.tab === 'drive' ? 'driveability' : 'durability';
+  return title + '-' + module + '-day-' + data.context.day + '-scores.xlsx';
+}
+
+async function build(Excel, data) {
+  const book = new Excel.Workbook();
+  const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
+  const info = [data.title, moduleName, 'روز ' + data.context.day, reportDate(data.date)].filter(Boolean).join(' | ');
+  book.creator = 'BAMCO';
+  book.title = info;
+  const items = groupByCategory(data.items);
+  const colors = new Map([...new Set(items.map(t => t.cat))].map((cat,i) => [cat,palette[i % palette.length]]));
+  const edge = {style:'thin', color:{argb:'FFD2E2DA'}};
+  const border = {top:edge, bottom:edge, left:edge, right:edge};
+  const fill = color => ({type:'pattern', pattern:'solid', fgColor:{argb:color}});
+  const middle = {vertical:'middle', wrapText:true};
+  const centered = {...middle, horizontal:'center'};
+  const right = {...middle, horizontal:'right'};
+
+  function sheet(name, tableName, headers, widths, tests, values) {
+    const scores = tableName === 'DayScores';
+    const face = scores ? 'B Nazanin' : 'Tahoma';
+    const headingFont = size => ({name:face, size, bold:true, color:{argb:'FFFFFFFF'}});
+    const ws = book.addWorksheet(name, {
+      views:[{rightToLeft:true, state:'frozen', ySplit:headerRow}],
+      properties:{defaultRowHeight:34.05}
+    });
+    ws.columns = widths.map(width => ({width, style:{font:{name:face, size:11}}}));
+    ws.mergeCells(1, 1, 1, headers.length);
+    const banner = ws.getCell('A1');
+    banner.value = info;
+    banner.font = headingFont(scores ? 14 : 11);
+    banner.fill = fill(headerGreen);
+    banner.alignment = centered;
+    banner.border = scores ? {left:edge, right:edge, top:edge} : border;
+    ws.getRow(1).height = 36;
+
+    const rows = tests.map((t,i) => [i+1,t.cat || '',t.sub || '',t.name || '',...values(t)]);
+    ws.addTable({
+      name:tableName, ref:'A'+headerRow, headerRow:true,
+      style:{theme:null, showRowStripes:false}, columns:headers.map(name => ({name, filterButton:true})), rows
+    });
+    const headings = ws.getRow(headerRow);
+    headings.height = 31.95;
+    headings.eachCell(cell => {
+      cell.font = headingFont(11);
+      cell.fill = fill(headerGreen);
+      cell.alignment = scores ? centered : right;
+      cell.border = border;
+    });
+    rows.forEach((values,i) => {
+      const row = ws.getRow(firstDataRow+i);
+      const test = tests[i];
+      const lines = Math.max(...values.map((v,col) => String(v ?? '').split('\n')
+        .reduce((n,line) => n + Math.max(1, Math.ceil(line.length / widths[col])), 0)));
+      row.height = Math.min(409, Math.max(54, lines*15+6));
+      headers.forEach((_,col) => {
+        const cell = row.getCell(col+1);
+        cell.font = {name:face, size:scores ? 12 : 11, color:{argb:test.custom ? 'FFFF0000' : 'FF214439'}};
+        cell.fill = fill(colors.get(test.cat));
+        cell.alignment = scores ? (col === 0 || col === 4 ? centered : middle) : right;
+        cell.border = border;
+      });
+    });
+    ws.pageSetup = {orientation:'landscape', paperSize:9, fitToPage:true, fitToWidth:1, fitToHeight:0, printTitlesRow:'1:'+headerRow};
+    return ws;
+  }
+
+  sheet('امتیازها', 'DayScores', ['ردیف','شاخص','زیرشاخص','آزمون','نمره از ۱۰'], [8.88671875,32,38,80,16], items,
+    t => [Number(t.score)>=1 && Number(t.score)<=10 ? Number(t.score) : null]);
+  const evidence = items.filter(t => t.note || t.photo);
+  const attachments = sheet('توضیحات و تصاویر', 'DayEvidence', ['ردیف','شاخص','زیرشاخص','آزمون','یادداشت ارزیاب','تصویر'],
+    [8.88671875,32,38,65,80,36], evidence, t => [t.note || '', t.photo ? 'تصویر پیوست' : '']);
+  evidence.forEach((test,i) => {
+    if (!test.photo) return;
+    const match = test.photo.match(/^data:image\/(png|jpe?g);base64,/i);
+    if (!match) throw Error('Unsupported evidence image');
+    const image = book.addImage({base64:test.photo, extension:match[1].toLowerCase()==='png' ? 'png' : 'jpeg'});
+    const row = attachments.getRow(firstDataRow+i);
+    row.height = Math.max(112.05, row.height);
+    attachments.addImage(image, {
+      tl:{nativeCol:5, nativeColOff:28800, nativeRow:row.number-1, nativeRowOff:89600},
+      ext:{width:200,height:135}, editAs:'oneCell'
+    });
+  });
+  return new Blob([await book.xlsx.writeBuffer()], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+async function download(){if(exporting)return;const data=collect();if(!data)return;exporting=true;sync();try{await app.waitForImages?.();const latest=collect();if(latest?.context.key!==data.context.key)throw Error('Page changed');const Excel=await excelLibrary(),blob=await build(Excel,latest);app.exportFile(blob,exportName(latest),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}catch(error){console.error('Day Excel failed',error?.message);window.alert(tr('exportFailed'))}finally{exporting=false;sync()}}
 document.addEventListener('bamco:render',sync);new MutationObserver(sync).observe($('questionsPanel'),{childList:true});new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.BAMCO_DAY_SCORES={collect,build,save};sync();
 })();

@@ -384,3 +384,53 @@
 #assessmentPageActions #dayScoresExcel{order:21;flex:0 0 40px;width:40px;min-height:40px;height:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid #c7ddd3;background:#f5faf7;color:#276e59;cursor:pointer}
 #dayScoresExcel svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}#dayScoresExcel:disabled{opacity:.55;cursor:progress}
 html[dir=ltr] #assessmentPageActions #dayScoresExcel{order:0}
+
+#dayProgressRoad {
+  --road-progress: 0%;
+  padding: 18px clamp(16px, 3vw, 30px) 14px;
+  border: 1px solid #cfe4da;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #fff 25%, #f0f8f3);
+  color: #245745;
+}
+#dayProgressRoad[hidden] {display:none}
+.day-progress-heading {display:flex; align-items:center; justify-content:space-between; gap:12px}
+.day-progress-heading h2 {margin:0; font-size:1.04rem; color:#224f40}
+.day-progress-heading p {margin:3px 0 0; color:#49695e; font-size:.87rem}
+#dayProgressPercent {
+  min-width:3.5em; padding:4px 10px; border-radius:12px;
+  background:#e0f2e7; color:#205e43; text-align:center;
+  font-size:1.06rem; font-variant-numeric:tabular-nums;
+}
+.day-road-meter {position:relative; margin-top:5px; height:48px; isolation:isolate}
+.day-road-asphalt {
+  position:absolute; inset: auto 0 1px; height:14px; overflow:hidden;
+  border-radius:20px; background:#a5bbb1; box-shadow:inset 0 -2px #00000012;
+}
+.day-road-distance {
+  height:100%; width:var(--road-progress); background:#4d9176;
+  transition:width .55s ease;
+}
+.day-road-asphalt::after {
+  content:""; position:absolute; inset:6px 7px auto; height:2px;
+  background:repeating-linear-gradient(90deg,#ffffffe0 0 10px,transparent 10px 22px);
+}
+.day-road-journey {position:absolute; inset:0 27px; pointer-events:none}
+.day-road-car {
+  display:block; position:absolute; bottom:6px; inset-inline-start:var(--road-progress);
+  width:54px; height:32px; margin-inline-start:-27px;
+  transition:inset-inline-start .55s ease;
+}
+[dir=rtl] .day-road-car {transform:scaleX(-1)}
+.day-road-flag {
+  position:absolute; inset-inline-end:6px; bottom:14px; width:2px; height:29px;
+  border-radius:2px; background:#41574d;
+}
+.day-road-flag::before {
+  content:""; position:absolute; inset-inline-end:0; top:0; width:14px; height:10px;
+  border:1px solid #647b6e; border-radius:2px;
+  background:repeating-conic-gradient(#3e5a50 0 25%,#fff 0 50%) 0 0 / 7px 7px;
+}
+@media (prefers-reduced-motion:reduce) {
+  .day-road-car,.day-road-distance {transition:none}
+}

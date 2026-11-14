@@ -256,6 +256,7 @@ function begin(c,form){
   };
   app.setMission(c.key,data);
   app.setDayMileage(c.tab,c.day,data.distanceKm);
+  renderRoad(c);
   $('bamco-live-state').textContent='فرم روزانه ذخیره شد.';
 }
 
@@ -295,9 +296,34 @@ function customCard(test){
   return html;
 }
 
+function renderRoad(c, scheduled) {
+  const panel = $('dayProgressRoad');
+  if (!panel) return;
+  panel.hidden = !c || c.section === 'days';
+  if (panel.hidden) return;
+  const progress = scheduled || app.dayProgress();
+  const extra = customTests(app.mission(c.key));
+  const total = progress.total + extra.length;
+  const answered = progress.scored + extra.filter(t => Number(t.score) >= 1 && Number(t.score) <= 10).length;
+  const fraction = total ? 100 * answered / total : 0;
+  const percent = answered < total ? Math.min(99, Math.round(fraction)) : Math.round(fraction);
+  const locale = window.BAMCO_I18N?.language || 'fa';
+  const a = number(answered), n = number(total);
+  const title = {fa:'پیشرفت امتیازدهی روز', en:'Daily scoring progress', zh:'当日评分进度'}[locale];
+  const count = {fa:a+' از '+n+' سؤال پاسخ داده شده', en:a+' of '+n+' questions answered', zh:'已回答 '+a+' / '+n+' 道题'}[locale];
+  for (const [id, value] of [['dayProgressTitle',title], ['dayProgressCount',count], ['dayProgressPercent',number(percent)+(locale==='fa'?'٪':'%')]]) {
+    if ($(id).textContent !== value) $(id).textContent = value;
+  }
+  panel.style.setProperty('--road-progress', fraction+'%');
+  const meter = panel.querySelector('[role="progressbar"]');
+  meter.setAttribute('aria-valuenow', String(percent));
+  meter.setAttribute('aria-valuetext', count);
+}
+
 function renderFinal(c){
   document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
   const progress=app.dayProgress?.();
+  renderRoad(c, progress);
   const meta=normalize(app.mission(c.key));
   if(c.section!=='scores')return;
   const map=taxonomy(),categories=[...map.keys()].sort((a,b)=>a.localeCompare(b,'fa'));
@@ -365,6 +391,11 @@ function uploadPicture(c,id,file){
  app.trackPicture(task).catch(()=>window.alert('ثبت تصویر انجام نشد؛ دوباره تصویر را انتخاب کنید.'));
 }
 
+document.addEventListener('bamco:render', () => {
+  const c = app.dayContext();
+  if (c?.section !== 'scores') renderRoad(c);
+});
+new MutationObserver(() => renderRoad(app.dayContext())).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
 document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
 document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});
 document.addEventListener('click',event=>{

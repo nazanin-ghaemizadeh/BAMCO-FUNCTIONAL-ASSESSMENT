@@ -98,6 +98,7 @@
     ['پیش‌نویس فرم روزانه ذخیره شد.','Daily form draft saved.','每日表单草稿已保存。'],
     ['فرم روزانه ذخیره شد.','Daily form saved.','每日表单已保存。'],
     ['ذخیره تأیید نشد. دوباره ذخیره را بزنید.','Save was not confirmed. Try saving again.','未能确认保存，请重试。'],
+    ['کیلومتر را با عدد مثبت یا صفر و حداکثر یک رقم اعشار وارد کنید.','Enter a nonnegative mileage with at most one decimal place.','请输入非负的里程数，最多保留一位小数。'],
     ['در حال ذخیره…','Saving…','正在保存…']
   ];
   function register(fa,en,zh) {

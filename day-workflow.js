@@ -12,6 +12,7 @@ const number=value=>Number(value||0).toLocaleString(window.BAMCO_I18N?.language=
 const faDigits='۰۱۲۳۴۵۶۷۸۹';
 const toFaDigits=value=>window.BAMCO_I18N?.formatDigits(value)??String(value??'').replace(/\d/g,digit=>faDigits[Number(digit)]);
 const toLatinDigits=value=>String(value??'').replace(/[۰-۹]/g,digit=>String(faDigits.indexOf(digit)));
+const formatMileage=value=>window.BAMCO_I18N?.formatDigits(value,undefined,'mileage')??toFaDigits(value).replace(/\./g,'٫');
 const persianTime=value=>toFaDigits(String(value??'').trim().replace(/[٫.]/g,':'));
 // Keep the stored HH:mm contract; use explicit controls on mobile instead of a numeric keyboard.
 function openTimePicker(field){
@@ -128,7 +129,7 @@ function checklistMarkup(check = {}) {
       '<div class="pre-drive-items">'+items+'</div><label class="bamco-full-label pre-drive-comment">توضیحات این دسته (اختیاری)'+
       '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></section>';
   }).join('');
-  return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><h3 id="preDriveTitle">چک‌لیست پیش از پیمایش</h3>'+
+  return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><div class="section-heading"><h2 id="preDriveTitle">چک‌لیست پیش از پیمایش</h2></div>'+
     '<div class="pre-drive-grid">'+groups+'</div></section>';
 }
 
@@ -143,10 +144,10 @@ function formData(form) {
   for (const field of form.querySelectorAll('[data-inspection-comment]')) {
     if (field.value.trim()) comments[field.dataset.inspectionComment] = field.value.trim();
   }
-  updateDistance(form);
+  const mileage = updateDistance(form);
   return {
     date:toFaDigits(text('date')), startTime:persianTime(text('startTime')), endTime:persianTime(text('endTime')),
-    startKm:numeric('startKm'), endKm:numeric('endKm'), distanceKm:numeric('distanceKm'),
+    ...mileage,
     driver:text('driver'), passengers:[...form.querySelectorAll('[name^="passenger"]')].map(field=>field.value.trim()).filter(Boolean),
     temperature:numeric('temperature'), weather:text('weather'),
     refueled:Boolean(fuelType || fuelStation || fuelLiters!=='' || fuelOdometer!==''), fuelType, fuelStation, fuelLiters, fuelOdometer,
@@ -170,9 +171,9 @@ function formMarkup(c,meta){
     '<label>تاریخ شمسی<input name="date" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.date)+'" placeholder="۱۴۰۵/۰۸/۱۹" aria-label="تاریخ شمسی"></label>'+
     '<label>ساعت شروع پیمایش<input name="startTime" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.startTime)+'" placeholder="۰۸:۳۰"></label>'+
     '<label>ساعت پایان پیمایش<input name="endTime" type="text" inputmode="numeric" dir="ltr" required value="'+esc(meta.endTime)+'" placeholder="۱۷:۳۰"></label>'+
-    '<label>کیلومتر شروع پیمایش<input name="startKm" type="number" min="0" step="0.1" required value="'+esc(meta.startKm)+'"></label>'+
-    '<label>کیلومتر پایان پیمایش<input name="endKm" type="number" min="0" step="0.1" required value="'+esc(meta.endKm)+'"></label>'+
-    '<label class="bamco-distance-field">کیلومتر طی‌شده<input name="distanceKm" type="number" readonly tabindex="-1" value="'+esc(meta.distanceKm)+'" placeholder="محاسبه خودکار"></label>'+
+    '<label>کیلومتر شروع پیمایش<input name="startKm" type="text" dir="ltr" data-numeric="mileage" inputmode="decimal" required value="'+esc(formatMileage(meta.startKm))+'"></label>'+
+    '<label>کیلومتر پایان پیمایش<input name="endKm" type="text" dir="ltr" data-numeric="mileage" inputmode="decimal" required value="'+esc(formatMileage(meta.endKm))+'"></label>'+
+    '<label class="bamco-distance-field">کیلومتر طی‌شده<input name="distanceKm" type="text" dir="ltr" data-numeric="mileage" readonly tabindex="-1" value="'+esc(formatMileage(meta.distanceKm))+'" placeholder="محاسبه خودکار"></label>'+
     '</div></div>'+
     '<div class="bamco-day-block"><div class="bamco-block-heading"><h3>افراد حاضر در خودرو</h3><div class="bamco-inline-actions"><button type="button" class="secondary" data-add-passenger="1">+ افزودن سرنشین</button><button type="button" class="secondary" data-remove-passenger="1">حذف آخرین سرنشین</button></div></div><div class="bamco-day-fields"><label>نام و نام خانوادگی راننده<input name="driver" required autocomplete="name" value="'+esc(meta.driver)+'"></label><div id="bamco-passenger-fields" class="bamco-passenger-grid">'+Array.from({length:passengerCount},(_,index)=>passengerField(index,meta.passengers[index])).join('')+'</div></div></div>'+
     '<div class="bamco-day-block"><h3>شرایط محیطی</h3><div class="bamco-day-fields"><label>دمای هوا (درجه سانتی‌گراد)<select name="temperature" required><option value="">انتخاب دما</option>'+temperatureOptions(meta.temperature)+'</select></label><label>نوع آب‌وهوا<select name="weather" required><option value="">انتخاب کنید</option>'+['آفتابی','نیمه‌ابری','ابری','بارانی','برفی','مه‌آلود','باد شدید','گرد و غبار'].map(item=>'<option '+(meta.weather===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label></div></div>'+
@@ -189,15 +190,28 @@ function setConditional(form,name,active){
   section.querySelectorAll('input,select,textarea').forEach(field=>field.required=active);
 }
 
-function updateDistance(form){
-  const start=Number(form.elements.startKm.value),end=Number(form.elements.endKm.value),output=form.elements.distanceKm;
-  if(form.elements.startKm.value!==''&&form.elements.endKm.value!==''&&Number.isFinite(start)&&Number.isFinite(end)&&end>=start){
-    output.value=String(Math.round((end-start)*10)/10);
-    output.setCustomValidity('');
-  }else{
-    output.value='';
-    output.setCustomValidity(form.elements.endKm.value!==''&&end<start?'کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.':'');
+function readMileage(field) {
+  const input = field.value;
+  const normalized = window.BAMCO_I18N?.formatDigits(input, 'en') ??
+    toLatinDigits(input).replace(/[٠-٩]/g, digit => '٠١٢٣٤٥٦٧٨٩'.indexOf(digit)).replace(/٫/g, '.').replace(/٬/g, ',');
+  const text = normalized.trim();
+  const validNumber = /^(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?|\.\d+)$/.test(text);
+  const value = Number(text.replace(/,/g, ''));
+  const valid = validNumber && Number.isSafeInteger(value * 10);
+  field.setCustomValidity(input && !valid ? 'کیلومتر را با عدد مثبت یا صفر و حداکثر یک رقم اعشار وارد کنید.' : '');
+  return valid ? value : '';
+}
+
+function updateDistance(form) {
+  const {startKm, endKm, distanceKm} = form.elements;
+  const start = readMileage(startKm), end = readMileage(endKm);
+  let distance = '';
+  if (start !== '' && end !== '') {
+    if (end < start) endKm.setCustomValidity('کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.');
+    else distance = Math.round((end - start) * 10) / 10;
   }
+  distanceKm.value = formatMileage(distance);
+  return {startKm:start, endKm:end, distanceKm:distance};
 }
 
 function paint(){
@@ -268,7 +282,6 @@ async function begin(c,form){
   const fields = form.elements;
   const {preDrive, ...values} = formData(form);
   fields.date.setCustomValidity(values.date && !validPersianDate(values.date) ? 'تاریخ شمسی را به‌صورت ۱۴۰۵/۰۸/۱۹ وارد کنید.' : '');
-  fields.endKm.setCustomValidity(values.startKm!=='' && values.endKm!=='' && values.endKm<values.startKm ? 'کیلومتر پایان نمی‌تواند کمتر از کیلومتر شروع باشد.' : '');
   for (const name of ['startTime','endTime','breakdownTime']) {
     if (values[name] && !validTime(values[name])) {openTimePicker(fields[name]);return}
   }

@@ -328,6 +328,19 @@ html[dir] body :is(#moduleLanding .gate-card strong,#moduleLanding .gate-cta,.da
 html[dir] body .scores button.score {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center!important}
 html[dir] body .scores button.score :is(strong,small,span) {display:block;width:100%;margin-inline:0;text-align:center!important;text-justify:auto!important}
 
-/* Center the calculated distance and its placeholder in every language. */
-html[dir] body #bamco-day-form input[name="distanceKm"],
-html[dir] body #bamco-day-form input[name="distanceKm"]::placeholder {text-align:center!important;text-justify:auto!important}
+/* The bundled faces keep Persian mileage legible on devices without B Nazanin. */
+@font-face {
+  font-family:"Daily Mileage Nazanin";
+  src:url("./assets/fonts/BNazanin.woff2") format("woff2");
+  font-weight:400;
+  font-display:swap;
+}
+@font-face {
+  font-family:"Daily Mileage Nazanin";
+  src:url("./assets/fonts/BNaznnBd.woff2") format("woff2");
+  font-weight:700;
+  font-display:swap;
+}
+html[dir] body #bamco-day-form input[data-numeric="mileage"],
+html[dir] body #bamco-day-form input[data-numeric="mileage"]::placeholder {text-align:center!important;text-justify:auto!important}
+html[lang="fa"] body #bamco-day-form input[data-numeric="mileage"] {font-family:"B Nazanin","BNazanin","Daily Mileage Nazanin",serif!important}

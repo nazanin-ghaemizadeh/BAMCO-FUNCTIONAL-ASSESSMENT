@@ -16,13 +16,15 @@ function text(value,lang=language){
  return digits(source.replace(/روز\s+([0-9۰-۹]+)/g,(_,n)=>lang==='zh'?'第'+digits(n)+'天':'Day '+digits(n)).replace(fragments,match=>table[match]||match)).replace(/،/g,lang==='zh'?'，':',').replace(/٪/g,'%').replace(/←/g,'→').replace(/。\./g,'。');
 }
 const excluded='.report-user-text,script,style,textarea,input,code,#assessmentName,.assessment-row-title,.assessment-map-popup strong,.bamco-summary-item strong:not([data-i18n-static]),.bamco-custom-question h3,.bamco-custom-question .test-conditions dd,.user-authored h3,.user-authored .test-conditions dd';
-function formatDigits(value,lang=language){
+function formatDigits(value,lang=language,kind){
  const latin=digits(value).replace(/٫/g,'.').replace(/٬/g,',');
- return lang==='fa'?latin.replace(/[0-9]/g,n=>'۰۱۲۳۴۵۶۷۸۹'[Number(n)]):latin;
+ if(lang!=='fa')return latin;
+ const localized=latin.replace(/[0-9]/g,n=>'۰۱۲۳۴۵۶۷۸۹'[Number(n)]);
+ return kind==='mileage'?localized.replace(/\./g,'٫').replace(/,/g,'٬'):localized;
 }
 function localizeNumericInputs(){
  document.querySelectorAll('input[data-numeric],#durDays,#bamco-day-form input[name="date"],#bamco-day-form input[name="startTime"],#bamco-day-form input[name="endTime"],#bamco-day-form input[name="breakdownTime"]').forEach(input=>{
-  const next=formatDigits(input.value);if(next===input.value)return;
+  const next=formatDigits(input.value,language,input.dataset.numeric);if(next===input.value)return;
   const focused=document.activeElement===input,start=input.selectionStart,end=input.selectionEnd;
   input.value=next;
   if(focused&&start!==null)input.setSelectionRange(start,end);

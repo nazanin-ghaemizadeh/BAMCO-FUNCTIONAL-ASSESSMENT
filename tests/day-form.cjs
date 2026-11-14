@@ -20,6 +20,27 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   app.open({setupComplete:true,missions:{'drive:1':{preDrive:{note:'یادداشت قدیمی'}}}},()=>{},false);assert(controls.hidden);enter();
   assert.equal(saveButton.form,form());assert.equal(saveButton.closest('nav').id,'assessmentPageActions');assert(!controls.hidden);
   assert.equal(form().lastElementChild.className,'bamco-day-block pre-drive');
+  assert.equal(form().querySelector('.section-heading h2').id,'preDriveTitle');
+  const km = (name,value) => {
+    const field=form().elements[name];field.value=value;
+    field.dispatchEvent(new w.Event('input',{bubbles:true}));
+    return field.value;
+  };
+  assert.equal(km('startKm','1200'),'۱۲۰۰');
+  assert.equal(km('endKm','١٥٠٠'),'۱۵۰۰');
+  assert.equal(form().elements.distanceKm.value,'۳۰۰');
+  assert.equal(km('startKm','۱٬۲۰۰٫۵'),'۱٬۲۰۰٫۵');
+  assert.equal(form().elements.distanceKm.value,'۲۹۹٫۵');
+  w.BAMCO_I18N.setLanguage('en');assert.equal(form().elements.distanceKm.value,'299.5');
+  w.BAMCO_I18N.setLanguage('fa');assert.equal(form().elements.distanceKm.value,'۲۹۹٫۵');
+  km('endKm','1200');assert(form().elements.endKm.validity.customError);
+  assert.equal(form().elements.distanceKm.value,'');
+  for(const value of ['-1','12.34','abc','1,20']) {
+    km('endKm',value);await save();
+    assert(form().elements.endKm.validity.customError);assert.equal(writes,0);
+  }
+  km('startKm','۰');km('endKm','0');assert.equal(form().elements.distanceKm.value,'۰');
+  km('endKm','');assert.equal(form().elements.distanceKm.value,'');
   assert.equal(d.querySelectorAll('[data-inspection]').length,71);
   assert.equal(d.querySelectorAll('[data-inspection-comment]').length,8);
   assert.equal(d.querySelectorAll('[data-inspection]:checked').length,0);
@@ -38,12 +59,13 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   find('[data-inspection-comment="engine"]').value='<با توضیح>';
   assert.equal(form().elements.preDriveNote,undefined);
   assert.equal(controls.previousElementSibling.id,'assessmentStop');assert.equal(controls.nextElementSibling.id,'dayFormExcel');
-  form().elements.startTime.value='۰۸:۳۰';form().elements.startKm.value='120';
+  form().elements.startTime.value='۰۸:۳۰';km('startKm','۱۲۰٫۵');
   await save();assert(stored);assert.match(id('bamco-live-state').textContent,/پیش‌نویس/);
   assert.equal(stored.missions['drive:1'].preDrive.reviewed['engine-oil-level'],true);
   assert.equal(stored.mileage.drive[1],undefined);assert.equal(stored.missions['drive:1'].dailyInfoSavedAt,undefined);
   app.open(stored,()=>{},false);enter();assert(find('[data-inspection="engine-oil-level"]').checked);
   assert.equal(form().elements.startTime.value,'۰۸:۳۰');assert.equal(form().elements.endKm.value,'');
+  assert.equal(form().elements.startKm.value,'۱۲۰٫۵');assert.equal(stored.missions['drive:1'].dailyFormDraft.startKm,120.5);
   assert.equal(find('[data-inspection-comment="engine"]').value,'<با توضیح>');
   assert.equal(stored.missions['drive:1'].preDrive.note,'یادداشت قدیمی');
   async function exportBook(){
@@ -51,7 +73,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
     const before=writes;click('#dayFormExcel');const {bytes,name}=await next;assert.equal(writes,before);
     const book=new Excel.Workbook();await book.xlsx.load(bytes);return {book,name,bytes};
   }
-  form().elements.driver.value='Driver A';form().elements.endKm.value='130';form().elements.endTime.value='۱۰:۰۰';
+  form().elements.driver.value='Driver A';km('endKm','۱۳۰٫۵');form().elements.endTime.value='۱۰:۰۰';
   form().elements.temperature.value='0';form().elements.weather.value='آفتابی';form().elements.date.value='۱۴۰۵/۰۸/۲۳';
   const {book,name}=await exportBook();assert.equal(name,'Case A-driveability-day-1-daily-form.xlsx');
   const [report,list]=book.worksheets;assert.equal(report.name,'فرم روزانه');assert.equal(list.name,'چک‌لیست پیش از پیمایش');
@@ -74,6 +96,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   assert.match(list.getCell('D3').value,/✓/);assert.match(list.getCell('D4').value,/×/);
   assert.notEqual(list.getCell('A3').fill.fgColor.argb,list.getCell('A13').fill.fgColor.argb);
   const values=Object.fromEntries(report.getRows(3,report.rowCount-2).map(r=>[r.getCell(3).value,r.getCell(4).value]));
+  assert.equal(values['کیلومتر شروع پیمایش'],120.5);assert.equal(values['کیلومتر پایان پیمایش'],130.5);
   assert(!Object.hasOwn(values,'توضیحات کلی چک‌لیست'));assert.equal(values['کیلومتر طی‌شده'],10);assert.equal(values['دمای هوا (درجه سانتی‌گراد)'],0);
   confirmed=false;await save();assert.match(id('bamco-live-state').textContent,/تأیید نشد/);
   confirmed=true;await save();assert.equal(stored.missions['drive:1'].dailyFormDraft,undefined);assert.equal(stored.mileage.drive[1],10);assert.equal(stored.missions['drive:1'].driver,'Driver A');

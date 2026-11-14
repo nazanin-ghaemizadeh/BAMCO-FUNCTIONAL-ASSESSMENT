@@ -31,7 +31,10 @@ function localizeNumericInputs(){
 let observer;
 function apply(){
  observer?.disconnect();
- document.documentElement.lang=language;document.documentElement.dir=language==='fa'?'rtl':'ltr';
+ const root=document.documentElement;
+ const direction=language==='fa'?'rtl':'ltr';
+ if(root.lang!==language)root.lang=language;
+ if(root.dir!==direction)root.dir=direction;
  document.querySelectorAll('select option').forEach(o=>{if(!o.hasAttribute('value'))o.setAttribute('value',canonical(o.textContent))});
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let node;
  while(node=walker.nextNode()){

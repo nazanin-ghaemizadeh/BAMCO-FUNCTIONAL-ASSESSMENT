@@ -11,7 +11,11 @@ function sync(){const c=app.dayContext?.(),active=c?.section==='scores',bar=$('a
  let footer=$('dayScoresSave');if(app.isReadOnly()){footer?.remove();return}
  if(!footer){footer=document.createElement('div');footer.id='dayScoresSave';footer.className='surface panel day-scores-save';const button=document.createElement('button');button.type='button';button.className='primary';button.onclick=save;const status=document.createElement('span');status.setAttribute('role','status');footer.append(button,status)}
  const anchor=document.querySelector('.bamco-day-extra')||$('questionsPanel');if(anchor&&anchor.nextElementSibling!==footer)anchor.insertAdjacentElement('afterend',footer);
- footer.firstElementChild.textContent=tr(saving?'saving':'save');footer.firstElementChild.disabled=saving;footer.firstElementChild.setAttribute('aria-busy',String(saving));
+ const saveButton=footer.firstElementChild;
+ const label=tr(saving?'saving':'save');
+ if(saveButton.textContent!==label)saveButton.textContent=label;
+ saveButton.disabled=saving;
+ saveButton.setAttribute('aria-busy',String(saving));
 }
 async function save(){if(saving||app.isReadOnly())return;captureNotes();const c=app.dayContext?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if(app.dayContext?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if(app.dayContext?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=tr('failed')}finally{saving=false;sync()}}
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;if(!library)library=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=()=>resolve(window.ExcelJS);s.onerror=()=>{library=null;s.remove();reject(Error('Excel unavailable'))};document.head.append(s)});return library}

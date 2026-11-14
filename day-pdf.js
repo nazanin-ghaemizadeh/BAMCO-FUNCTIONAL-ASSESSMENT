@@ -3,14 +3,14 @@
 const app=window.BAMCO_ASSESSMENT,$=id=>document.getElementById(id);
 const texts={download:['دانلود PDF همه سؤال‌های این روز','Download all questions for this day as PDF','下载当天全部试验题目PDF'],preparing:['در حال ساخت PDF…','Creating PDF…','正在生成PDF…'],ready:['PDF سؤال‌های روز آماده شد.','Day questions PDF is ready.','当天试验题目PDF已生成。'],failed:['ساخت PDF انجام نشد؛ دوباره تلاش کنید.','PDF could not be created. Please retry.','无法生成PDF，请重试。'],empty:['آزمونی برای این روز برنامه‌ریزی نشده است.','No tests are scheduled for this day.','当天未安排试验。'],note:['یادداشت ارزیاب','Evaluator note','评估员备注'],day:['روز','Day','天'],questions:['سؤال','questions','个题目'],drive:['قابلیت رانندگی','Driveability','驾驶性能'],durability:['آزمون دوام','Durability','耐久试验']};
 const language=()=>window.BAMCO_I18N?.language||'fa',tr=(key,lang=language())=>texts[key][lang==='fa'?0:lang==='zh'?2:1],tx=(value,lang)=>window.BAMCO_I18N?.text(value,lang)||String(value??''),digits=(value,lang)=>window.BAMCO_I18N?.formatDigits(value,lang)||String(value);
-let working=false,status='',libraries,lastLanguage=language();
+let working=false,libraries;
 function sync(){
  const c=app.dayContext?.(),bar=$('assessmentPageActions');if(!bar)return;
- const active=c?.section==='scores';let button=$('dayQuestionsPdf'),notice=$('dayQuestionsPdfStatus');
- if(!active){button?.remove();notice?.remove();return}
+ const active=c?.section==='scores';let button=$('dayQuestionsPdf');
+ if(!active){button?.remove();return}
  if(!button){button=document.createElement('button');button.id='dayQuestionsPdf';button.type='button';button.className='secondary';button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>';button.addEventListener('click',download);bar.append(button)}
  button.title=tr('download');button.setAttribute('aria-label',tr('download'));button.disabled=working;button.setAttribute('aria-busy',String(working));
- if(!notice){notice=document.createElement('span');notice.id='dayQuestionsPdfStatus';notice.className='day-pdf-status report-user-text';notice.setAttribute('role','status');bar.append(notice)}if(notice.textContent!==status)notice.textContent=status;
+
 }
 function script(url){return new Promise((resolve,reject)=>{const element=document.createElement('script');element.src=url;element.onload=resolve;element.onerror=()=>{element.remove();reject(Error('PDF library unavailable'))};document.head.append(element)})}
 async function loadLibraries(){if(!libraries)libraries=Promise.all([window.html2canvas?null:script('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),window.jspdf?.jsPDF?null:script('https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js')]).catch(error=>{libraries=null;throw error});await libraries;return {capture:window.html2canvas,PDF:window.jspdf.jsPDF}}
@@ -39,7 +39,7 @@ async function create(data,{capture,PDF},progress=()=>{}){
  frame=await mountStage(stage.root,data);await imagesReady(stage.root);
  const captureNode=node=>capture(node,{scale:1.6,ignoreElements:element=>(element.parentElement===stage.root&&element!==node)||(element.parentElement===stage.root.ownerDocument.body&&element!==stage.root),backgroundColor:'#ffffff',useCORS:true,logging:false,windowWidth:1200,windowHeight:1700,scrollX:0,scrollY:0,onclone:doc=>{doc.documentElement.lang=data.lang;doc.documentElement.dir=data.lang==='fa'?'rtl':'ltr'}});
  const pdf=new PDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});pdf.setProperties({title:data.title+' | '+data.context.tab+' | Day '+data.context.day,subject:'All scheduled and custom questions for selected day',keywords:'BAMCO; tab='+data.context.tab+'; day='+data.context.day+'; questions='+data.cards.length});
- const head=await captureNode(stage.header),width=190,headHeight=width*head.height/head.width,gap=5,top=10+headHeight+gap,bottom=285;let y=top,page=1;
+ const head=await captureNode(stage.header),width=190,headHeight=width*head.height/head.width,gap=3,top=10+headHeight+gap,bottom=285;let y=top,page=1;
  function addHeader(){pdf.addImage(head.toDataURL('image/jpeg',.9),'JPEG',10,10,width,headHeight,'day-header','FAST')}
  addHeader();
  for(let i=0;i<stage.nodes.length;i++){
@@ -52,6 +52,6 @@ async function create(data,{capture,PDF},progress=()=>{}){
  return pdf.output('blob');
  }finally{stage.root.remove();frame?.remove()}
 }
-async function download(){if(working)return;const data=collect();if(!data)return;working=true;status=tr('preparing');sync();try{const deps=await loadLibraries(),blob=await create(data,deps,(done,total)=>{status=tr('preparing')+' '+digits(done,language())+' / '+digits(total,language());sync()});app.exportFile(blob,'BAMCO-'+data.context.tab+'-day-'+data.context.day+'.pdf','application/pdf');status=tr('ready')}catch(error){console.error('Day PDF export failed',error?.message||'PDF error');status=tr('failed')}finally{working=false;sync()}}
-document.addEventListener('bamco:render',()=>{if(!working)status='';sync()});new MutationObserver(()=>{if(lastLanguage!==language()){lastLanguage=language();if(!working)status=''}sync()}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.BAMCO_DAY_PDF={collect,create};sync();
+async function download(){if(working)return;const data=collect();if(!data)return;working=true;sync();try{const deps=await loadLibraries(),blob=await create(data,deps);app.exportFile(blob,'BAMCO-'+data.context.tab+'-day-'+data.context.day+'.pdf','application/pdf')}catch(error){console.error('Day PDF export failed',error?.message||'PDF error');window.alert(tr('failed'))}finally{working=false;sync()}}
+document.addEventListener('bamco:render',sync);new MutationObserver(sync).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});window.BAMCO_DAY_PDF={collect,create};sync();
 })();

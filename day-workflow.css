@@ -427,14 +427,29 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
 #dayFormActions[hidden] {display:none}
 #dayFormActions [role=status]:empty {display:none}
 .pre-drive > p {margin:-4px 0 16px; color:#557267; font-size:.9rem}
-.pre-drive-group {border:1px solid #dce9e1; border-radius:12px; margin:8px 0; background:white; overflow:hidden}
-.pre-drive-group > summary {display:flex; gap:10px; align-items:center; padding:11px 14px; min-height:44px; cursor:pointer; color:#264c3f; font-weight:700; list-style:none}
-.pre-drive-group > summary::-webkit-details-marker {display:none}
-.pre-drive-group > summary::after {content:''; width:8px; height:8px; border:solid #59826f; border-width:0 1.5px 1.5px 0; transform:rotate(45deg); flex:none; margin:-4px 2px 0}
-.pre-drive-group[open] > summary {background:#f0f7f2}
-.pre-drive-group[open] > summary::after {transform:rotate(225deg); margin-top:4px}
-.pre-drive-count {margin-inline-start:auto; white-space:nowrap; border-radius:8px; padding:1px 7px; background:#e8f2ec; color:#385d49; font-size:.84rem; font-variant-numeric:tabular-nums}
-.pre-drive-items {padding:0 14px}
+.pre-drive {container-type:inline-size; min-width:0}
+.pre-drive-grid {display:grid; grid-template-columns:minmax(0,1fr); gap:14px}
+@container (min-width:38rem) {
+  .pre-drive-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@container (min-width:58rem) {
+  .pre-drive-grid {grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+.pre-drive-group {
+  display:flex; flex-direction:column; min-width:0; border:1px solid #d8e7df;
+  border-radius:16px; background:#fff; overflow:hidden;
+  box-shadow:0 2px 8px rgba(40,78,58,.045);
+}
+.pre-drive-category {
+  display:flex; align-items:center; gap:10px; padding:11px 13px;
+  background:#f3f8f5; border-bottom:1px solid #deebe4;
+}
+.pre-drive-category svg {
+  flex:none; width:42px; height:42px; padding:2px; box-sizing:border-box;
+  border:1px solid #dbe9df; border-radius:13px; background:#fff;
+}
+.pre-drive-category h4 {margin:0; color:#264c3f; font-size:1rem; line-height:1.55}
+.pre-drive-items {padding:2px 13px 8px}
 .pre-drive-item {position:relative; display:flex; gap:10px; align-items:center; padding:7px 0; min-height:44px; cursor:pointer; line-height:1.6; color:#2c463d}
 .pre-drive-item + .pre-drive-item {border-top:1px solid #e9f0ec}
 .pre-drive-item input {position:absolute; width:1px; height:1px; margin:0; opacity:0}
@@ -442,7 +457,7 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
 .pre-drive-mark::after {content:'×'; color:#a95048; font:bold 19px/1 sans-serif}
 .pre-drive-item input:checked + .pre-drive-mark {background:#e1f4e9; border-color:#acd5ba}
 .pre-drive-item input:checked + .pre-drive-mark::after {content:'✓'; color:#187647; font-size:16px}
-.pre-drive-item input:focus-visible + .pre-drive-mark,.pre-drive-group > summary:focus-visible {outline:2px solid #256e50; outline-offset:-2px}
-.pre-drive-comment {margin:8px 14px 14px; font-size:.92rem}
+.pre-drive-item input:focus-visible + .pre-drive-mark {outline:2px solid #256e50; outline-offset:-2px}
+.pre-drive-comment {margin:auto 13px 13px; padding-top:8px; font-size:.92rem}
 .pre-drive-note {margin-top:16px}
 .pre-drive textarea {resize:vertical; box-sizing:border-box}

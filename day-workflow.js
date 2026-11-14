@@ -121,14 +121,15 @@ function checklistMarkup(check = {}) {
     const items = group.items.map(({key,title}) =>
       '<label class="pre-drive-item"><input type="checkbox" data-inspection="'+key+'" '+(check.reviewed?.[key]===true?'checked':'')+'>'+
       '<span class="pre-drive-mark" aria-hidden="true"></span><span>'+esc(title)+'</span></label>').join('');
-    const reviewed = group.items.filter(item => check.reviewed?.[item.key]===true).length;
-    return '<details class="pre-drive-group"><summary><span class="pre-drive-category"><span>'+number(group.number)+'. </span><span>'+esc(group.title)+'</span></span>'+
-      '<span class="pre-drive-count" dir="ltr" data-inspection-count>'+number(reviewed)+' / '+number(group.items.length)+'</span></summary>'+
+    const headingId='pre-drive-'+group.id;
+    return '<section class="pre-drive-group" aria-labelledby="'+headingId+'">'+
+      '<div class="pre-drive-category"><svg aria-hidden="true" focusable="false" viewBox="0 0 48 48"><use href="./checklist-icons.svg#'+group.id+'"></use></svg>'+
+      '<h4 id="'+headingId+'">'+esc(group.title)+'</h4></div>'+
       '<div class="pre-drive-items">'+items+'</div><label class="bamco-full-label pre-drive-comment">توضیحات این دسته (اختیاری)'+
-      '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></details>';
+      '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></section>';
   }).join('');
   return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><h3 id="preDriveTitle">چک‌لیست پیش از پیمایش</h3>'+
-    '<p>ضربدر یعنی هنوز بررسی نشده است. پس از بررسی، روی مورد بزنید تا تیک سبز بگیرد.</p>'+groups+
+    '<p>ضربدر یعنی هنوز بررسی نشده است. پس از بررسی، روی مورد بزنید تا تیک سبز بگیرد.</p><div class="pre-drive-grid">'+groups+'</div>'+
     '<label class="bamco-full-label pre-drive-note">توضیحات کلی چک‌لیست (اختیاری)<textarea name="preDriveNote" rows="3">'+esc(check.note)+'</textarea></label></section>';
 }
 
@@ -206,7 +207,7 @@ function paint(){
   if(c.section==='scores'){renderFinal(c);return}
   const host=$('schedulePanel');
   if(!host)return;
-  if($('bamco-day-workflow')&&lastStamp===c.key){renderFinal(c);return}
+  if($('bamco-day-workflow')&&lastStamp===c.key)return;
   lastStamp=c.key;
   document.querySelectorAll('#bamco-day-workflow,.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
   const saved=app.mission(c.key);
@@ -294,7 +295,6 @@ async function begin(c,form){
   status.textContent = 'در حال ذخیره…';
   try {
     const ok = await app.saveDailyForm(c,mission,complete ? values.distanceKm : null);
-    if (form.isConnected) renderRoad(c);
     if (!ok) throw Error('Unconfirmed save');
     if (form.isConnected && !form.dataset.changedDuringSave) status.textContent = complete ? 'فرم روزانه ذخیره شد.' : 'پیش‌نویس فرم روزانه ذخیره شد.';
   } catch {
@@ -344,7 +344,7 @@ function customCard(test){
 function renderRoad(c, scheduled) {
   const panel = $('dayProgressRoad');
   if (!panel) return;
-  panel.hidden = !c || c.section === 'days';
+  panel.hidden = c?.section !== 'scores';
   if (panel.hidden) return;
   const progress = scheduled || app.dayProgress();
   const extra = customTests(app.mission(c.key));
@@ -367,10 +367,10 @@ function renderRoad(c, scheduled) {
 
 function renderFinal(c){
   document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove());
+  if(c.section!=='scores')return;
   const progress=app.dayProgress?.();
   renderRoad(c, progress);
   const meta=normalize(app.mission(c.key));
-  if(c.section!=='scores')return;
   const map=taxonomy(),categories=[...map.keys()].sort((a,b)=>a.localeCompare(b,'fa'));
   const tests=customTests(meta);
   const questions=$('questionsPanel');
@@ -467,10 +467,6 @@ document.addEventListener('click',event=>{
 
 document.addEventListener('change',event=>{
   const field=event.target;
-  if(field.hasAttribute('data-inspection')){
-    const group=field.closest('.pre-drive-group');
-    group.querySelector('[data-inspection-count]').textContent=number(group.querySelectorAll('[data-inspection]:checked').length)+' / '+number(group.querySelectorAll('[data-inspection]').length);
-  }
   if(field.matches('#bamco-day-form [name="breakdown"]'))setConditional($('bamco-day-form'),field.name,field.checked);
   if(field.dataset.customNote&&!app.isReadOnly()){
     const c=context();if(c)updateCustom(c,field.dataset.customNote,{note:field.value.trim()});

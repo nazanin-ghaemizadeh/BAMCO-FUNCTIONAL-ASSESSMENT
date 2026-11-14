@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <g id="smile" fill="none" stroke="#36564d" stroke-width="1.6" stroke-linecap="round">
+      <path d="M-5-1v1m10-1v1m-7 2q2 3 4 0"/>
+    </g>
+  </defs>
+  <symbol id="engine" viewBox="0 0 48 48">
+    <g stroke="#568a74" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 10h12m-6 0v5M5 21v10m0-5h5" fill="none"/>
+      <path d="M10 19h5l4-4h13l3 5h5l3 4v10h-7l-4 4H18l-8-7z" fill="#b9e2ce"/>
+      <path d="M14 21h5" stroke="#f6fffa"/>
+    </g>
+    <use href="#smile" x="25" y="26"/>
+  </symbol>
+  <symbol id="transmission" viewBox="0 0 48 48">
+    <g stroke="#7772a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="8" y="28" width="32" height="13" rx="6" fill="#c9c5e6"/>
+      <path d="m20 30 6-13 5 2-6 12z" fill="#eeeafa"/>
+      <rect x="22" y="7" width="16" height="14" rx="6" transform="rotate(15 30 14)" fill="#c7bce8"/>
+      <path d="m28 12 5 1" stroke="#fff"/>
+    </g>
+    <use href="#smile" x="23" y="34"/>
+  </symbol>
+  <symbol id="steering-brakes" viewBox="0 0 48 48">
+    <circle cx="24" cy="24" r="16.5" fill="#f1d4b9" stroke="#a4785b" stroke-width="2"/>
+    <circle cx="24" cy="24" r="11.5" fill="#fff8ee" stroke="#b79170" stroke-width="1.5"/>
+    <path d="M12 21q12-4 24 0l-2 5-6 2-1 7h-6l-1-7-6-2z" fill="#e2b892" stroke="#a4785b" stroke-width="1.5" stroke-linejoin="round"/>
+    <use href="#smile" x="24" y="23"/>
+  </symbol>
+  <symbol id="wheels" viewBox="0 0 48 48">
+    <circle cx="23" cy="24" r="17" fill="#779aa7" stroke="#466774" stroke-width="2"/>
+    <path d="m13 12 4 2m11-6 1 4m7 4-3 2m6 9-4-1m-5 13-2-4m-14 2 3-3M7 25l4 1" fill="none" stroke="#a9c4cc" stroke-width="2.1" stroke-linecap="round"/>
+    <circle cx="23" cy="24" r="9.5" fill="#deedf2" stroke="#557787" stroke-width="1.7"/>
+    <use href="#smile" x="23" y="24"/>
+  </symbol>
+  <symbol id="body" viewBox="0 0 48 48">
+    <g stroke="#a37278" stroke-width="1.9" stroke-linejoin="round">
+      <path d="m8 23 5-2 5-9h12l8 10 4 2v9H6V24z" fill="#f4cbd0"/>
+      <path d="m16 21 4-7h8l6 7z" fill="#f0f8f8"/>
+    </g>
+    <g fill="#6c616c"><circle cx="14" cy="33" r="4.8"/><circle cx="34" cy="33" r="4.8"/></g>
+    <g fill="#fff5ee"><circle cx="14" cy="33" r="2"/><circle cx="34" cy="33" r="2"/></g>
+    <use href="#smile" x="24" y="26"/>
+  </symbol>
+  <symbol id="electrical" viewBox="0 0 48 48">
+    <g stroke="#ac8846" stroke-linejoin="round" stroke-width="1.9">
+      <path d="M12 17v-5h7v5m10 0v-5h7v5" fill="#dbc48d"/>
+      <rect x="7" y="16" width="34" height="23" rx="5" fill="#f5df9f"/>
+      <path d="M12 21h5m-2.5-2.5v5m17-2.5h5" stroke-linecap="round"/>
+    </g>
+    <use href="#smile" x="24" y="29"/>
+  </symbol>
+  <symbol id="cabin" viewBox="0 0 48 48">
+    <g fill="#b6dfe1" stroke="#57848c" stroke-width="1.7">
+      <path id="fan-blade" d="M23 22c-8-4-8-13-2-16 5-2 12 2 10 7-1 3-6 3-6 9z"/>
+      <use href="#fan-blade" transform="rotate(120 24 24)"/>
+      <use href="#fan-blade" transform="rotate(240 24 24)"/>
+      <circle cx="24" cy="24" r="8.4" fill="#e2f3ef"/>
+    </g>
+    <use href="#smile" x="24" y="24"/>
+  </symbol>
+  <symbol id="final" viewBox="0 0 48 48">
+    <g stroke="#648668" stroke-width="2" stroke-linejoin="round">
+      <rect x="11" y="10" width="27" height="32" rx="5" fill="#cde7cf"/>
+      <rect x="18" y="7" width="13" height="7" rx="3" fill="#eef4da"/>
+      <path d="m18 22 4 4 9-10" fill="none" stroke="#42825c" stroke-width="2.7" stroke-linecap="round"/>
+    </g>
+    <use href="#smile" x="24" y="32"/>
+  </symbol>
+</svg>

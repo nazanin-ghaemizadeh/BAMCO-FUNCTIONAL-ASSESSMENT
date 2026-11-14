@@ -24,8 +24,17 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   assert.equal(d.querySelectorAll('[data-inspection-comment]').length,8);
   assert.equal(d.querySelectorAll('[data-inspection]:checked').length,0);
   assert.equal(new Set(w.BAMCO_PRE_DRIVE.flatMap(g=>g.items.map(x=>x.key))).size,71);
-  find('.pre-drive-group').open=true;
-  click('[data-inspection="engine-oil-level"]');assert.equal(find('[data-inspection-count]').textContent,'۱ / ۱۰');
+  const cards=d.querySelectorAll('.pre-drive-grid > section');
+  assert.equal(cards.length,8);
+  const sprite=new w.DOMParser().parseFromString(fs.readFileSync('checklist-icons.svg','utf8'),'image/svg+xml');
+  cards.forEach((card,i)=>{
+    const group=w.BAMCO_PRE_DRIVE[i];
+    assert.equal(card.querySelector('h4').textContent,group.title);
+    assert.equal(card.querySelector('use').getAttribute('href'),'./checklist-icons.svg#'+group.id);
+    assert(sprite.getElementById(group.id));
+  });
+  assert(!form().querySelector('.pre-drive details,.pre-drive summary,[data-inspection-count]'));
+  click('[data-inspection="engine-oil-level"]');assert(find('[data-inspection="engine-oil-level"]').checked);
   find('[data-inspection-comment="engine"]').value='<با توضیح>';
   form().elements.preDriveNote.value='یادداشت کلی';
   form().elements.startTime.value='۰۸:۳۰';form().elements.startKm.value='120';

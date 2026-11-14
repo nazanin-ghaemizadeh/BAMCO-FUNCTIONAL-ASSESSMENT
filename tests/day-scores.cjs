@@ -62,6 +62,9 @@ for (const ws of book.worksheets) {
   }
 }
 assert.equal(evidence.getImages()[0].range.tl.nativeRow,evidence.rowCount-1);
+const imageRange=evidence.getImages()[0].range;
+assert.equal(imageRange.br.nativeColOff-imageRange.tl.nativeColOff,200*9525);
+assert.equal(imageRange.br.nativeRowOff-imageRange.tl.nativeRowOff,135*9525);
 assert.equal(evidence.lastRow.height,112.05);
 w.ExcelJS=Excel;w.BAMCO_CASES={current:()=>({id:'test',title:'Nazi'})};
 async function filename(){

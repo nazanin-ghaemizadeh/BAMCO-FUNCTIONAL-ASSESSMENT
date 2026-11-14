@@ -146,7 +146,9 @@ async function build(Excel, data) {
     row.height = Math.max(112.05, row.height);
     attachments.addImage(image, {
       tl:{nativeCol:5, nativeColOff:28800, nativeRow:row.number-1, nativeRowOff:89600},
-      ext:{width:200,height:135}, editAs:'oneCell'
+      // Two-cell anchors support editAs and keep the 200 × 135 px image attached to this row.
+      br:{nativeCol:5, nativeColOff:28800+200*9525, nativeRow:row.number-1, nativeRowOff:89600+135*9525},
+      editAs:'oneCell'
     });
   });
   return new Blob([await book.xlsx.writeBuffer()], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});

@@ -126,8 +126,9 @@ function checklistMarkup(check = {}) {
     return '<section class="pre-drive-group" aria-labelledby="'+headingId+'">'+
       '<div class="pre-drive-category"><svg aria-hidden="true" focusable="false" viewBox="0 0 48 48"><use href="./checklist-icons.svg#'+group.id+'"></use></svg>'+
       '<h4 id="'+headingId+'">'+esc(group.title)+'</h4></div>'+
-      '<div class="pre-drive-items">'+items+'</div><label class="bamco-full-label pre-drive-comment">توضیحات این دسته (اختیاری)'+
-      '<textarea rows="2" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></label></section>';
+      '<div class="pre-drive-items">'+items+'</div><details class="pre-drive-comment">'+
+      '<summary id="'+headingId+'-comment">توضیحات</summary>'+
+      '<textarea rows="2" aria-labelledby="'+headingId+'-comment '+headingId+'" data-inspection-comment="'+group.id+'">'+esc(check.comments?.[group.id])+'</textarea></details></section>';
   }).join('');
   return '<section class="bamco-day-block pre-drive" aria-labelledby="preDriveTitle"><div class="section-heading"><h2 id="preDriveTitle">چک‌لیست پیش از پیمایش</h2></div>'+
     '<div class="pre-drive-grid">'+groups+'</div></section>';

@@ -81,7 +81,8 @@
 .bamco-custom-builder input,
 .bamco-custom-builder select,
 .bamco-custom-builder textarea,
-.bamco-full-label textarea {
+.bamco-full-label textarea,
+.pre-drive-comment textarea {
   background: #fff;
   border: 1px solid #c8ddd1;
   border-radius: 12px;
@@ -466,8 +467,10 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   @keyframes inspection-pop {50% {transform:scale(1.09) rotate(-4deg)}}
 }
 .pre-drive-item input:focus-visible + .pre-drive-mark {outline:2px solid #256e50; outline-offset:-2px}
-.pre-drive-comment {margin:auto 13px 13px; padding-top:8px; font-size:.92rem}
-.pre-drive textarea {resize:vertical; box-sizing:border-box}
+.pre-drive-comment {margin:auto 13px 7px; font-size:.92rem; border-top:1px solid #e9f0ec}
+.pre-drive-comment summary {cursor:pointer; padding:6px 3px; color:#28664e; font-weight:700}
+.pre-drive-comment summary:focus-visible {outline:2px solid #256e50; outline-offset:-2px; border-radius:5px}
+.pre-drive-comment textarea {display:block; margin:2px 0 6px; resize:vertical; box-sizing:border-box}
 
 /* Reserve the physical left edge for the form download, including wrapped toolbars. */
 #assessmentPageActions:has(> #dayFormExcel:not([hidden])) {

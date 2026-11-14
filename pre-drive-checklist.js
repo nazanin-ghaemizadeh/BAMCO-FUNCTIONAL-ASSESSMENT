@@ -92,7 +92,7 @@
   ];
   const labels = [
     ['چک‌لیست پیش از پیمایش','Pre-drive checklist','出发前检查清单'],
-    ['توضیحات این دسته (اختیاری)','Category comment (optional)','本类别备注（选填）'],
+    ['توضیحات','Comments','备注'],
     ['ذخیره فرم روزانه','Save daily form','保存每日表单'],
     ['دانلود اکسل فرم روزانه','Download daily form as Excel','下载每日表单 Excel'],
     ['پیش‌نویس فرم روزانه ذخیره شد.','Daily form draft saved.','每日表单草稿已保存。'],

@@ -51,12 +51,22 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   cards.forEach((card,i)=>{
     const group=w.BAMCO_PRE_DRIVE[i];
     assert.equal(card.querySelector('h4').textContent,group.title);
+    const comment=card.querySelector('details.pre-drive-comment');
+    assert(!comment.open);
+    assert.equal(comment.querySelector('summary').textContent,'توضیحات');
+    assert.equal(comment.querySelector('textarea').dataset.inspectionComment,group.id);
+    assert(!card.querySelector('.pre-drive-items').closest('details'));
     assert.equal(card.querySelector('use').getAttribute('href'),'./checklist-icons.svg#'+group.id);
     assert(sprite.getElementById(group.id));
   });
-  assert(!form().querySelector('.pre-drive details,.pre-drive summary,[data-inspection-count]'));
+  assert(!form().querySelector('[data-inspection-count]'));
   click('[data-inspection="engine-oil-level"]');assert(find('[data-inspection="engine-oil-level"]').checked);
-  find('[data-inspection-comment="engine"]').value='<با توضیح>';
+  const engineComment=()=>find('[data-inspection-comment="engine"]');
+  const engineDetails=()=>engineComment().closest('details');
+  const toggleEngine=()=>engineDetails().querySelector('summary').click();
+  toggleEngine();assert(engineDetails().open);assert.equal(form().querySelectorAll('details[open]').length,1);
+  engineComment().value='<با توضیح>';
+  toggleEngine();assert(!engineDetails().open);
   assert.equal(form().elements.preDriveNote,undefined);
   assert.equal(controls.previousElementSibling.id,'assessmentStop');assert.equal(controls.nextElementSibling.id,'dayFormExcel');
   form().elements.startTime.value='۰۸:۳۰';km('startKm','۱۲۰٫۵');
@@ -66,7 +76,8 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   app.open(stored,()=>{},false);enter();assert(find('[data-inspection="engine-oil-level"]').checked);
   assert.equal(form().elements.startTime.value,'۰۸:۳۰');assert.equal(form().elements.endKm.value,'');
   assert.equal(form().elements.startKm.value,'۱۲۰٫۵');assert.equal(stored.missions['drive:1'].dailyFormDraft.startKm,120.5);
-  assert.equal(find('[data-inspection-comment="engine"]').value,'<با توضیح>');
+  assert(!engineDetails().open);toggleEngine();assert.equal(engineComment().value,'<با توضیح>');
+  toggleEngine();
   assert.equal(stored.missions['drive:1'].preDrive.note,'یادداشت قدیمی');
   async function exportBook(){
     const next=new Promise(resolve=>{app.exportFile=(blob,name)=>{const reader=new w.FileReader();reader.onload=()=>resolve({bytes:Buffer.from(reader.result),name});reader.readAsArrayBuffer(blob)}});

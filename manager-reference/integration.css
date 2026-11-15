@@ -30,3 +30,28 @@ button,input,select,textarea{font-family:inherit}
 .english,[lang=en]{font-family:'Times New Roman',serif}
 
 #entryScreen{display:none!important}
+
+/* The assessment shell supplies the header, vehicle name and page actions. */
+html,body,#appShell{height:auto!important;min-height:0!important;background:transparent!important}
+.topbar,.appFooter,.managerHero,.headerActions>.actionCard,
+#managerReviewComments,.finalCommentPanel,.finalCommentCard,[data-final-comment]{display:none!important}
+main{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;min-height:0!important}
+.headerActions{position:static!important;max-width:none!important;width:100%!important;margin:0!important;padding:0!important;background:transparent!important;box-shadow:none!important}
+body{font-size:19px;color:#244b43}
+.card,.dashboard .card,.analyticsGrid .card,.managerComparisonEntry{border:1px solid #d7e6df!important;border-radius:23px!important;background:#fff!important;box-shadow:0 6px 24px #214e3906!important;padding:26px!important}
+.sectionTitle h2{color:#244b43;font-size:25px!important;text-align:center}
+.sectionTitle{justify-content:center}
+.sectionTitle p{color:#6b8a7e;font-size:16px;line-height:1.9}
+.analyticsGrid{gap:22px!important}
+button,.button,.managerUploadButton,.comparisonUploadButton{font:inherit!important;border-radius:11px!important;min-height:44px}
+input,select,textarea{font:inherit;border-radius:13px!important;border-color:#d7e6df!important;background:#f7fbf9!important;color:#244b43!important}
+.dashboard{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.dashboard>.managerHeadline{border:1px solid #d7e6df;border-radius:23px;padding:24px;background:#fff;justify-content:center;flex-wrap:wrap}
+.dashboard .scoreOrb{background:#f8fcfa;border-color:#e0eee8;color:#244b43}
+.finalOpinionPanel,.finalCommentsPanel,.managerFinalComment{display:none!important}
+@media(max-width:760px){.dashboard{grid-template-columns:1fr}.card,.dashboard .card,.analyticsGrid .card{padding:18px!important}.sectionTitle h2{font-size:22px!important}}
+
+html:has(#integratedManager){overflow:hidden!important}
+html body#integratedManager{overflow:hidden!important;height:auto!important;min-height:0!important}
+body#integratedManager #appShell>header.topbar,body#integratedManager #appShell>.appFooter{display:none!important}
+body#integratedManager #managerReviewComments,body#integratedManager .finalCommentCard{display:none!important}

@@ -58,12 +58,6 @@ async function exportManagerDashboard(){
    return canvas.toDataURL("image/png").split(",")[1]};
  [["bar",27],["quality",52],["radar",77]].forEach(([kind,row])=>{const id=wb.addImage({base64:chartDataUrl(kind),extension:"png"});ws.addImage(id,{tl:{col:0,row:row-1},ext:{width:1040,height:430}});for(let rr=row;rr<row+24;rr++)ws.getRow(rr).height=15});
 
- /* Final comments from all three roles. */
- const comments=wb.addWorksheet(txt("نظرات نهایی","Final Comments"));comments.views=[{rightToLeft:fa,showGridLines:false}];comments.mergeCells("A1:D1");comments.getCell("A1").value=txt("نظرات نهایی ارزیاب، خبره و مدیریت","Evaluator, Expert and Management Final Comments");comments.getCell("A1").font={bold:true,size:17,color:{argb:"FFFFFFFF"}};comments.getCell("A1").fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF163B69"}};comments.getCell("A1").alignment={horizontal:"center"};comments.columns=[{width:26},{width:80},{width:14},{width:14}];
- const commentRows=[[txt("نظر نهایی ارزیاب","Evaluator Final Comment"),state.finalComments?.evaluator||""],[txt("نظر نهایی خبره","Expert Final Comment"),state.finalComments?.expert||""],[txt("نظر نهایی مدیریت","Management Final Comment"),state.finalComments?.manager||""]];
- commentRows.forEach((item,i)=>{const r=3+i*4;comments.getCell(r,1).value=item[0];comments.getCell(r,1).font={bold:true,color:{argb:"FF244B70"}};comments.getCell(r,1).fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEAF3F8"}};comments.mergeCells(r+1,1,r+3,4);const cell=comments.getCell(r+1,1);cell.value=item[1];cell.alignment={horizontal:fa?"right":"left",vertical:"top",wrapText:true};[r+1,r+2,r+3].forEach(x=>comments.getRow(x).height=24)});
- 
-
  /* Multi-vehicle comparison exported when one or more comparison JSON files are loaded. */
  let comparisonCases=[];try{const parsed=JSON.parse(dashboardStorage.getItem("bamco-multi-vehicle-comparisons")||"[]");if(Array.isArray(parsed))comparisonCases=parsed.filter(x=>x?.state?.scores&&typeof x.state.scores==="object")}catch(_){}
  if(!comparisonCases.length){try{const legacy=JSON.parse(dashboardStorage.getItem("bamco-second-vehicle-comparison")||"null");if(legacy?.state?.scores)comparisonCases=[legacy]}catch(_){}}

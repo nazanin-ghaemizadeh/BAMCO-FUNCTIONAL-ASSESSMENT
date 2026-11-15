@@ -355,3 +355,9 @@ body[data-view="comprehensive"] #kpis {grid-template-columns:repeat(3,minmax(0,1
 .comprehensive-question > summary small {color:#567469}
 .comprehensive-question > summary b {margin-inline-start:auto;color:#226c54;white-space:nowrap}
 .comprehensive-question .question {margin:0;border:0;border-top:1px solid #d5e5dc;border-radius:0 0 12px 12px}
+
+body.manager-dashboard-open :is(#workPanel,#dayProgressRoad){display:none!important}
+body.manager-dashboard-open #assessmentPageActions>:not(#managerPageActions){display:none!important}
+#managerPageActions{display:contents}
+#managerPageActions #managerExcelButton{margin-inline-start:auto}
+#comprehensiveDashboard{width:100%;min-width:0}

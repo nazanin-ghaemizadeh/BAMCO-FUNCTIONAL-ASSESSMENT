@@ -36,6 +36,8 @@ const labels = {
   historyCta:['مشاهده نتایج ثبت‌شده','Browse completed assessments','查看已完成的评估'],
   evaluatorCta:['ثبت و مدیریت ارزیابی','Record and manage assessments','记录和管理评估'],
   observerCta:['مشاهده موقعیت خودرو','View vehicle location','查看车辆位置'],
+  weighting:['وزن‌دهی','Weighting','权重设置'],
+  weightingCta:['وزن شاخص‌ها و زیرشاخص‌ها · به‌زودی','Criterion and subcriterion weights · Coming soon','指标与子指标权重 · 即将推出'],
   active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
@@ -194,7 +196,7 @@ function card(key, icon, action) {
 }
 
 function cards(...items) {
-  const grid = node('div', '', 'gate-grid'+(items.length===3?' three':''));
+  const grid = node('div', '', 'gate-grid'+(items.length>=3?' three':''));
   grid.append(...items);
   hub.append(grid);
 }
@@ -260,7 +262,11 @@ function render() {
     divider.after(toolbar);
   }
   if (screen === 'home') {
+    const weighting=card('weighting','results',()=>{});
+    weighting.disabled=true;
+    weighting.dataset.weightingPlaceholder='';
     cards(
+      weighting,
       card('active','setup',()=>navigate('active')),
       card('history','results',()=>navigate('history')),
       card('observer','observer',()=>navigate('observer'))

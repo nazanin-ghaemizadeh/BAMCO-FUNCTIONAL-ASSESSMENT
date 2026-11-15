@@ -361,3 +361,7 @@ body.manager-dashboard-open #assessmentPageActions>:not(#managerPageActions){dis
 #managerPageActions{display:contents}
 #managerPageActions #managerExcelButton{margin-inline-start:auto}
 #comprehensiveDashboard{width:100%;min-width:0}
+
+#assessmentHub .gate-card[data-weighting-placeholder]{grid-column:1/-1;height:155px;cursor:default;opacity:.8}
+#assessmentHub .gate-card[data-weighting-placeholder] .gate-illustration{display:none}
+#assessmentHub .gate-card[data-weighting-placeholder] .gate-cta{margin-top:10px}

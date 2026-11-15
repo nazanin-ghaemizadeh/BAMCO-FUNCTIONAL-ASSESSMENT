@@ -2490,8 +2490,8 @@ const dashboardData=dashboardHost.data();
 const dashboardValues={...(dashboardData.settings.storage||{})};
 const dashboardStorage={
  getItem(key){return dashboardValues[key]??null},
- setItem(key,value){dashboardValues[key]=String(value);dashboardHost.store({...dashboardValues})},
- removeItem(key){delete dashboardValues[key];dashboardHost.store({...dashboardValues})}
+ setItem(key,value){dashboardValues[key]=String(value)},
+ removeItem(key){delete dashboardValues[key]}
 };
 const dashboardGroups=dashboardData.categories.map((cat,index)=>({id:String(index+1),titleFa:cat,subgroups:[]}));
 for(const test of dashboardData.tests){
@@ -5390,7 +5390,7 @@ window.bindManagerControls=bindManagerControls;
  const save=document.createElement('button');save.type='button';save.className='primary';save.textContent='ذخیره داشبورد';
  const status=document.createElement('span');status.setAttribute('role','status');
  save.disabled=dashboardData.readOnly;
- save.onclick=async()=>{save.disabled=true;status.textContent='در حال ذخیره…';try{persist();status.textContent=await dashboardHost.save()?'داشبورد ذخیره شد.':'ذخیره تأیید نشد؛ دوباره تلاش کنید.'}catch{status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.'}finally{save.disabled=dashboardData.readOnly}};
+ save.onclick=async()=>{save.disabled=true;status.textContent='در حال ذخیره…';try{persist();status.textContent=await dashboardHost.save({...dashboardValues},window)?'داشبورد ذخیره شد.':'ذخیره تأیید نشد؛ دوباره تلاش کنید.'}catch{status.textContent='ذخیره انجام نشد؛ دوباره تلاش کنید.'}finally{save.disabled=dashboardData.readOnly}};
  actions.prepend(save,status);
  document.querySelectorAll('#managerVehiclePhotos,#evaluatorVehiclePhotos').forEach(el=>el.remove());
  document.getElementById('switchRoleButton').hidden=true;

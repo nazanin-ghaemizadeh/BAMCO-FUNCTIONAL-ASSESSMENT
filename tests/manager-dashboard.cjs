@@ -6,7 +6,7 @@ function open(){
  const dom=new JSDOM(fs.readFileSync(root+'manager.html','utf8'),{url:'https://qa.example/manager-reference/manager.html',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.ExcelJS=ExcelJS;w.alert=message=>{throw Error(message)};w.scrollTo=()=>{};w.ResizeObserver=class{observe(){} disconnect(){}};w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
  const payload={snapshot,tests:[{id:'CR-1',cat:'ایمنی',sub:'ترمز',name:'بررسی',measure:'روش',profile:'شرایط'}],categories:['ایمنی'],case:{id:'a',title:'Test vehicle'},settings,readOnly:false};
- Object.defineProperty(w,'parent',{value:{BAMCO_MANAGER:{data:()=>payload,store:storage=>{saved=storage;settings={storage}},save:async()=>true,close:()=>{}},document:w.document}});
+ Object.defineProperty(w,'parent',{value:{BAMCO_MANAGER:{data:()=>payload,save:async storage=>{saved=storage;settings={storage};return true},close:()=>{}},document:w.document}});
  for(const file of ['bridge.js','scripts-2.js','scripts-3.js','scripts-4.js','scripts-5.js','scripts-6.js','scripts-7-base.js','scripts-8.js','scripts-9.js','scripts-10.js','scripts-11.js','integration.js','ai-review.js'])require('node:vm').runInContext(fs.readFileSync(root+file,'utf8'),dom.getInternalVMContext());
  return dom;
 }
@@ -16,6 +16,7 @@ function open(){
  assert(!d.getElementById('managerVehiclePhotos'));
  assert(!d.getElementById('entryScreen').hidden===false);
  require('node:vm').runInContext("managerWeightState.activeSource='qa.xlsx';persistManager();persist()",dom.getInternalVMContext());
+ assert.equal(saved,undefined);d.querySelector('.actionCard button.primary').click();
  assert.equal(JSON.parse(saved['bamco-vehicle-assessment']).scores['1/ترمز/CR-1'],7);
  assert.equal(Object.keys(JSON.parse(saved['bamco-vehicle-assessment']).scores).length,1);
  dom.window.close();dom=open();w=dom.window;d=w.document;

@@ -34,7 +34,7 @@ const after=structuredClone(saved);api.open(after,v=>saved=structuredClone(v),fa
 click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="route"]');assert(d.querySelector('#routeEditor fieldset').disabled);assert([...d.querySelectorAll('#routeEditor .vehicle-dropdown-trigger')].every(b=>b.disabled));
 api.open(initial,v=>saved=structuredClone(v),false);click('[data-open="supplementary"]');
 const f=d.getElementById('staticTestForm');f.elements.name.value='USER TEST';f.elements.sub.value='USER SUB';f.elements.profile.value='USER METHOD';f.elements.measure.value='USER EVIDENCE';submit('staticTestForm');assert(api.eligibleTests('supplementary').some(t=>t.name==='USER TEST'));
-const custom=api.eligibleTests('supplementary').find(t=>t.name==='USER TEST');set('questionSearch','USER TEST');d.getElementById('questionSearch').dispatchEvent(new w.Event('input',{bubbles:true}));click('[data-test="'+custom.id+'"][data-score="8"]');assert.equal(saved.records['supplementary:general:'+custom.id].score,8);
+const custom=api.eligibleTests('supplementary').find(t=>t.name==='USER TEST');set('questionSearch','USER TEST');d.getElementById('questionSearch').dispatchEvent(new w.Event('input',{bubbles:true}));click('[data-test="'+custom.id+'"][data-score="8"]');await api.saveDraft();assert.equal(saved.records['supplementary:general:'+custom.id].score,8);
 api.open(saved,v=>saved=structuredClone(v),false);assert(api.eligibleTests('supplementary').some(t=>t.id===custom.id));
 const legacy={setupComplete:true,config:{durabilityPlannerVersion:1,durKm:45000,durDays:107,twoDiff:'yes'},records:{'durability:1:CR-0002':{score:9}},missions:{'durability:1':{driver:'KEEP'}},mileage:{drive:{},durability:{1:250}}};
 api.open(legacy,v=>saved=structuredClone(v),false);const old=JSON.stringify(api.durabilityPlan());click('[data-open="setup"]');submit('vehicleForm');assert.equal(JSON.stringify(api.durabilityPlan()),old);assert.equal(saved.records['durability:1:CR-0002'].score,9);
@@ -92,7 +92,7 @@ assert(d.querySelector('#questionsPanel [data-pagejump]'));
 assert.equal(api.scoreContext().key,'comprehensive:general');
 const search=d.getElementById('questionSearch');search.value='CR-0443';search.dispatchEvent(new w.Event('input',{bubbles:true}));
 click('[data-test="CR-0443"][data-score="9"]');
-assert.equal(saved.records['comprehensive:general:CR-0443'].score,9);assert.equal(saved.records['drive:1:CR-0443'].score,4);
+await api.saveDraft();assert.equal(saved.records['comprehensive:general:CR-0443'].score,9);assert.equal(saved.records['drive:1:CR-0443'].score,4);
 assert.deepEqual(saved.mileage,surveySource.mileage);
 assert.deepEqual(errors,[]);console.log('PASS app: setup, final drive program, Excel vehicle filters, route editing with frozen history, database snapshot reopen, actual/preview separation, custom static test scoring, legacy preservation.');dom.window.close();
 

@@ -30,8 +30,11 @@
    return {snapshot:{config:{...snapshot.config},records},tests,categories:app.criterionNames(),
     case:{id:caseId,title:window.BAMCO_CASES.current().title},settings:app.mission('comprehensive-dashboard:general'),readOnly:app.isReadOnly()};
   },
-  store(storage){if(caseId!==window.BAMCO_CASES.current()?.id||app.isReadOnly())return;app.setMission('comprehensive-dashboard:general',{storage})},
-  async save(){if(caseId!==window.BAMCO_CASES.current()?.id||app.isReadOnly())return false;return window.BAMCO_CASES.saveNow(app.snapshot())},
+  async save(storage,source){
+   if(!frame||source!==frame.contentWindow||caseId!==window.BAMCO_CASES.current()?.id||app.isReadOnly())return false;
+   app.setMission('comprehensive-dashboard:general',{storage});
+   return app.saveDraft();
+  },
   mountActions(nodes){actions?.remove();actions=document.createElement('div');actions.id='managerPageActions';actions.append(...nodes);document.getElementById('assessmentPageActions').append(actions)},
   resize(height){if(frame)frame.style.height=Math.ceil(Math.max(400,height))+'px'},
   ready,close
@@ -44,7 +47,7 @@
   notice.textContent='در حال بارگذاری داشبورد مدیریتی…';
   const target=document.createElement('iframe');frame=target;
   frame.title='داشبورد مدیریتی ارزیابی جامع خودرو';
-  frame.src='./manager-reference/view/manager.html?v=dashboard-pickup-2';
+  frame.src='./manager-reference/view/manager.html?v=explicit-save-1';
   frame.style.cssText='width:100%;height:600px;border:0;background:transparent';
   frame.addEventListener('error',()=>failed(target));
   frame.addEventListener('load',()=>failed(target));

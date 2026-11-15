@@ -440,10 +440,11 @@ function updateCustom(c,id,patch){
 
 function uploadPicture(c,id,file){
  if(!file||!file.type.startsWith('image/'))return;
+ const session=app.editSession();
  const task=new Promise((resolve,reject)=>{
   const reader=new FileReader();reader.onerror=()=>reject(Error('Image read failed'));
   reader.onload=()=>{const image=new Image();image.onerror=()=>reject(Error('Image decode failed'));image.onload=()=>{try{
-   if(context()?.key!==c.key){resolve();return}
+   if(session!==app.editSession()||context()?.key!==c.key){resolve();return}
    const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(image.width,image.height));canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);updateCustom(c,id,{photo:canvas.toDataURL('image/jpeg',.55)});renderFinal(c);resolve();
   }catch(error){reject(error)}};image.src=reader.result};reader.readAsDataURL(file);
  });
@@ -451,7 +452,6 @@ function uploadPicture(c,id,file){
 }
 
 function roadContext() {
-  if (document.body.dataset.view === 'supplementary') return {section:'scores'};
   return (app.scoreContext || app.dayContext)();
 }
 

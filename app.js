@@ -27,13 +27,67 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const fa=s=>String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ة/g,'ه');
 let cloudSave, readOnly = false, dayScreen = 'days';
 function snapshot(){return {config:state.config,records:state.records,mileage:state.mileage,setupComplete:state.setupComplete,missions:state.missions||{},durabilitySchedule:state.durabilitySchedule,checkpointAssignments:state.checkpointAssignments||{}}}
-function save(){if(readOnly)return false;if(cloudSave){cloudSave(snapshot());return true}try{localStorage.setItem(KEY,JSON.stringify(snapshot()));return true}catch(e){toast('حافظه مرورگر پر شده است؛ نسخه پشتیبان بگیرید.');return false}}
+function save(data=snapshot()){if(readOnly)return false;if(cloudSave){cloudSave(data);return true}try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch(e){toast('حافظه مرورگر پر شده است؛ نسخه پشتیبان بگیرید.');return false}}
+// Only the active editing screen owns these changes. Navigation drops the overlay.
+let draft = null, caseGeneration = 0;
+function scoreContext(){
+ if(['comprehensive','supplementary'].includes(state.tab))return {tab:state.tab,key:state.tab+':general',section:'scores'};
+ return dayContext();
+}
+function syncDraft(){
+ const c=scoreContext();
+ const key=c?.section==='scores'?c.key:state.tab==='comprehensiveDashboard'?state.tab:
+   state.tab==='results'?'results:'+dashboardModule:null;
+ if(key!==(draft?.key??null))draft=key?{key,records:{},missions:{},version:0,pictures:new Set()}:null;
+}
+function mission(key){return draft?.missions[key]??state.missions?.[key]??{}}
+function workingSnapshot(){
+ const data=snapshot();
+ return draft?{...data,records:{...data.records,...draft.records},missions:{...data.missions,...draft.missions}}:data;
+}
+function edit(group,key,value){
+ if(draft){
+  draft[group][key]=value;
+  draft.version++;
+  document.dispatchEvent(new Event('bamco:draft-change'));
+ }else{
+  state[group][key]=value;
+  save();
+ }
+}
+async function saveDraft(){
+ const page=draft;
+ if(!page||readOnly)return false;
+ const original=snapshot(),submitted=workingSnapshot();
+ const changes={records:page.records,missions:page.missions};
+ // Subsequent submissions must include the edits already submitted, while later typing stays staged.
+ for(const group of ['records','missions']){
+  state[group]=submitted[group];
+  page[group]={};
+ }
+ const generation=caseGeneration;
+ let ok=false;
+ try{ok=window.BAMCO_CASES?.saveNow?await window.BAMCO_CASES.saveNow(submitted):save(submitted)}
+ finally{
+  if(!ok&&generation===caseGeneration){
+   for(const group of ['records','missions']){
+    for(const [key,value] of Object.entries(changes[group])){
+     if(state[group][key]!==value)continue;
+     if(draft===page&&!Object.hasOwn(page[group],key))page[group][key]=value;
+     if(Object.hasOwn(original[group],key))state[group][key]=original[group][key];
+     else delete state[group][key];
+    }
+   }
+  }
+ }
+ return ok;
+}
 let tm;function toast(s){const t=byId('toast');t.textContent=s;t.classList.remove('hidden');clearTimeout(tm);tm=setTimeout(()=>t.classList.add('hidden'),3200)}
 function conf(){return state.config}
 function parts(s){return String(s||'').split(/\s*\/\s*|\s*\|\s*/).map(x=>x.trim()).filter(Boolean)}
 function allowed(rule,value){if(Array.isArray(rule))return rule.includes(String(value));if(rule==='None')return false;if(!rule||rule==='All')return true;return parts(rule).includes(String(value))}
 function applicable(t){const v=t.vehicle||{},c=conf();return allowed(v.cls,c.vclass)&&allowed(v.body,c.body==='Station Wagon'?'Station':c.body)&&allowed(v.power,c.power)&&allowed(v.gear,c.gear)&&allowed(v.drive,c.driveType)}
-function staticCustomTests(){return (state.missions?.['supplementary:general']?.customTests||[]).map(t=>({...t,scope:['supplementary']}))}
+function staticCustomTests(){return (mission('supplementary:general').customTests||[]).map(t=>({...t,scope:['supplementary']}))}
 function candidates(tab){
  const all=tab==='comprehensive';
  const bank=all||tab==='supplementary'?[...DB.tests,...staticCustomTests()]:DB.tests;
@@ -112,9 +166,8 @@ function updateDayMileage(tab, day, km) {
   state.config.durabilityPlannerVersion = 2;
 }
 function ratedKey(t){return state.tab+':'+(dayContext()?currentDay():'general')+':'+t.id}
-function record(t){return state.records[ratedKey(t)]||{}}
+function record(t){const key=ratedKey(t);return draft?.records[key]??state.records[key]??{}}
 function avg(items){if(!items.length)return null;return items.reduce((a,b)=>a+b,0)/items.length}
-function scoresForTab(tab){return Object.entries(state.records).filter(([k,v])=>k.startsWith(tab+':')&&num(v.score)>=1&&num(v.score)<=10).map(([k,v])=>({id:k.split(':').pop(),score:num(v.score),entry:v}))}
 function viewSummary(items){const scored=items.filter(t=>num(record(t).score)>0).length;return [items.length,scored]}
 function readSetup(){
  const config={...conf(),durabilityPlannerVersion:2,routeCaps:{},routeShares:{},startCity:byId('startCity').value};
@@ -201,21 +254,6 @@ document.addEventListener('submit',e=>{if(e.target.id!=='routeEditor')return;e.p
  }catch(error){toast(error.message)}
 });
 
-function renderKpis(items){
-if(state.tab==='comprehensive'){
- const scores=items.map(t=>Number(record(t).score)).filter(s=>s>=1&&s<=10);
- byId('kpis').innerHTML=[['آزمون‌های قابل‌اجرا',number(items.length)],['نمره‌های ثبت‌شده',number(scores.length)],['میانگین نمره',scores.length?number(avg(scores))+' / '+number(10):'—']]
-  .map(([label,value])=>'<div class="kpi"><small>'+label+'</small><strong>'+value+'</strong></div>').join('');
- return;
-}
-const total=state.tab==='drive'?candidates('drive').length:state.tab==='durability'?candidates('durability').length:candidates('supplementary').length;
-const count=scoresForTab(state.tab).length,mean=avg(scoresForTab(state.tab).map(x=>x.score));
-const current=state.tab==='drive'?state.driveDay:state.durDay;
-const days=state.tab==='supplementary'?'بدون زمان‌بندی':(state.tab==='drive'?26:num(conf().durDays))+' روز';
-byId('kpis').innerHTML=[
-['آزمون‌های قابل‌اجرا',number(total)],['نمره‌های ثبت‌شده',number(count)],['میانگین نمره',mean==null?'—':number(mean)+' / ۱۰'],['برنامه ارزیابی',days]
-].map(x=>'<div class="kpi"><small>'+esc(x[0])+'</small><strong>'+esc(x[1])+'</strong></div>').join('')
-}
 function renderCategories(items){
 const grouped=new Map();items.forEach(t=>grouped.set(t.cat,(grouped.get(t.cat)||0)+1));
 byId('categories').innerHTML=['<button class="cat-item '+(state.category==='همه'?'active':'')+'" data-category="همه"><span>همه شاخص‌ها</span><span>'+number(items.length)+'</span></button>'].concat([...new Set([...categories,...grouped.keys()])].filter(c=>grouped.has(c)).map(c=>'<button class="cat-item '+(state.category===c?'active':'')+'" data-category="'+esc(c)+'"><span>'+esc(c)+'</span><span>'+number(grouped.get(c))+'</span></button>')).join('')
@@ -417,11 +455,12 @@ function routeMixHtml(tab){
 }
 
 function renderResults(){
- byId('resultsPanel').innerHTML='<div class="toolbar"><button class="primary" data-dashboard-export>خروجی اکسل داشبورد</button><button class="secondary" data-exportcsv="1">دریافت گزارش آزمون‌ها</button><button class="secondary" data-dashboard-print>چاپ داشبورد</button></div><div id="assessmentDashboard"></div>'+(dashboardModule==='supplementary'?'':dashboardModule?routeMixHtml(dashboardModule):routeMixHtml('drive')+routeMixHtml('durability'));
+ byId('resultsPanel').innerHTML='<div class="toolbar">'+(readOnly?'':'<button class="primary" data-report-save></button><span data-report-save-status role="status"></span>')+'<button class="primary" data-dashboard-export>خروجی اکسل داشبورد</button><button class="secondary" data-exportcsv="1">دریافت گزارش آزمون‌ها</button><button class="secondary" data-dashboard-print>چاپ داشبورد</button></div><div id="assessmentDashboard"></div>'+(dashboardModule==='supplementary'?'':dashboardModule?routeMixHtml(dashboardModule):routeMixHtml('drive')+routeMixHtml('durability'));
  window.BAMCO_DASHBOARD?.render();
 }
 
 function render(){
+syncDraft();
 document.body.dataset.view=state.tab;
 renderGate();
 const titles={home:['',''],modules:['پرونده خودرو',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],comprehensive:['ارزیابی جامع خودرو',''],supplementary:['بررسی استاتیک','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['داشبورد و نتایج','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
@@ -447,14 +486,13 @@ renderDayNavigation();
 const workspace=byId('workPanel').querySelector('.workspace');
 workspace.classList.toggle('hidden',Boolean(daily)&&['days','menu'].includes(dayScreen));
 workspace.classList.toggle('assessment-single-section',Boolean(daily)&&dayScreen!=='scores');
-byId('kpis').classList.toggle('hidden',Boolean(daily)||state.tab==='comprehensive');
 byId('schedulePanel').classList.toggle('hidden',state.tab==='comprehensive'||Boolean(daily)&&dayScreen==='scores');
 byId('questionsPanel').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 workspace.querySelector('.sidebar').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 if(state.tab==='setup')renderSetup();
 else if(state.tab==='results')renderResults();
 else if(Object.hasOwn(modes,state.tab)){
- if(!daily){const items=dayItems();renderKpis(items);if(state.tab!=='comprehensive')renderSchedule();renderQuestions()}
+ if(!daily){if(state.tab!=='comprehensive')renderSchedule();renderQuestions()}
  else {
   byId('schedulePanel').replaceChildren();byId('questionsPanel').replaceChildren();
   if(dayScreen==='route')renderSchedule();
@@ -553,20 +591,29 @@ function buildExcelReport(sheets){
 }
 function exportCSV(){exportFile(buildExcelReport(excelReportSheets()),'BAMCO-assessment-report.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');toast('گزارش Excel آماده شد.')}
 
-function auditChange(action,details={}){state.missions??={};const old=state.missions['audit:general']||{};state.missions['audit:general']={entries:[...(old.entries||[]),{at:new Date().toISOString(),action,...details}].slice(-2000)}}
-function updateRating(btn){if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay)){toast('ابتدا پیمایش واقعی روز را در فرم روزانه ثبت کنید.');return}const id=btn.dataset.test,t=testById.get(id);if(!t)return;const k=ratedKey(t);const rec={...(state.records[k]||{})},selected=num(btn.dataset.score);if(num(rec.score)===selected)delete rec.score;else rec.score=selected;rec.band=window.BAMCO_REVIEW_CONTRACT.band(rec.score);auditChange('scoreChange',{testId:id,from:state.records[k]?.score??null,to:rec.score??null});rec.updatedAt=new Date().toISOString();state.records[k]=rec;save();
+function updateRating(btn){
+ if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay)){toast('ابتدا پیمایش واقعی روز را در فرم روزانه ثبت کنید.');return}
+ const test=testById.get(btn.dataset.test);if(!test)return;
+ const previous=record(test),rec={...previous},selected=num(btn.dataset.score);
+ if(num(rec.score)===selected)delete rec.score;else rec.score=selected;
+ rec.band=window.BAMCO_REVIEW_CONTRACT.band(rec.score);
+ rec.updatedAt=new Date().toISOString();
+ const audit=mission('audit:general');
+ edit('missions','audit:general',{entries:[...(audit.entries||[]),{at:rec.updatedAt,action:'scoreChange',testId:test.id,from:previous.score??null,to:rec.score??null}].slice(-2000)});
+ edit('records',ratedKey(test),rec);
  const sy=window.scrollY;render();window.scrollTo(0,sy)}
 const pendingPictures=new Set();
-function trackPicture(task){pendingPictures.add(task);task.finally(()=>pendingPictures.delete(task)).catch(()=>{});return task}
+function currentPictures(){return draft?.pictures??pendingPictures}
+function trackPicture(task){const pictures=currentPictures();pictures.add(task);task.finally(()=>pictures.delete(task)).catch(()=>{});return task}
 function uploadPicture(file,testId){
- const assessment=cloudSave,t=testById.get(testId);if(!file||!file.type.startsWith('image/')||!t)return;const k=ratedKey(t);
+ const page=draft,assessment=cloudSave,t=testById.get(testId);if(!file||!file.type.startsWith('image/')||!t)return;const k=ratedKey(t);
  trackPicture(new Promise((resolve,reject)=>{
   const reader=new FileReader();reader.onerror=()=>reject(Error('Image read failed'));
   reader.onload=()=>{const im=new Image();im.onerror=()=>reject(Error('Image decode failed'));im.onload=()=>{try{
-   if(assessment!==cloudSave){resolve();return}
+   if(page!==draft||assessment!==cloudSave){resolve();return}
    const canvas=document.createElement('canvas'),max=850,ratio=Math.min(1,max/Math.max(im.width,im.height));canvas.width=Math.max(1,Math.round(im.width*ratio));canvas.height=Math.max(1,Math.round(im.height*ratio));canvas.getContext('2d').drawImage(im,0,0,canvas.width,canvas.height);
    const data=canvas.toDataURL('image/jpeg',.55);
-   state.records[k]={...(state.records[k]||{}),photo:data};if(save()){toast('عکس برای این آزمون ثبت شد.');const sy=window.scrollY;render();window.scrollTo(0,sy)}resolve();
+   edit('records',k,{...record(t),photo:data});const sy=window.scrollY;render();window.scrollTo(0,sy);resolve();
   }catch(error){reject(error)}};im.src=reader.result};reader.readAsDataURL(file);
  })).catch(()=>toast('ثبت تصویر انجام نشد؛ دوباره تصویر را انتخاب کنید.'));
 }
@@ -580,6 +627,7 @@ byId('vehicleForm').addEventListener('submit',async e=>{
  const {config,plan}=result;
  if(!Number.isInteger(config.driveKm)||config.driveKm<1||config.driveKm>20000){toast('هدف قابلیت رانندگی باید عدد صحیح بین ۱ تا ۲۰٬۰۰۰ باشد.');return}
  if(!['yes','no'].includes(config.twoDiff)){toast('وضعیت دو دیفرانسیل را انتخاب کنید.');return}
+ const original=snapshot();
  config.durDays=plan.days;
  state.config=config;
  state.durabilitySchedule=plan.schedule;
@@ -608,7 +656,11 @@ byId('vehicleForm').addEventListener('submit',async e=>{
    form.removeEventListener('change',onEdit);
    if(confirmation.current?.()?.id===id)button.disabled=readOnly;
   }
-  if(confirmation.current?.()?.id!==id||state.tab!=='setup')return;
+  if(confirmation.current?.()?.id!==id)return;
+  if(!saved&&state.config===config){
+   for(const key of ['config','durabilitySchedule','setupComplete','checkpointAssignments'])state[key]=original[key];
+  }
+  if(state.tab!=='setup')return;
   if(!saved){toast('ذخیره تأیید نشد. دوباره ذخیره را بزنید.');return}
   if(edited)return;
  }else if(!save())return;
@@ -633,13 +685,13 @@ if(el.dataset.exportcsv){exportCSV();return}
 if(el.dataset.import){if(readOnly)return;byId('importBackup').click();return}
 if(el.dataset.clear){if(readOnly)return;if(confirm('تمام نمره‌ها و یادداشت‌های ثبت‌شده پاک شوند؟')){state.records={};save();render();toast('نتایج پاک شدند.')}return}
 });
-document.addEventListener('input',e=>{const el=e.target;if(readOnly||!el.dataset.note)return;const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value,updatedAt:new Date().toISOString()};save()});
-document.addEventListener('change',e=>{const el=e.target;if(readOnly)return;if(el.dataset.note){const t=testById.get(el.dataset.note);if(!t)return;const k=ratedKey(t);state.records[k]={...(state.records[k]||{}),note:el.value,updatedAt:new Date().toISOString()};save();return}if(el.dataset.photo){uploadPicture(el.files?.[0],el.dataset.photo);return}});
+document.addEventListener('input',e=>{const el=e.target;if(readOnly||scoreContext()?.section!=='scores'||!el.dataset.note)return;const t=testById.get(el.dataset.note);if(!t)return;if(record(t).note!==el.value)edit('records',ratedKey(t),{...record(t),note:el.value,updatedAt:new Date().toISOString()})});
+document.addEventListener('change',e=>{const el=e.target;if(readOnly||scoreContext()?.section!=='scores')return;if(el.dataset.note){const t=testById.get(el.dataset.note);if(!t)return;if(record(t).note!==el.value)edit('records',ratedKey(t),{...record(t),note:el.value,updatedAt:new Date().toISOString()});return}if(el.dataset.photo){uploadPicture(el.files?.[0],el.dataset.photo);return}});
 document.addEventListener('input',e=>{if(e.target.id==='questionSearch'){state.query=e.target.value;state.page=0;const field=e.target;const pos=field.selectionStart;renderQuestions();const newField=byId('questionSearch');newField.focus();newField.setSelectionRange(pos,pos)}});
 byId('importBackup').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const assessment=cloudSave;const fr=new FileReader();fr.onload=()=>{if(assessment!==cloudSave)return;try{const obj=JSON.parse(fr.result);if(!obj||!obj.records||!obj.config)throw Error('Invalid');if(!confirm('اطلاعات موجود با فایل پشتیبان جایگزین شود؟'))return;state.config=normalizeConfig(obj.config,true);state.records=obj.records;state.mileage=obj.mileage||{drive:{},durability:{}};state.missions=obj.missions||{};state.durabilitySchedule=obj.durabilitySchedule;state.checkpointAssignments=obj.checkpointAssignments||{};state.setupComplete=true;save();render();toast('بازیابی پشتیبان انجام شد.')}catch(err){toast('فایل JSON معتبر نیست.')}};fr.readAsText(file);e.target.value=''});
 window.BAMCO_ASSESSMENT={
   open(data,onSave,locked){
-    cloudSave=onSave;readOnly=locked;dayScreen='days';dashboardModule=null;
+    caseGeneration++;draft=null;cloudSave=onSave;readOnly=locked;dayScreen='days';dashboardModule=null;
     document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select').forEach(el=>el.disabled=locked);
     Object.assign(state,{
       config:normalizeConfig(data.config||{},Boolean(data.setupComplete)),
@@ -650,7 +702,20 @@ window.BAMCO_ASSESSMENT={
     if(state.durabilitySchedule)state.config.durDays=state.durabilitySchedule.length;
     if(caseDocument())restoreRoute();else render();
   },
-  applyReconciledSnapshot(data){
+  applyReconciledSnapshot(data,submitted){
+    // Keep only edits made after Save, including when the user resolves a conflict.
+    if(draft&&submitted){
+      const staged={...submitted};
+      for(const group of ['records','missions'])staged[group]={...submitted[group],...draft[group]};
+      const rebased=window.BAMCO_RECONCILE(submitted,staged,data).snapshot;
+      for(const group of ['records','missions']){
+        for(const key of Object.keys(draft[group])){
+          const next=rebased[group]?.[key];
+          if(next===data[group]?.[key])delete draft[group][key];
+          else draft[group][key]=next;
+        }
+      }
+    }
     state.config=normalizeConfig(data.config||{},Boolean(data.setupComplete));
     state.records=data.records||{};
     state.missions=data.missions||{};
@@ -659,7 +724,7 @@ window.BAMCO_ASSESSMENT={
     state.durabilitySchedule=data.durabilitySchedule;
     state.checkpointAssignments=data.checkpointAssignments||{};
     // The daily and setup forms may contain drafts that have not been submitted.
-    if(dayContext()?.section==='scores'||state.tab==='comprehensive'){
+    if(scoreContext()?.section==='scores'||state.tab==='results'){
       const focus=document.activeElement;
       const editingNote=focus?.matches('textarea[data-note],textarea[data-custom-note]');
       const cursor=editingNote?[focus.selectionStart,focus.selectionEnd]:null;
@@ -668,15 +733,15 @@ window.BAMCO_ASSESSMENT={
       if(replacement){replacement.focus({preventScroll:true});replacement.setSelectionRange(...cursor)}
     }
   },
-  saveNow:save,trackPicture,async waitForImages(){while(pendingPictures.size)await Promise.all([...pendingPictures])},
+  saveNow:save,saveDraft,editSession(){return draft},hasPendingImages(){return currentPictures().size>0},trackPicture,async waitForImages(){const pictures=currentPictures();while(pictures.size)await Promise.all([...pictures])},
   openDashboard(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Dashboard');else{dashboardModule=null;state.tab='results';dayScreen='days';render()}},
   navigateModule(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Menu')},reportMode(){return dashboardModule},
-  dayContext,scoreContext(){return state.tab==='comprehensive'?{tab:'comprehensive',key:'comprehensive:general',section:'scores'}:dayContext()},
+  dayContext,scoreContext,
   criterionNames(){return categories.slice()},
-  snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
+  snapshot:workingSnapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},
-  mission(key){return state.missions?.[key]||{}},
-  setMission(key,mission){if(!cloudSave||readOnly)return;state.missions[key]=mission;save()},
+  mission,
+  setMission(key,mission){if(!cloudSave||readOnly)return;edit('missions',key,mission)},
   setDayMileage(tab,day,value){
     if(!cloudSave || readOnly || !['drive','durability'].includes(tab)) return;
     const km = num(value);
@@ -686,13 +751,33 @@ window.BAMCO_ASSESSMENT={
   },
   async saveDailyForm(context, mission, distance){
     if(!cloudSave || readOnly || dayContext()?.key !== context.key) return false;
-    if(distance !== null) updateDayMileage(context.tab, context.day, distance);
-    state.missions[context.key] = mission;
-    return window.BAMCO_CASES?.saveNow ? window.BAMCO_CASES.saveNow(snapshot()) : save();
+    const before=snapshot(),generation=caseGeneration;
+    if(distance!==null){
+      state.config={...state.config};
+      state.mileage={...state.mileage,[context.tab]:{...state.mileage[context.tab]}};
+      state.checkpointAssignments={...state.checkpointAssignments};
+      updateDayMileage(context.tab,context.day,distance);
+    }
+    state.missions={...state.missions,[context.key]:mission};
+    const submitted=snapshot();
+    let ok=false;
+    try{ok=window.BAMCO_CASES?.saveNow?await window.BAMCO_CASES.saveNow(submitted):save(submitted)}
+    finally{
+      if(!ok&&generation===caseGeneration){
+        for(const key of ['config','mileage','durabilitySchedule','checkpointAssignments']){
+          if(state[key]===submitted[key])state[key]=before[key];
+        }
+        if(state.missions[context.key]===mission){
+          if(Object.hasOwn(before.missions,context.key))state.missions[context.key]=before.missions[context.key];
+          else delete state.missions[context.key];
+        }
+      }
+    }
+    return ok;
   },
   dayProgress(){const items=dayItems(),scored=items.filter(t=>num(record(t).score)>=1&&num(record(t).score)<=10).length;return {total:items.length,scored,remaining:Math.max(0,items.length-scored),complete:items.length===0||scored===items.length}},
   isReadOnly(){return readOnly},
-  home(){document.dispatchEvent(new Event('bamco:assessment-close'));cloudSave=null;readOnly=false;state.tab='home';render()},
+  home(){caseGeneration++;document.dispatchEvent(new Event('bamco:assessment-close'));cloudSave=null;readOnly=false;state.tab='home';render()},
   legacy(){try{
     const data=JSON.parse(localStorage.getItem(KEY)||'null');
     if(data)data.missions=JSON.parse(localStorage.getItem('bamco-drive-day-metadata-v2')||'{}');
@@ -701,7 +786,7 @@ window.BAMCO_ASSESSMENT={
 };
 
 function staticTestForm(){return '<details class="static-test-builder"><summary>افزودن آزمون جدید</summary><form id="staticTestForm"><div class="formgrid"><label>شاخص<select name="cat">'+categories.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label><label>عنوان آزمون<input name="name" required maxlength="250"></label><label>زیرشاخص<input name="sub" required maxlength="200"></label></div><label>روش اجرای آزمون<textarea name="profile" required maxlength="3000"></textarea></label><label>راهنمای ارزیابی کیفی<textarea name="measure" required maxlength="3000"></textarea></label><button class="primary" '+(readOnly?'disabled':'')+'>افزودن آزمون</button></form></details>'}
-document.addEventListener('submit',e=>{if(e.target.id!=='staticTestForm')return;e.preventDefault();if(readOnly)return;const f=new FormData(e.target),test={id:'CUSTOM-'+crypto.randomUUID(),cat:f.get('cat'),sub:f.get('sub').trim(),name:f.get('name').trim(),profile:f.get('profile').trim(),measure:f.get('measure').trim(),vehicle:{},scope:['supplementary']};if(!test.name||!test.sub||!test.profile||!test.measure)return;state.missions??={};const previous=state.missions['supplementary:general']||{};state.missions['supplementary:general']={...previous,customTests:[...(previous.customTests||[]),test]};testById.set(test.id,test);save();render();toast('آزمون استاتیک افزوده شد.');});
+document.addEventListener('submit',e=>{if(e.target.id!=='staticTestForm')return;e.preventDefault();if(readOnly)return;const f=new FormData(e.target),test={id:'CUSTOM-'+crypto.randomUUID(),cat:f.get('cat'),sub:f.get('sub').trim(),name:f.get('name').trim(),profile:f.get('profile').trim(),measure:f.get('measure').trim(),vehicle:{},scope:['supplementary']};if(!test.name||!test.sub||!test.profile||!test.measure)return;const previous=mission('supplementary:general');edit('missions','supplementary:general',{...previous,customTests:[...(previous.customTests||[]),test]});render();toast('آزمون استاتیک افزوده شد.');});
 document.addEventListener('bamco:render',routeChoices);
 
 state.tab='home';

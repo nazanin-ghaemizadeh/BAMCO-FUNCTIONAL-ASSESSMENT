@@ -26,6 +26,10 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
     field.dispatchEvent(new w.Event('input',{bubbles:true}));
     return field.value;
   };
+  km('startKm','7788');click('[data-inspection="engine-oil-level"]');
+  click('#assessmentTabActions button');click('[data-daysection="form"]');
+  assert.equal(writes,0);assert.equal(form().elements.startKm.value,'');
+  assert.equal(find('[data-inspection="engine-oil-level"]').checked,false);
   assert.equal(km('startKm','1200'),'۱۲۰۰');
   assert.equal(km('endKm','١٥٠٠'),'۱۵۰۰');
   assert.equal(form().elements.distanceKm.value,'۳۰۰');

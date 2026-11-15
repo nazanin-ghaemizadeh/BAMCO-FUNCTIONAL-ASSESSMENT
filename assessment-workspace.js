@@ -514,11 +514,11 @@ async function openAssessment(id) {
 }
 
 function queueSave(snapshot) {
-  pending = structuredClone(snapshot);
+  recovery=null;pending = structuredClone(snapshot);
   if(syncState!=='overlap' && syncState!=='unavailable') flush();
 }
 
-let overlapReview=null;
+let overlapReview=null,recovery=null;
 
 function showOverlaps(host) {
   const review=overlapReview;
@@ -564,12 +564,15 @@ async function flush(decision) {
       if(!error && Number.isInteger(data?.revision)){
         row.snapshot=snapshot;
         row.revision=data.revision;
+        if(!pending&&recovery?.row===row)app.applyReconciledSnapshot(structuredClone(snapshot),recovery.submitted);
+        recovery=null;
         overlapReview=null;
         syncState='saved';
         retries=0;
         continue;
       }
       pending??=snapshot;
+      if(recovery?.row!==row)recovery={row,submitted:pending};
       if(error || ++retries>3){syncState='unsaved';return}
       const latest=await ownerRequest('open',{id:row.id});
       if(current!==row)return;
@@ -592,7 +595,6 @@ async function flush(decision) {
       row.snapshot=server.snapshot;
       row.revision=server.revision;
       pending=structuredClone(merged.snapshot);
-      app.applyReconciledSnapshot(structuredClone(merged.snapshot));
     }
   })();
   try{await saving}finally{saving=null;render()}
@@ -600,7 +602,7 @@ async function flush(decision) {
 
 if(editor) $('assessmentBack').onclick = async () => {
   const row = current;
-  await flush();
+  if(saving)await saving;
   if (!row || current !== row) return;
   if (pending && !confirm(tr('leave'))) return;
   if (watch !== null || locationSession) await stopGps();
@@ -782,7 +784,7 @@ window.addEventListener('beforeunload',event => {
 window.BAMCO_CASES={
  async saveNow(snapshot){
   if(!current||current.status!=='active'||app.isReadOnly())return false;
-  const row=current;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
+  const row=current;recovery=null;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
   return current===row&&!pending&&syncState==='saved';
  },
  saveStatus(){return syncState},
@@ -801,6 +803,7 @@ if (hub) {
   const id=query.get('id');
   $('brandIcon').href=document.querySelector('.brand-logo').src;
   $('caseReturn').href='./?view='+(query.get('from')==='history'?'history':'active');
+  window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
   $('caseRetry').onclick=()=>openAssessment(id);
   openAssessment(id);
 }

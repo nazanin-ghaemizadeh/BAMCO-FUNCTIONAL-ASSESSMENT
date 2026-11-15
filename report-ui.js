@@ -8,9 +8,9 @@ const testName=test=>/^(CUSTOM-|custom-)/.test(test.id)?test.name:tx(test.name);
 const tx=value=>window.BAMCO_I18N?.text(value)||value,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n=(v,d=1)=>v===null||v===undefined||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString(lang()==='fa'?'fa-IR':lang()==='zh'?'zh-CN':'en-US',{maximumFractionDigits:d});
 const stateKey=()=>window.BAMCO_CASES?.current()?.id||'local';
-let lastScope=null;
+let lastScope=null,lastSession=null;
 let view,caseKey='',model,sequence=0,aiRunning=false,lastLanguage=lang(),service=null,servicePending=false;
-function reset(){view={tab:'overview',mode:'all',category:'',trend:'',trendRoute:'all',detail:'',search:'',caseList:null,selected:[],comparisons:[],compareStatus:'',pendingWeights:null,weightStatus:'',aiStatus:'',transientTechnical:null,radarMode:'separate',exportStatus:''};sequence++;}
+function reset(){view={detailsEdited:false,tab:'overview',mode:'all',category:'',trend:'',trendRoute:'all',detail:'',search:'',caseList:null,selected:[],comparisons:[],compareStatus:'',pendingWeights:null,weightStatus:'',aiStatus:'',transientTechnical:null,radarMode:'separate',exportStatus:''};sequence++;}
 reset();
 const card=(title,body,hint='',cls='')=>'<section class="report-card '+cls+'"><header><h2>'+esc(title)+'</h2>'+(hint?'<p>'+esc(hint)+'</p>':'')+'</header>'+body+'</section>';
 const empty=(key='empty')=>'<p class="report-empty">'+esc(t(key))+'</p>';
@@ -27,9 +27,12 @@ function saveSettings(patch,action='reportChange'){
  api.setMission('results:general',{...current,...patch,history});
 }
 function render(){
- const host=$('assessmentDashboard');if(!host)return;
+ const host=$('assessmentDashboard');if(!host||document.body.dataset.view!=='results')return;
+ const session=api.editSession();
+ const toolbarSave=$('resultsPanel').querySelector('[data-report-save]')||document.querySelector('[data-report-save]');
+ if(toolbarSave)toolbarSave.textContent=t('save');
  const scope=api.reportMode?.()||null;
- if(caseKey!==stateKey()||lastScope!==scope){caseKey=stateKey();lastScope=scope;reset();view.mode=scope||'all';}
+ if(lastSession!==session||caseKey!==stateKey()||lastScope!==scope){lastSession=session;caseKey=stateKey();lastScope=scope;reset();view.mode=scope||'all';}
  model=R.build(api.snapshot(),{mode:view.mode,category:view.category});
  const modeSelect=scope?'':selector('reportMode',t('section'),['all','drive','durability','supplementary'].map(k=>[k,t(k)]),view.mode);
  const catSelect=selector('reportCategory',t('criterion'),[['',t('allCriteria')],...R.criteria.map(c=>[c.id,tx(c.name)])],view.category);
@@ -117,7 +120,7 @@ async function checkService(){servicePending=true;try{const response=await fetch
 async function listCases(){const token=++sequence;view.compareStatus=t('loading');render();try{const rows=await window.BAMCO_CASES.listActive();if(token!==sequence)return;view.caseList=rows;view.selected=view.selected.filter(id=>rows.some(r=>r.id===id));view.compareStatus='';}catch{if(token===sequence)view.compareStatus=t('connectionError')}if(token===sequence)render()}
 async function compareCases(){const ids=[...view.selected],token=++sequence;if(!ids.length)return;view.compareStatus=t('loading');view.comparisons=[];render();try{const rows=await Promise.all(ids.map(id=>window.BAMCO_CASES.read(id)));if(token!==sequence)return;view.comparisons=rows.filter(r=>r.status==='active');view.compareStatus='';}catch{if(token===sequence)view.compareStatus=t('connectionError')}if(token===sequence)render()}
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=resolve;s.onerror=reject;document.head.append(s)});return window.ExcelJS}
-async function readWeights(file){if(!file||api.isReadOnly())return;const key=caseKey;view.pendingWeights=null;try{if(file.size>5*1024*1024)throw Error('size');const Excel=await excelLibrary(),book=new Excel.Workbook();await book.xlsx.load(await file.arrayBuffer());const sheet=book.worksheets.find(s=>s.name==='Weights')||book.worksheets.find(s=>s.actualRowCount>=15)||book.worksheets[0],rows=[],cell=v=>v&&typeof v==='object'?(v.result??v.text??v.richText?.map(x=>x.text).join('')??''):v;sheet.eachRow(row=>rows.push(row.values.slice(1).map(cell)));const aliases=Object.fromEntries(R.criteria.map(c=>[c.id,[window.BAMCO_TRANSLATIONS.en[c.name],window.BAMCO_TRANSLATIONS.zh[c.name]].filter(Boolean)])),check=R.parseWeightRows(rows,aliases);if(key!==caseKey)return;if(!check.valid){view.weightStatus=t('weightInvalid');}else{view.pendingWeights={weights:check.weights,name:file.name};view.weightStatus=t('fileReady')}}catch{if(key===caseKey)view.weightStatus=t('fileError')}if(key===caseKey)render()}
+async function readWeights(file){if(!file||api.isReadOnly())return;const session=api.editSession(),key=caseKey;view.pendingWeights=null;try{if(file.size>5*1024*1024)throw Error('size');const Excel=await excelLibrary(),book=new Excel.Workbook();await book.xlsx.load(await file.arrayBuffer());const sheet=book.worksheets.find(s=>s.name==='Weights')||book.worksheets.find(s=>s.actualRowCount>=15)||book.worksheets[0],rows=[],cell=v=>v&&typeof v==='object'?(v.result??v.text??v.richText?.map(x=>x.text).join('')??''):v;sheet.eachRow(row=>rows.push(row.values.slice(1).map(cell)));const aliases=Object.fromEntries(R.criteria.map(c=>[c.id,[window.BAMCO_TRANSLATIONS.en[c.name],window.BAMCO_TRANSLATIONS.zh[c.name]].filter(Boolean)])),check=R.parseWeightRows(rows,aliases);if(session!==api.editSession()||key!==caseKey)return;if(!check.valid){view.weightStatus=t('weightInvalid');}else{view.pendingWeights={weights:check.weights,name:file.name};view.weightStatus=t('fileReady')}}catch{if(session===api.editSession()&&key===caseKey)view.weightStatus=t('fileError')}if(key===caseKey)render()}
 function download(sheets,name){api.exportFile(api.buildExcelReport(sheets),name,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
 function weightTemplate(){download([{name:'Weights',rows:[['ID',t('criterion'),'Weight'],...R.criteria.map(c=>[c.id,tx(c.name),1])],widths:[16,60,20]}],'BAMCO-weights-template.xlsx')}
 function reportSheets(){const m=model;let sheets=[{name:'Dashboard',rows:[[t('criterion'),t('average'),t('weight'),t('contribution'),t('scored'),t('scheduled')],...m.rows.map(r=>[tx(r.name),r.avg??'',r.weight,r.contribution??'',r.answered,r.total]),[t('final'),m.final??'']],widths:[50,18,18,20,20,20],percentCols:[2]},{name:'Test records',rows:[[t('section'),t('criterion'),t('sub'),t('test'),t('day'),t('route'),t('checkpoint'),t('average'),t('distance'),t('cumulative'),t('note')],...m.entries.map(e=>[t(e.tab),tx(e.test.cat),tx(e.test.sub),testName(e.test),e.day??'',t(e.routeId),e.quarter?e.quarter*25+'%':'',e.score,e.distance??'',e.cumulative??'',e.note])],widths:[25,35,45,70,12,25,16,14,18,22,70]},{name:'Comments',rows:[[t('action'),t('note')],...['evaluator','expert','manager'].map(k=>[t(k+'Comment'),settings()[k+'Comment']||''])],widths:[30,100]}];
@@ -135,10 +138,34 @@ function exportCharts(){const charts=[{name:t('performance'),svg:Charts.columns(
  }if(view.trend){const html=lineChart(R.trends(model,view.trend,view.trendRoute)),svg=html.match(/<svg[\s\S]*<\/svg>/)?.[0];if(svg)charts.push({name:t('trends'),svg:svg.replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ')})}return charts;}
 async function exportDashboard(){const key=caseKey,sheets=reportSheets(),charts=exportCharts();view.exportStatus=t('exporting');render();try{const Excel=await excelLibrary(),blob=await window.BAMCO_REPORT_EXPORT.build(Excel,sheets,charts,{rtl:lang()==='fa',font:getComputedStyle($('assessmentDashboard')).fontFamily});api.exportFile(blob,'BAMCO-dashboard.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');if(key===caseKey)view.exportStatus=t('exported')}catch(error){console.error('Dashboard export failed',error?.message||'Chart export error');if(key===caseKey)view.exportStatus=t('exportFailed')}if(key===caseKey)render()}
 function exportAnalysis(){const report=(view.transientTechnical||settings().technicalReview)?.report;if(!report)return;download([{name:'Technical review',rows:[[t('opportunity'),t('reasoning'),t('causes'),t('diagnostic'),t('correction')],...report.suggestions.map(s=>[s.improvementOpportunity,s.linkedResultsReasoning,s.probableCauses.join(' / '),s.diagnosticTest,s.correctiveActionIfConfirmed])],widths:[40,70,50,70,70]}],'BAMCO-technical-review.xlsx')}
-async function runAI(){if(aiRunning||!model.entries.length)return;const payload=analysisPayload(),body=JSON.stringify(payload);if(new TextEncoder().encode(body).length>215000){view.aiStatus=t('analysisLarge');render();return}const modeAtStart=api.reportMode?.(),key=caseKey,stamp=fingerprint(),analysisLanguage=lang(),pointGroups=Object.fromEntries(Object.entries(model.pointBands).map(([key,entries])=>[key,entries.map(e=>({recordKey:e.recordKey,section:e.tab,day:e.day,route:e.routeId,checkpoint:e.quarter?e.quarter*25:null,score:e.score}))]));aiRunning=true;view.aiStatus=t('analyzing');render();try{const response=await fetch('https://cwpfzvcwuiawjtvsnpkq.supabase.co/functions/v1/vehicle-technical-review',{method:'POST',headers:{'Content-Type':'application/json'},body,signal:AbortSignal.timeout(100000)}),data=await response.json();if(!response.ok||!data.ok||!validReport(data.report))throw Error(data.openaiCode||data.error||'review');if(key!==caseKey||modeAtStart!==api.reportMode?.())return;const review={report:data.report,fingerprint:stamp,at:new Date().toISOString(),language:data.language||analysisLanguage,promptId:data.promptId||Contract.promptId,model:data.model,pointGroups};if(api.isReadOnly())view.transientTechnical=review;else saveSettings({technicalReview:review},'reportChange');view.aiStatus='';}catch(error){if(key===caseKey)view.aiStatus=t(error.message==='insufficient_quota'?'apiQuota':error.message==='openai_key_missing'?'apiMissing':(error.message==='openai_timeout'||error.name==='TimeoutError')?'apiTimeout':'analysisFailed')}finally{aiRunning=false;if(key===caseKey)render()}}
+async function runAI(){if(aiRunning||!model.entries.length)return;const payload=analysisPayload(),body=JSON.stringify(payload);if(new TextEncoder().encode(body).length>215000){view.aiStatus=t('analysisLarge');render();return}const session=api.editSession(),modeAtStart=api.reportMode?.(),key=caseKey,stamp=fingerprint(),analysisLanguage=lang(),pointGroups=Object.fromEntries(Object.entries(model.pointBands).map(([key,entries])=>[key,entries.map(e=>({recordKey:e.recordKey,section:e.tab,day:e.day,route:e.routeId,checkpoint:e.quarter?e.quarter*25:null,score:e.score}))]));aiRunning=true;view.aiStatus=t('analyzing');render();try{const response=await fetch('https://cwpfzvcwuiawjtvsnpkq.supabase.co/functions/v1/vehicle-technical-review',{method:'POST',headers:{'Content-Type':'application/json'},body,signal:AbortSignal.timeout(100000)}),data=await response.json();if(!response.ok||!data.ok||!validReport(data.report))throw Error(data.openaiCode||data.error||'review');if(session!==api.editSession()||key!==caseKey||modeAtStart!==api.reportMode?.())return;const review={report:data.report,fingerprint:stamp,at:new Date().toISOString(),language:data.language||analysisLanguage,promptId:data.promptId||Contract.promptId,model:data.model,pointGroups};if(api.isReadOnly())view.transientTechnical=review;else saveSettings({technicalReview:review},'reportChange');view.aiStatus='';}catch(error){if(key===caseKey)view.aiStatus=t(error.message==='insufficient_quota'?'apiQuota':error.message==='openai_key_missing'?'apiMissing':(error.message==='openai_timeout'||error.name==='TimeoutError')?'apiTimeout':'analysisFailed')}finally{aiRunning=false;if(key===caseKey)render()}}
 function validReport(report){return report?.suggestions?.length===5&&report.suggestions.every(s=>['improvementOpportunity','linkedResultsReasoning','diagnosticTest','correctiveActionIfConfirmed'].every(k=>typeof s[k]==='string')&&Array.isArray(s.probableCauses)&&s.probableCauses.every(x=>typeof x==='string'))}
 async function copyPrompt(){const instruction=Contract.prompt(lang());try{await navigator.clipboard.writeText(instruction+'\n\n'+JSON.stringify(analysisPayload(),null,2));view.aiStatus=t('copied')}catch{view.aiStatus=t('copyError')}render()}
-async function photo(file,slot){if(api.isReadOnly()||!file||!/^image\/(png|jpeg|webp)$/.test(file.type))return;const key=caseKey;const reader=new FileReader();reader.onload=()=>{const image=new Image();image.onload=()=>{if(key!==caseKey)return;const scale=Math.min(1,1000/Math.max(image.width,image.height)),canvas=document.createElement('canvas');canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);saveSettings({photos:{...settings().photos,[slot]:canvas.toDataURL('image/jpeg',.6)}});render()};image.src=reader.result};reader.readAsDataURL(file)}
+function photo(file,slot){
+ if(api.isReadOnly()||!file||!/^image\/(png|jpeg|webp)$/.test(file.type))return;
+ const session=api.editSession();
+ const task=new Promise((resolve,reject)=>{
+  const reader=new FileReader();reader.onerror=()=>reject(Error('Image read failed'));
+  reader.onload=()=>{
+   const image=new Image();image.onerror=()=>reject(Error('Image decode failed'));
+   image.onload=()=>{
+    try{
+     if(session===api.editSession()){
+      const scale=Math.min(1,1000/Math.max(image.width,image.height)),canvas=document.createElement('canvas');
+      canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);
+      canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+      saveSettings({photos:{...settings().photos,[slot]:canvas.toDataURL('image/jpeg',.6)}});
+      render();
+     }
+     resolve();
+    }catch(error){reject(error)}
+   };
+   image.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+ });
+ api.trackPicture(task).catch(()=>{if(session===api.editSession()){view.exportStatus=t('fileError');render()}});
+}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.hasAttribute('data-compare-back')){view.detail='';render();}
  if(b.dataset.radarMode){view.radarMode=b.dataset.radarMode;render();}
@@ -166,7 +193,45 @@ document.addEventListener('change',e=>{const el=e.target;
 });
 document.addEventListener('click',e=>{const target=e.target.closest('svg [data-report-detail],svg [data-compare-detail]');if(!target)return;e.preventDefault();view.detail=target.dataset.compareDetail||target.dataset.reportDetail;view.tab=target.hasAttribute('data-compare-detail')?'compare':'details';render()});
 document.addEventListener('keydown',e=>{if(!['Enter',' '].includes(e.key))return;const target=e.target.closest('svg [role=button]');if(target){e.preventDefault();target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
-document.addEventListener('submit',e=>{if(e.target.id!=='reportDetailsForm')return;e.preventDefault();if(api.isReadOnly())return;const form=new FormData(e.target),patch={};for(const key of ['evaluatorName','expertName','date','evaluatorComment','expertComment','managerComment'])patch[key]=String(form.get(key)||'').trim();saveSettings(patch);render()});
+function stageDetails(form){
+ const values=Object.fromEntries(new FormData(form));
+ const previous=settings();
+ if(Object.entries(values).some(([key,value])=>value!==(previous[key]||''))){
+  view.detailsEdited=true;
+  api.setMission('results:general',{...previous,...values});
+ }
+}
+async function saveReport(){
+ const session=api.editSession(),button=document.querySelector('[data-report-save]'),status=document.querySelector('[data-report-save-status]');
+ if(!session||!button||button.disabled||api.isReadOnly())return;
+ const form=$('reportDetailsForm');
+ if(form)stageDetails(form);
+ button.disabled=true;
+ try{
+  if(api.hasPendingImages()){
+   const content=$('assessmentDashboard');
+   content.inert=true;
+   try{await api.waitForImages()}finally{content.inert=false}
+   if(session!==api.editSession())return;
+  }
+  if(view.detailsEdited){saveSettings({});view.detailsEdited=false}
+  const version=session.version;
+  const ok=await api.saveDraft();
+  if(status?.isConnected&&api.editSession()===session&&session.version===version)status.textContent=saveMessage(ok);
+ }catch{if(status?.isConnected)status.textContent=saveMessage(false)}
+ finally{button.disabled=false}
+}
+function saveMessage(ok){
+ const index={fa:0,en:1,zh:2}[lang()];
+ return (ok?['داشبورد ذخیره شد.','Dashboard saved.','仪表板已保存。']:['ذخیره تأیید نشد. دوباره تلاش کنید.','Save failed. Try again.','保存失败，请重试。'])[index];
+}
+document.addEventListener('bamco:draft-change',()=>{
+ const status=document.querySelector('[data-report-save-status]');
+ if(status?.textContent)status.textContent='';
+});
+document.addEventListener('input',event=>{if(event.target.form?.id==='reportDetailsForm'&&!api.isReadOnly())stageDetails(event.target.form)});
+document.addEventListener('click',event=>{if(event.target.closest('[data-report-save]'))saveReport()});
+document.addEventListener('submit',event=>{if(event.target.id==='reportDetailsForm'){event.preventDefault();saveReport()}});
 document.addEventListener('bamco:assessment-close',()=>{caseKey='';reset()});
 new MutationObserver(()=>{if(lang()!==lastLanguage){lastLanguage=lang();render()}}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
 window.BAMCO_DASHBOARD={render,exportCharts,pointBands:()=>model.pointBands,model:()=>model,reportSheets,analysisPayload,validReport};

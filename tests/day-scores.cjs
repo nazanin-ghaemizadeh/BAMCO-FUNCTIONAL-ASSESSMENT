@@ -28,7 +28,7 @@ labelObserver.observe(saveLabel,{childList:true});
 await new Promise(resolve=>setTimeout(resolve,0));
 labelObserver.disconnect();
 assert(labelChanges<=10,'Entering scores repeatedly rewrote the save button');
-const first=api.currentTests()[0];click('[data-test="'+first.id+'"][data-score="8"]');checkProgress(1,dailyTotal);let note=d.querySelector('[data-note="'+first.id+'"]');note.value='typed before blur';note.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(snapshot.records['drive:1:'+first.id].note,'typed before blur');
+const first=api.currentTests()[0];click('[data-test="'+first.id+'"][data-score="8"]');checkProgress(1,dailyTotal);let note=d.querySelector('[data-note="'+first.id+'"]');note.value='typed before blur';note.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(snapshot,undefined);assert.equal(api.snapshot().records['drive:1:'+first.id].note,'typed before blur');
 const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 api.setMission('drive:1',{date:'1405/8/23',customTests:[{id:'custom-export',cat:first.cat,sub:first.sub,name:'Custom test',score:7,note:'Evidence',photo:png}]});api.refresh();
 checkProgress(2,dailyTotal+1);

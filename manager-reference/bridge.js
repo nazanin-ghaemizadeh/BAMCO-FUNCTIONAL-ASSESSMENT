@@ -5,8 +5,8 @@ const dashboardData=dashboardHost.data();
 const dashboardValues={...(dashboardData.settings.storage||{})};
 const dashboardStorage={
  getItem(key){return dashboardValues[key]??null},
- setItem(key,value){dashboardValues[key]=String(value);dashboardHost.store({...dashboardValues})},
- removeItem(key){delete dashboardValues[key];dashboardHost.store({...dashboardValues})}
+ setItem(key,value){dashboardValues[key]=String(value)},
+ removeItem(key){delete dashboardValues[key]}
 };
 const dashboardGroups=dashboardData.categories.map((cat,index)=>({id:String(index+1),titleFa:cat,subgroups:[]}));
 for(const test of dashboardData.tests){

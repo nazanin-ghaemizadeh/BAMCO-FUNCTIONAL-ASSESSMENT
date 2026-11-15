@@ -672,6 +672,7 @@ window.BAMCO_ASSESSMENT={
   openDashboard(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Dashboard');else{dashboardModule=null;state.tab='results';dayScreen='days';render()}},
   navigateModule(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Menu')},reportMode(){return dashboardModule},
   dayContext,scoreContext(){return state.tab==='comprehensive'?{tab:'comprehensive',key:'comprehensive:general',section:'scores'}:dayContext()},
+  criterionNames(){return categories.slice()},
   snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},
   mission(key){return state.missions?.[key]||{}},

@@ -269,10 +269,7 @@
     if(!host)return;
     const data=weightedImpactRows(rows);
     const hasAnyScore=data.some(r=>Number.isFinite(r.raw100));
-    if(!hasAnyScore){
-      host.innerHTML=`<p class="chartEmpty" dir="${locale==='fa'?'rtl':'ltr'}">${locale==='fa'?'پس از ثبت امتیازها، نمودار عنکبوتی نمایش داده می‌شود.':'The radar chart will appear after scores are recorded.'}</p>`;
-      return;
-    }
+    if(!data.length){host.replaceChildren();return;}
     const n=data.length,cx=380,cy=300,R=190;
     const angle=i=>-Math.PI/2+i*2*Math.PI/n;
     const point=(i,radius)=>{const a=angle(i);return[cx+Math.cos(a)*radius,cy+Math.sin(a)*radius]};
@@ -286,11 +283,11 @@
       const impact=impactValue(r),value=(Number.isFinite(r.raw100)?fmt(impact):'—');
       const valueRadius=Math.max(30,impact/100*R+18),[scoreX,scoreY]=point(i,valueRadius);
       const anchor=ux>.28?'start':ux<-.28?'end':'middle',baseline=uy>.55?'hanging':uy<-.55?'auto':'middle';
-      const circle=Number.isFinite(r.raw100)||r.weight<=0?`<circle cx="${vx}" cy="${vy}" r="${impact<=0?3.8:5.5}" fill="${colors[i%colors.length]}" stroke="#fff" stroke-width="2"/>`:'';
+      const circle=Number.isFinite(r.raw100)?`<circle cx="${vx}" cy="${vy}" r="${impact<=0?3.8:5.5}" fill="${colors[i%colors.length]}" stroke="#fff" stroke-width="2"/>`:'';
       const valueText=impact>0?`<text x="${scoreX}" y="${scoreY}" text-anchor="${anchor}" dominant-baseline="${baseline}" class="radarValue" fill="${colors[i%colors.length]}">${value}</text>`:'';
       return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke:${colors[i%colors.length]}88"/>${circle}${valueText}<text x="${lx}" y="${ly}" fill="${colors[i%colors.length]}">${lines.map((line,j)=>`<tspan x="${lx}" dy="${j?15:0}">${esc(line)}</tspan>`).join('')}</text>`;
     }).join('');
-    host.innerHTML=`<svg viewBox="0 0 760 600" role="img" aria-label="${locale==='fa'?'نمودار عنکبوتی وزن‌دار شاخص‌ها از ۱۰۰':'Weighted criteria radar chart out of 100'}">${wedges}${[.2,.4,.6,.8,1].map(x=>`<polygon points="${pts(R*x)}" class="radarGrid"/>`).join('')}${axes}<polygon points="${dataPoints.map(p=>p.join(',')).join(' ')}" class="radarData"/></svg>`;
+    host.innerHTML=`<svg viewBox="0 0 760 600" role="img" aria-label="${locale==='fa'?'نمودار عنکبوتی وزن‌دار شاخص‌ها از ۱۰۰':'Weighted criteria radar chart out of 100'}">${wedges}${[.2,.4,.6,.8,1].map(x=>`<polygon points="${pts(R*x)}" class="radarGrid"/>`).join('')}${axes}${hasAnyScore?`<polygon points="${dataPoints.map(p=>p.join(',')).join(' ')}" class="radarData"/>`:''}</svg>`;
   };
 
   /* Ensure the v24 renderers remain the final renderers after every manager refresh. */
@@ -327,11 +324,6 @@
     const host=document.querySelector('#qualityChart');
     if(!host)return;
     const max=Math.max(0,...counts);
-    if(max<=0){
-      host.innerHTML=`<p class="qualityEmpty" dir="${locale==='fa'?'rtl':'ltr'}">${locale==='fa'?'با ثبت امتیاز، فراوانی درجه‌های کیفی در این بخش نمایش داده می‌شود.':'The quality-grade frequency will appear after scores are recorded.'}</p>`;
-      return;
-    }
-
     host.innerHTML=counts.map((count,i)=>{
       const width=max?count/max*100:0;
       const level=SCORE_LEVELS.find(x=>x.n===i+1);

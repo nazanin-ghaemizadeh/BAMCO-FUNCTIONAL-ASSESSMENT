@@ -602,14 +602,15 @@
     });
   };
   renderChart=function(rows){
-    const data=weightedRows(rows).filter(r=>Number.isFinite(r.weightedVisual)).sort((a,b)=>b.weightedVisual-a.weightedVisual);
+    const ranked=weightedRows(rows);
+    const scored=ranked.filter(r=>Number.isFinite(r.weightedVisual)).sort((a,b)=>b.weightedVisual-a.weightedVisual);
+    const data=scored.length?scored:ranked;
     const host=document.querySelector('#scoreChart');if(!host)return;
     host.parentElement?.querySelector('.chartZoomNote')?.remove();
-    if(!data.length){host.innerHTML=`<p class="chartEmpty" dir="${locale==='fa'?'rtl':'ltr'}">${locale==='fa'?'پس از ثبت امتیازها، نمودار وزن‌دار در این بخش نمایش داده می‌شود.':'The weighted comparison chart will appear after scores are recorded.'}</p>`;return;}
     const colors=['#2463a5','#b54d66','#128778','#d58a24','#7454b8','#d9673a','#3e8c47','#ad5f99','#2c7d9a','#96733c','#5475b5','#b85c48','#4b9a91','#8f5c6b','#527e50'];
     host.innerHTML=data.map((r,i)=>{
-      const v=r.weightedVisual,h=v<=0?0:Math.max(3,v);
-      return `<div class="barItem" title="${locale==='fa'?'امتیاز خام':'Raw score'}: ${fmt(r.raw100)}"><div class="barTrack"><b class="barEndValue" style="--bar-height:${h}%">${fmt(v)}</b><i style="height:${h}%;--bar:${colors[i%colors.length]}"></i></div><div class="barLabel"><span>${title(r.main.titleFa,'main',r.main.id)}</span></div></div>`;
+      const v=r.weightedVisual,h=Number.isFinite(v)&&v>0?Math.max(3,v):0;
+      return `<div class="barItem" title="${locale==='fa'?'امتیاز خام':'Raw score'}: ${fmt(r.raw100)}"><div class="barTrack"><b class="barEndValue" style="--bar-height:${h}%">${fmt(v)}</b><i style="height:${h}%;--bar:${colors[i%colors.length]}"></i></div><div class="barLabel"><span>${esc(title(r.main.titleFa,'main',r.main.id))}</span></div></div>`;
     }).join('');
   };
 

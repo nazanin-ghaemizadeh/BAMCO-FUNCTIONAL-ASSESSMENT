@@ -307,6 +307,12 @@
 <script src="scripts-11.js?v=70"></script>
 <script src="integration.js?v=case-pages-1"></script>
 <script src="ai-review.js?v=82"></script>
+<script>
+if(document.body.id==='integratedManager' && document.querySelector('#radarChart') &&
+   document.querySelector('#openComparisonMode') && document.querySelector('#aiTechnicalReview')){
+  window.parent.BAMCO_MANAGER?.ready?.(window);
+}
+</script>
 </body>
 </html>
 

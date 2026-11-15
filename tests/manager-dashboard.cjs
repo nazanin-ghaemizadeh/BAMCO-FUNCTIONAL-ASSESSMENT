@@ -34,5 +34,14 @@ function open(){
  const sheets=[];w.ExcelJS={Workbook:class extends ExcelJS.Workbook{addWorksheet(name,options){sheets.push(name);return super.addWorksheet(name,options)}}};w.URL.createObjectURL=()=>'';w.URL.revokeObjectURL=()=>{};w.HTMLAnchorElement.prototype.click=()=>{};
  await w.exportManagerDashboard();
  assert(sheets.length>=2);assert(!sheets.some(s=>/چهار|vehicle views|نظرات|Final Comments/i.test(s)));
+ dom.window.close();
+ delete snapshot.records['comprehensive:general:CR-1'];
+ settings={storage:{'bamco-vehicle-assessment':'invalid-json'}};
+ dom=open();d=dom.window.document;
+ assert(d.querySelector('#appShell:not([hidden])'));
+ assert(d.querySelector('#scoreChart .barTrack'));assert.equal(d.querySelector('#scoreChart .barEndValue').textContent,'—');
+ assert.equal(d.querySelectorAll('#qualityChart .qualityBar').length,10);
+ assert(d.querySelector('#radarChart .radarGrid'));assert(!d.querySelector('#radarChart .radarData'));
+ assert(d.querySelector('#openComparisonMode'));assert(d.querySelector('#aiTechnicalReview'));
  dom.window.close();console.log('PASS manager dashboard: comprehensive-only scores, original dashboard sections, stored weights, reopen, styled Excel and no four-view sheet.');
 })().catch(e=>{console.error(e);process.exit(1)});

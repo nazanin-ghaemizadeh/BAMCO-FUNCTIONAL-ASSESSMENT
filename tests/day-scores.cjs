@@ -87,5 +87,14 @@ api.setMission('durability:1',{customTests:[{id:'c',name:'آزمون',score:null
 assert(road.hidden);click('[data-daysection="scores"]');checkProgress(0,planCount+1);click('[data-custom-score="5"]');checkProgress(1,planCount+1);
 assert.equal(await filename(),'Test-durability-day-1-scores.xlsx');
 w.confirm=()=>true;click('[data-custom-delete="c"]');checkProgress(0,planCount);
+const pickup=road.querySelector('.day-road-body img');
+assert(pickup && fs.existsSync(pickup.getAttribute('src')));
+for(const mode of ['supplementary','comprehensive']){
+  api.open({setupComplete:true,missions:{'supplementary:general':{customTests:[{id:'CUSTOM-road',cat:'شاخص',sub:'زیرشاخص',name:'آزمون'}]}}},()=>{},false);
+  click('[data-open="'+mode+'"]');
+  const total=api.currentTests().length;checkProgress(0,total);
+  click('#questionsPanel [data-score="6"]');checkProgress(1,total);
+  api.openDashboard(mode);assert(road.hidden);
+}
 assert.deepEqual(errors,[]);w.close();console.log('PASS daily scores: immediate notes, save success/failure/reopen, full-day export with filters, custom tests, images, tables, colors and readonly.');
 })().catch(e=>{console.error(e);process.exit(1)});

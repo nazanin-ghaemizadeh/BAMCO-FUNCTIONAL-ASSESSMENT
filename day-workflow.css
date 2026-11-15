@@ -417,7 +417,19 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
   content:""; position:absolute; inset:0 -112px 0 0;
   background:url("./assets/trail-gravel.svg") repeat-x left bottom / 112px 18px;
 }
-.day-road-dust {opacity:0}
+.day-road-body {position:relative}
+.day-road-body img {display:block;width:100%;height:auto}
+.day-road-wheel {
+  position:absolute;width:7.6%;aspect-ratio:1;border-radius:50%;
+  background:url("./assets/rely-r8-trail.webp") no-repeat;
+  background-size:1316.67% 538.89%;
+}
+.day-road-wheel.front {left:13.50%;top:62.89%;background-position:14.61% 77.22%}
+.day-road-wheel.rear {left:73.00%;top:63.92%;background-position:79.00% 78.48%}
+.day-road-dust {
+  opacity:0;position:absolute;right:5%;bottom:18%;width:7%;height:7%;
+  border-radius:50%;background:#b28d65;box-shadow:5px -2px 2px #c4a57d;
+}
 .day-road-journey {
   --truck-width:clamp(108px, 18vw, 148px);
   position:absolute; inset:0 calc(var(--truck-width) / 2); pointer-events:none;
@@ -450,8 +462,7 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
     transform-box:fill-box; transform-origin:left bottom;
     animation:day-road-dust 1.3s ease-out infinite;
   }
-  .day-road-meter:not([aria-valuenow="100"]) .day-road-spokes {
-    transform-box:view-box;
+  .day-road-meter:not([aria-valuenow="100"]) .day-road-wheel {
     animation:day-road-wheels 1.4s linear infinite reverse;
   }
   @keyframes day-road-gravel {to {transform:translateX(-112px)}}

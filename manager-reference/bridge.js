@@ -18,7 +18,10 @@ for(const test of dashboardData.tests){
 }
 window.ASSESSMENT_CRITERIA=dashboardGroups;
 function comprehensiveCase(snapshot,title,includeSettings=false){
- const saved=includeSettings?(JSON.parse(dashboardValues['bamco-vehicle-assessment']||'null')||{}):{};
+ let saved={};
+ if(includeSettings){
+  try{saved=JSON.parse(dashboardValues['bamco-vehicle-assessment'])||{}}catch{}
+ }
  const result={metadata:{...(saved.metadata||{}),model:title||'',date:snapshot.config.date||'',...snapshot.config},scores:{},notes:{},attachments:{},weights:saved.weights||{},vehiclePhotos:{},finalComments:saved.finalComments||{evaluator:'',expert:'',manager:''},auditTrail:saved.auditTrail||[]};
  for(const main of dashboardGroups)for(const sub of main.subgroups)for(const item of sub.items){
   const record=snapshot.records?.['comprehensive:general:'+item.id]||{},key=main.id+'/'+sub.id+'/'+item.id;

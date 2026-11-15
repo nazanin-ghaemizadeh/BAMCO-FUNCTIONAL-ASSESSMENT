@@ -367,7 +367,7 @@ function renderRoad(c, scheduled) {
   const percent = answered < total ? Math.min(99, Math.round(fraction)) : Math.round(fraction);
   const locale = window.BAMCO_I18N?.language || 'fa';
   const a = number(answered), n = number(total);
-  const title = {fa:'پیشرفت امتیازدهی روز', en:'Daily scoring progress', zh:'当日评分进度'}[locale];
+  const title = c.tab==='comprehensive'?{fa:'پیشرفت امتیازدهی',en:'Scoring progress',zh:'评分进度'}[locale]:{fa:'پیشرفت امتیازدهی روز', en:'Daily scoring progress', zh:'当日评分进度'}[locale];
   const count = {fa:a+' از '+n+' سؤال پاسخ داده شده', en:a+' of '+n+' questions answered', zh:'已回答 '+a+' / '+n+' 道题'}[locale];
   for (const [id, value] of [['dayProgressTitle',title], ['dayProgressCount',count], ['dayProgressPercent',number(percent)+(locale==='fa'?'٪':'%')]]) {
     if ($(id).textContent !== value) $(id).textContent = value;
@@ -451,10 +451,10 @@ function uploadPicture(c,id,file){
 
 document.addEventListener('bamco:render', () => {
   syncFormActions();
-  const c = app.dayContext();
-  if (c?.section !== 'scores') renderRoad(c);
+  const c = (app.scoreContext||app.dayContext)();
+  if (c?.tab==='comprehensive'||c?.section !== 'scores') renderRoad(c);
 });
-new MutationObserver(() => renderRoad(app.dayContext())).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
+new MutationObserver(() => renderRoad((app.scoreContext||app.dayContext)())).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
 document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
 document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});
 document.addEventListener('click',event=>{

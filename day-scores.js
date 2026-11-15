@@ -3,10 +3,10 @@ const app=window.BAMCO_ASSESSMENT,$=id=>document.getElementById(id);
 const copy={save:['ذخیره امتیازها','Save scores','保存评分'],saving:['در حال ذخیره…','Saving…','正在保存…'],saved:['امتیازها و یادداشت‌ها در سرور ذخیره شدند.','Scores and notes saved to server.','评分和备注已保存到服务器。'],local:['اطلاعات در این مرورگر ذخیره شد.','Saved in this browser.','已保存在此浏览器。'],failed:['ذخیره تأیید نشد. از صفحه خارج نشوید و دوباره ذخیره را بزنید.','Save was not confirmed. Stay on this page and retry.','保存未确认，请留在此页并重试。'],excel:['دانلود اکسل امتیازهای این روز','Download this day’s scores as Excel','下载当天评分Excel'],exportFailed:['ساخت اکسل انجام نشد؛ دوباره تلاش کنید.','Excel export failed. Please retry.','Excel导出失败，请重试。']};
 const lang=()=>window.BAMCO_I18N?.language||'fa',tr=k=>copy[k][lang()==='fa'?0:lang()==='zh'?2:1];
 let saving=false,exporting=false,library;
-function collect(){const c=app.dayContext?.();if(c?.section!=='scores')return null;const snap=app.snapshot(),meta=snap.missions?.[c.key]||{},items=app.currentTests().map(t=>({...t,...snap.records?.[c.key+':'+t.id],custom:false}));for(const t of meta.customTests||[])items.push({...t,custom:true});return {context:{...c},title:window.BAMCO_CASES?.current()?.title||$('assessmentName')?.textContent||'BAMCO',date:meta.date||'',items:structuredClone(items)}}
-function sync(){const c=app.dayContext?.(),active=c?.section==='scores',bar=$('assessmentPageActions');let icon=$('dayScoresExcel');if(!active){icon?.remove();$('dayScoresSave')?.remove();return}
+function collect(){const c=(app.scoreContext||app.dayContext)?.();if(c?.section!=='scores')return null;const snap=app.snapshot(),meta=snap.missions?.[c.key]||{},items=app.currentTests().map(t=>({...t,...snap.records?.[c.key+':'+t.id],custom:false}));for(const t of meta.customTests||[])items.push({...t,custom:true});return {context:{...c},title:window.BAMCO_CASES?.current()?.title||$('assessmentName')?.textContent||'BAMCO',date:meta.date||'',items:structuredClone(items)}}
+function sync(){const c=(app.scoreContext||app.dayContext)?.(),active=c?.section==='scores',bar=$('assessmentPageActions');let icon=$('dayScoresExcel');if(!active){icon?.remove();$('dayScoresSave')?.remove();return}
  if(bar&&!icon){icon=document.createElement('button');icon.id='dayScoresExcel';icon.type='button';icon.className='secondary';icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7zM17 3v5h4M3 8h11v11H3zM6 11l5 5m0-5-5 5"/></svg>';icon.onclick=download;const pdf=$('dayQuestionsPdf');if(pdf)pdf.insertAdjacentElement('afterend',icon);else bar.append(icon)}
- if(icon){icon.title=tr('excel');icon.setAttribute('aria-label',tr('excel'));icon.disabled=exporting;icon.setAttribute('aria-busy',String(exporting))}
+ if(icon){const label=c.tab==='comprehensive'?({fa:'دانلود اکسل ارزیابی جامع خودرو',en:'Download comprehensive assessment Excel',zh:'下载综合评估Excel'}[lang()]):tr('excel');icon.title=label;icon.setAttribute('aria-label',label);icon.disabled=exporting;icon.setAttribute('aria-busy',String(exporting))}
  let controls=$('dayScoresSave');
  if(app.isReadOnly()){controls?.remove();return}
  if(bar&&!controls){
@@ -24,7 +24,7 @@ function sync(){const c=app.dayContext?.(),active=c?.section==='scores',bar=$('a
  saveButton.disabled=saving;
  saveButton.setAttribute('aria-busy',String(saving));
 }
-async function save(){if(saving||app.isReadOnly())return;const c=app.dayContext?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if(app.dayContext?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if(app.dayContext?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed')}finally{saving=false;sync()}}
+async function save(){if(saving||app.isReadOnly())return;const c=(app.scoreContext||app.dayContext)?.(),caseId=window.BAMCO_CASES?.current()?.id;saving=true;sync();const status=$('dayScoresSave')?.lastElementChild;if(status)status.textContent=tr('saving');try{await app.waitForImages?.();if((app.scoreContext||app.dayContext)?.()?.key!==c?.key||window.BAMCO_CASES?.current()?.id!==caseId)throw Error('Page changed');const remote=window.BAMCO_CASES?.saveNow;const ok=remote?await remote(app.snapshot()):await app.saveNow();if(!ok)throw Error('Save not confirmed');if((app.scoreContext||app.dayContext)?.()?.key===c?.key&&window.BAMCO_CASES?.current()?.id===caseId&&status?.isConnected)status.textContent=tr(remote?'saved':'local')}catch(error){if(status?.isConnected)status.textContent=['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed')}finally{saving=false;sync()}}
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;if(!library)library=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=()=>resolve(window.ExcelJS);s.onerror=()=>{library=null;s.remove();reject(Error('Excel unavailable'))};document.head.append(s)});return library}
 const palette=['FFE5F2EB','FFE6EFF9','FFF7EBD9','FFEFE7F7','FFF9E4E8','FFE1F2F3','FFF0F1DA','FFE8E9F7','FFF5E7DC','FFDDEEE3','FFE3EDF2','FFF3E3F1','FFDFE8E0','FFF4EFDC','FFE3E3E3'];
 const headerGreen = 'FF216C56';
@@ -64,11 +64,13 @@ function exportName(data,kind='scores') {
   const title = [...String(data.title || '')].map(c =>
     c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '-' : c
   ).join('').trim() || 'BAMCO';
+  if(data.context.tab==='comprehensive')return title+'-comprehensive-'+kind+'.xlsx';
   const module = data.context.tab === 'drive' ? 'driveability' : 'durability';
   return title + '-' + module + '-day-' + data.context.day + '-' + kind + '.xlsx';
 }
 
 function reportTitle(data,date) {
+  if(data.context.tab==='comprehensive')return [data.title,'ارزیابی جامع خودرو',reportDate(date)].filter(Boolean).join(' | ');
   const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
   return [data.title, moduleName, 'روز ' + data.context.day, reportDate(date)].filter(Boolean).join(' | ');
 }

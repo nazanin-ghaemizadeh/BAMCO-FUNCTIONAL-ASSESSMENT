@@ -5,13 +5,25 @@ const dom=new JSDOM(fs.readFileSync('./index.html','utf8'),{url:'https://preview
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.structuredClone=structuredClone;w.fetch=async()=>{throw Error('offline test')};
 for(const f of ['data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','report-charts.js','workbook-metadata.js','report-model.js','app.js','polish.js','pre-drive-checklist.js','day-workflow.js','report-ui.js'])w.eval(fs.readFileSync('./'+f,'utf8'));
 const api=w.BAMCO_ASSESSMENT;let saved;
-const click=s=>{assert(d.querySelector(s),s);d.querySelector(s).click()},set=(id,v)=>{d.getElementById(id).value=v;d.getElementById(id).dispatchEvent(new w.Event('change',{bubbles:true}))},submit=id=>d.getElementById(id).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+const click=s=>{require('./navigation.cjs')(d,s);if(s==='[data-open="results"]'&&d.getElementById('assessmentDashboard'))return;assert(d.querySelector(s),s);d.querySelector(s).click()},set=(id,v)=>{d.getElementById(id).value=v;d.getElementById(id).dispatchEvent(new w.Event('change',{bubbles:true}))},submit=id=>d.getElementById(id).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
 api.open({setupComplete:false},v=>saved=structuredClone(v),false);
 assert.equal(d.getElementById('driveKm').value,'۶۹۳۰');assert(d.getElementById('driveKm').readOnly);
 set('twoDiff','yes');set('driveType','4WD');set('body','Pickup');set('gear','Manual');set('share-urban','20');set('share-hot','20');submit('vehicleForm');assert(saved);assert.equal(saved.durabilitySchedule.length,saved.config.durDays);
 assert.equal(api.drivePlan().reduce((s,p)=>s+p.km,0),6930);assert.equal(api.drivePlan().length,26);
 assert(api.eligibleTests('drive').every(t=>t.vehicle.gear.includes('Manual')));
 assert(!api.eligibleTests('drive').some(t=>t.sourceId==='T6.11.36'));
+// Case navigation follows the same hierarchy for every assessment type.
+assert.deepEqual([...d.querySelectorAll('#moduleLanding [data-open]')].map(el=>el.dataset.open),['setup','assessmentTypes']);
+click('[data-open="assessmentTypes"]');
+assert.equal(d.querySelectorAll('#moduleLanding [data-open]').length,4);
+for(const mode of ['drive','durability','supplementary','comprehensive']){
+ click('[data-open="'+mode+'Menu"]');
+ assert(d.querySelector('#moduleLanding [data-open="'+mode+'"]'));
+ assert(d.querySelector('#moduleLanding [data-module-dashboard="'+mode+'"]'));
+ assert.equal(d.getElementById('backModulesBtn').dataset.open,'assessmentTypes');
+ click('#backModulesBtn');
+}
+click('#backModulesBtn');
 const initial=structuredClone(saved);api.open(initial,v=>saved=structuredClone(v),false);click('[data-open="setup"]');assert.equal(d.getElementById('share-urban').value,'۲۰');submit('vehicleForm');api.open({...initial,records:{'durability:1:CR-0002':{score:8,note:'HISTORY'}}},v=>saved=structuredClone(v),false);
 api.setMission('durability:1',{driver:'UNCHANGED',dailyInfoSavedAt:'test'});api.setDayMileage('durability',1,100);
 const before=structuredClone(saved),planBefore=structuredClone(api.durabilityPlan());

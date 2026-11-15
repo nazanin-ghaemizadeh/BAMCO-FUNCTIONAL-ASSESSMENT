@@ -6,7 +6,7 @@ w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>tr
 w.fetch=async()=>{throw Error('offline')};
 for(const f of ['translations-en.js','translations-zh.js','planning-translations.js','dashboard-translations.js','pre-drive-checklist.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','report-charts.js','report-export.js','workbook-metadata.js','report-model.js','app.js','polish.js','day-workflow.js','report-ui.js'])w.eval(fs.readFileSync(f,'utf8'));
 assert.equal(typeof w.BAMCO_REPORT_EXPORT.build,'function');for(const file of ['report-charts.js','review-contract.js','report-export.js','report-model.js','report-ui.js'])assert([...d.scripts].some(s=>s.src.includes('/'+file+'?')),file+' must be loaded in production');
-const api=w.BAMCO_ASSESSMENT,R=w.BAMCO_REPORT,tick=()=>new Promise(r=>setTimeout(r,20)),click=s=>{assert(d.querySelector(s),s);d.querySelector(s).click()},change=(id,v)=>{const e=d.getElementById(id);assert(e,id);e.value=v;e.dispatchEvent(new w.Event('change',{bubbles:true}))};
+const api=w.BAMCO_ASSESSMENT,R=w.BAMCO_REPORT,tick=()=>new Promise(r=>setTimeout(r,20)),click=s=>{require('./navigation.cjs')(d,s);if(s==='[data-open="results"]'&&d.getElementById('assessmentDashboard'))return;assert(d.querySelector(s),s);d.querySelector(s).click()},change=(id,v)=>{const e=d.getElementById(id);assert(e,id);e.value=v;e.dispatchEvent(new w.Event('change',{bubbles:true}))};
 let saved,writes=0,current='A';w.BAMCO_CASES={current:()=>({id:current,title:current==='A'?'CURRENT':'SECOND',createdAt:'2026-11-11'}),listActive:async()=>[{id:'A',title:'CURRENT'},{id:'B',title:'SECOND'}],read:async()=>({id:'B',title:'SECOND',status:'active',snapshot:comparison})};
 api.open({setupComplete:true},v=>{saved=structuredClone(v);writes++},false);
 const config=api.snapshot().config,drive=api.eligibleTests('drive').find(t=>t.days.length>1),dur=api.eligibleTests('durability')[0],stat=api.eligibleTests('supplementary')[0];assert(drive&&dur&&stat);
@@ -43,5 +43,18 @@ for(const language of ['en','zh']){w.BAMCO_I18N.setLanguage(language);await tick
 w.BAMCO_I18N.setLanguage('fa');api.open(source,()=>{},false);click('[data-open="supplementary"]');assert(d.getElementById('questionsPanel').lastElementChild.classList.contains('static-test-builder'));assert(!d.getElementById('questionsPanel').textContent.includes('حالت بار'));assert(d.getElementById('pageTitle').textContent.includes('بررسی استاتیک'));
 api.open(source,()=>{},false);click('[data-open="drive"]');click('[data-day="'+day1+'"]');click('[data-daysection="scores"]');assert(!d.getElementById('questionsPanel').textContent.includes('حالت بار'));
 api.open(source,()=>{},false);click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="scores"]');const shown=api.currentTests();for(const test of shown.slice(0,12)){const expected=w.BAMCO_WORKBOOK.tests[test.sourceId].loads.join(' / '),question=d.getElementById('q-'+test.id);if(question&&expected)assert([...question.querySelectorAll('dd')].some(e=>e.textContent===expected));}
+
+for(const mode of ['drive','durability','supplementary']){
+ api.open(source,()=>{throw Error('Navigation must not save evaluation data')},false);
+ click('[data-open="assessmentTypes"]');click('[data-open="'+mode+'Menu"]');
+ click('[data-module-dashboard="'+mode+'"]');
+ assert.equal(api.reportMode(),mode);
+ assert(w.BAMCO_DASHBOARD.model().entries.every(entry=>entry.tab===mode));
+ assert.equal(w.BAMCO_DASHBOARD.model().total,R.build(api.snapshot(),{mode}).total);
+ assert(!d.getElementById('reportMode'));
+ assert.equal(d.getElementById('backModulesBtn').dataset.open,mode+'Menu');
+ click('#backModulesBtn');
+ assert(d.querySelector('[data-module-dashboard="'+mode+'"]'));
+}
 assert.deepEqual(errors,[]);w.close();console.log('PASS reports: route totals, daily aggregation, checkpoint trends, custom scores, weights, XLSX, active-case comparison, persistence, readonly, stale requests, AI contract, static form placement and Excel load labels.');
 })().catch(e=>{console.error(e);process.exit(1)});

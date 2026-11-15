@@ -295,24 +295,35 @@ html+='<div class="toolbar"><button class="secondary" data-pagejump="'+(page-1)+
 byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'')
 }
 
+const assessmentNames={drive:'قابلیت رانندگی',durability:'آزمون دوام',supplementary:'بررسی استاتیک',comprehensive:'ارزیابی جامع'};
+const gateTabs=['modules','assessmentTypes',...Object.keys(assessmentNames).map(key=>key+'Menu')];
+let dashboardModule=null;
+function moduleCards(items){
+ return '<div class="gate-grid">'+items.map(([target,label,icon,attribute='data-open'])=>'<button type="button" class="gate-card" data-gate-icon="'+icon+'" '+attribute+'="'+target+'"><span class="gate-illustration"></span><strong>'+label+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
+}
+function backDestination(){
+ if(state.tab==='assessmentTypes'||state.tab==='setup')return 'modules';
+ if(state.tab.endsWith('Menu'))return 'assessmentTypes';
+ if(state.tab==='results')return dashboardModule?dashboardModule+'Menu':'modules';
+ return assessmentNames[state.tab]?state.tab+'Menu':'modules';
+}
 function renderGate(){
  const landing=byId('landing'),modules=byId('moduleLanding');
- const main=state.tab==='home'||state.tab==='modules';
  landing.classList.toggle('hidden',state.tab!=='home');
- modules.classList.toggle('hidden',state.tab!=='modules');
+ modules.classList.toggle('hidden',!gateTabs.includes(state.tab));
  byId('innerHero').classList.toggle('hidden',state.tab==='home');
  byId('legacySteps').classList.add('hidden');
- byId('backModulesBtn').classList.toggle('hidden',main||Boolean(dayContext()&&dayScreen!=='days'));
+ const back=byId('backModulesBtn');
+ back.classList.toggle('hidden',['home','modules'].includes(state.tab)||Boolean(dayContext()&&dayScreen!=='days'));
+ back.dataset.open=backDestination();
+ back.textContent='بازگشت';
  byId('assessmentBack').classList.toggle('hidden',state.tab!=='modules');
- if(state.tab==='home'&&!document.getElementById('assessmentHub'))landing.innerHTML='<div class="gate-eyebrow">BAMCO · VEHICLE ASSESSMENT</div><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid one"><button type="button" class="gate-card" data-open="setup"><span class="gate-illustration">◇</span><strong>مشخصات خودرو</strong><span class="gate-cta">ورود و تکمیل اطلاعات ←</span></button></div>';
- if(state.tab==='modules')modules.innerHTML='<div class="gate-grid">'+[
- ['setup','۰۱','ویرایش مشخصات','ویرایش مشخصات خودرو و برنامه آزمون','◇'],
- ['drive','۰۱','قابلیت رانندگی','برنامه ۲۶ روزه، مسیرهای پیشنهادی و نمره‌دهی روزانه','↗'],
- ['durability','۰۲','آزمون دوام','برنامه منعطف کیلومتری، کنترل‌های دوره‌ای و ثبت عملکرد','↗'],
- ['supplementary','۰۳','بررسی استاتیک','شاخص‌های تکمیلی و ارزیابی بدون محدودیت روزانه','↗'],
- ['comprehensive','','ارزیابی جامع خودرو','',''],
- ['results','۰۴','گزارش و نتایج','میانگین شاخص‌ها و مقایسه برنامه مسیر با پیمایش واقعی','↗']
- ].map(x=>'<button type="button" class="gate-card" data-gate-icon="'+(x[0]==='setup'?'editSetup':x[0])+'" data-open="'+x[0]+'"><span class="gate-illustration">'+x[4]+'</span><strong>'+x[2]+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
+ if(state.tab==='modules')modules.innerHTML=moduleCards([['setup','ویرایش مشخصات','editSetup'],['assessmentTypes','انتخاب نوع ارزیابی','comprehensive']]);
+ if(state.tab==='assessmentTypes')modules.innerHTML=moduleCards(Object.entries(assessmentNames).map(([key,label])=>[key+'Menu',label,key]));
+ if(state.tab.endsWith('Menu')){
+  const mode=state.tab.slice(0,-4);
+  modules.innerHTML=moduleCards([[mode,['drive','durability'].includes(mode)?'تقویم روزانه':'امتیازدهی',mode],[mode,'داشبورد مدیریتی','results','data-module-dashboard']]);
+ }
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -344,17 +355,18 @@ function routeMixHtml(tab){
 }
 
 function renderResults(){
- byId('resultsPanel').innerHTML='<div class="toolbar"><button class="primary" data-dashboard-export>خروجی اکسل داشبورد</button><button class="secondary" data-exportcsv="1">دریافت گزارش آزمون‌ها</button><button class="secondary" data-dashboard-print>چاپ داشبورد</button></div><div id="assessmentDashboard"></div>'+routeMixHtml('drive')+routeMixHtml('durability');
+ byId('resultsPanel').innerHTML='<div class="toolbar"><button class="primary" data-dashboard-export>خروجی اکسل داشبورد</button><button class="secondary" data-exportcsv="1">دریافت گزارش آزمون‌ها</button><button class="secondary" data-dashboard-print>چاپ داشبورد</button></div><div id="assessmentDashboard"></div>'+(dashboardModule==='supplementary'?'':dashboardModule?routeMixHtml(dashboardModule):routeMixHtml('drive')+routeMixHtml('durability'));
  window.BAMCO_DASHBOARD?.render();
 }
 
 function render(){
 document.body.dataset.view=state.tab;
 renderGate();
-const titles={home:['',''],modules:['بخش‌های ارزیابی',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],comprehensive:['ارزیابی جامع خودرو',''],supplementary:['بررسی استاتیک','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['داشبورد و نتایج','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
+const titles={home:['',''],modules:['پرونده خودرو',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],comprehensive:['ارزیابی جامع خودرو',''],supplementary:['بررسی استاتیک','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['داشبورد و نتایج','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
 const daily=dayContext();
+const gateTitle=state.tab==='assessmentTypes'?'انتخاب نوع ارزیابی':state.tab.endsWith('Menu')?assessmentNames[state.tab.slice(0,-4)]:null;
 const sectionNames={menu:'',form:'فرم روزانه',route:'مسیر پیمایش',scores:'امتیازدهی'};
-byId('pageTitle').textContent=titles[state.tab][0];
+byId('pageTitle').textContent=gateTitle||(state.tab==='results'&&dashboardModule?'داشبورد مدیریتی '+assessmentNames[dashboardModule]:titles[state.tab]?.[0]||'پرونده خودرو');
 let pageContext=byId('pageContext');
 if(!pageContext){pageContext=document.createElement('div');pageContext.id='pageContext';pageContext.className='page-context';byId('pageTitle').insertAdjacentElement('afterend',pageContext)}
 pageContext.replaceChildren();
@@ -363,7 +375,7 @@ if(daily&&dayScreen!=='days'){
  const day=document.createElement('span');day.className='page-day-chip';day.textContent='روز '+number(daily.day);pageContext.append(day);
  if(sectionNames[dayScreen]){const section=document.createElement('span');section.className='page-section-chip';section.textContent=sectionNames[dayScreen];pageContext.append(section)}
 }
-byId('pageSub').textContent=titles[state.tab][1];
+byId('pageSub').textContent=titles[state.tab]?.[1]||'';
 byId('headerVehicle').textContent=conf().vclass+' · '+conf().body+' · '+conf().power+' · '+conf().driveType;
 document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===state.tab));
 byId('setupPanel').classList.toggle('hidden',state.tab!=='setup');
@@ -381,7 +393,7 @@ byId('questionsPanel').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='sc
 workspace.querySelector('.sidebar').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 if(state.tab==='setup')renderSetup();
 else if(state.tab==='results')renderResults();
-else if(!['home','modules'].includes(state.tab)){
+else if(state.tab!=='home'&&!gateTabs.includes(state.tab)){
  if(!daily){const items=dayItems();renderKpis(items);if(state.tab!=='comprehensive')renderSchedule();renderQuestions()}
  else {
   byId('schedulePanel').replaceChildren();byId('questionsPanel').replaceChildren();
@@ -404,7 +416,7 @@ if(daily&&dayScreen!=='days'){
 }
 document.dispatchEvent(new Event('bamco:render'));
 }
-function changeTab(tab){if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}dayScreen='days';state.tab=tab;state.category='همه';state.query='';state.page=0;render();window.scrollTo({top:0,behavior:'smooth'})}
+function changeTab(tab){if(tab!=='results')dashboardModule=null;if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}dayScreen='days';state.tab=tab;state.category='همه';state.query='';state.page=0;render();window.scrollTo({top:0,behavior:'smooth'})}
 function exportFile(content,name,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 function exportJSON(){exportFile(JSON.stringify({schema:1,savedAt:new Date().toISOString(),...snapshot()},null,2),'BAMCO-assessment-backup.json','application/json;charset=utf-8');toast('فایل پشتیبان آماده شد.')}
 function csvCell(x){return '"'+String(x??'').replace(/"/g,'""')+'"'}
@@ -416,7 +428,7 @@ function excelReportSheets(){
   {tab:'durability',name:'آزمون دوام',days:dayCategoryPlan().length},
   {tab:'supplementary',name:'بررسی استاتیک',days:0}
  ];
- return specs.map(({tab,name,days})=>{
+ return specs.filter(spec=>!dashboardModule||spec.tab===dashboardModule).map(({tab,name,days})=>{
   const eligible=candidates(tab);
   const headers=['شاخص','زیرشاخص','آزمون',...(days?Array.from({length:days},(_,i)=>'روز '+(i+1)):['نمره']), 'میانگین آزمون','میانگین زیرشاخص','میانگین شاخص'];
   const testMeans=new Map(),subMeans=new Map(),catMeans=new Map(),rows=[headers];
@@ -535,7 +547,14 @@ byId('vehicleForm').addEventListener('submit',async e=>{
  changeTab('modules');
  toast('مشخصات خودرو ثبت و برنامه دوام محاسبه شد.');
 });
-document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
+document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.moduleDashboard){
+ const mode=el.dataset.moduleDashboard;
+ if(!assessmentNames[mode])return;
+ if(mode==='comprehensive'){changeTab(mode);window.BAMCO_MANAGER?.open()}
+ else{dashboardModule=mode;changeTab('results')}
+ return;
+}
+if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
 if(el.id==='editSetupBtn'){changeTab('setup');return}
 if(el.dataset.daysection){navigateDay(el.dataset.daysection);return}
 if(el.dataset.day){
@@ -557,7 +576,7 @@ document.addEventListener('input',e=>{if(e.target.id==='questionSearch'){state.q
 byId('importBackup').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const assessment=cloudSave;const fr=new FileReader();fr.onload=()=>{if(assessment!==cloudSave)return;try{const obj=JSON.parse(fr.result);if(!obj||!obj.records||!obj.config)throw Error('Invalid');if(!confirm('اطلاعات موجود با فایل پشتیبان جایگزین شود؟'))return;state.config=normalizeConfig(obj.config,true);state.records=obj.records;state.mileage=obj.mileage||{drive:{},durability:{}};state.missions=obj.missions||{};state.durabilitySchedule=obj.durabilitySchedule;state.checkpointAssignments=obj.checkpointAssignments||{};state.setupComplete=true;save();render();toast('بازیابی پشتیبان انجام شد.')}catch(err){toast('فایل JSON معتبر نیست.')}};fr.readAsText(file);e.target.value=''});
 window.BAMCO_ASSESSMENT={
   open(data,onSave,locked){
-    cloudSave=onSave;readOnly=locked;dayScreen='days';
+    cloudSave=onSave;readOnly=locked;dayScreen='days';dashboardModule=null;
     document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select').forEach(el=>el.disabled=locked);
     Object.assign(state,{
       config:normalizeConfig(data.config||{},Boolean(data.setupComplete)),
@@ -589,6 +608,8 @@ window.BAMCO_ASSESSMENT={
     }
   },
   saveNow:save,trackPicture,async waitForImages(){while(pendingPictures.size)await Promise.all([...pendingPictures])},
+  openDashboard(mode){dashboardModule=assessmentNames[mode]?mode:null;changeTab('results')},
+  navigateModule(mode){if(assessmentNames[mode])changeTab(mode+'Menu')},reportMode(){return dashboardModule},
   dayContext,scoreContext(){return state.tab==='comprehensive'?{tab:'comprehensive',key:'comprehensive:general',section:'scores'}:dayContext()},
   snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},

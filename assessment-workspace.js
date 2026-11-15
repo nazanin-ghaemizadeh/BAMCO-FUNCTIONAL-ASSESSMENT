@@ -113,7 +113,7 @@ function translateInterface() {
       if (values.includes(element.textContent)) element.textContent = values[index-1];
     }
   }
-  $('backModulesBtn').textContent = ['بازگشت به بخش‌های ارزیابی','Back to assessment modules','返回评估模块'][index-1];
+  $('backModulesBtn').textContent = ['بازگشت','Back','返回'][index-1];
   const setupInfo = $('setupInfo');
   const average = setupInfo.dataset.average;
   if (average) {

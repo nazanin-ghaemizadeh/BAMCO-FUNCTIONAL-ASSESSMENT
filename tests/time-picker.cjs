@@ -4,7 +4,7 @@ w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.structuredClon
 w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
 for(const f of ['data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','polish.js','pre-drive-checklist.js','day-workflow.js'])w.eval(fs.readFileSync(f,'utf8'));
 const style=d.createElement('style');style.textContent=fs.readFileSync('day-workflow.css','utf8');d.head.append(style);
-const api=w.BAMCO_ASSESSMENT,click=s=>{assert(d.querySelector(s),s);d.querySelector(s).click()};
+const api=w.BAMCO_ASSESSMENT,click=s=>{require('./navigation.cjs')(d,s);if(s==='[data-open="results"]'&&d.getElementById('assessmentDashboard'))return;assert(d.querySelector(s),s);d.querySelector(s).click()};
 api.open({setupComplete:true},()=>{},false);click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="form"]');
 const form=d.getElementById('bamco-day-form');assert(form);
 const fuel=form.elements.fuelType;assert.equal(w.getComputedStyle(fuel).opacity,'0');assert(fuel.nextElementSibling.classList.contains('vehicle-dropdown-trigger'));fuel.nextElementSibling.click();fuel.parentElement.querySelectorAll('.vehicle-dropdown-option')[2].click();assert.equal(fuel.value,'سوپر');

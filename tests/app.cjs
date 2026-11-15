@@ -67,6 +67,30 @@ const destination=d.getElementById('routeDestination'),menu=()=>destination.next
 assert.deepEqual([...menu().querySelectorAll('[data-value]')].map(x=>x.textContent),[...destination.options].map(x=>x.textContent));
 assert(destination.options.length>1);destination.nextElementSibling.click();const chosen=menu().querySelectorAll('[data-value]')[1],chosenValue=chosen.dataset.value,chosenText=chosen.textContent;chosen.click();assert.equal(destination.value,chosenValue);assert.equal(destination.nextElementSibling.firstElementChild.textContent,chosenText);assert(menu().hidden);assert.equal(JSON.stringify(saved),persisted);
 set('routeKind','urban');assert.equal(destination.options.length,0);assert(destination.nextElementSibling.disabled);assert.equal(menu().children.length,0);
+// The vehicle-wide bank is a single list with independent records, filtered only by the vehicle.
+const surveySource=structuredClone(initial);
+surveySource.records={'drive:1:CR-0443':{score:4}};
+const surveyOpen=(source,locked=false)=>{
+ api.open(structuredClone(source),v=>saved=structuredClone(v),locked);
+ click('[data-open="comprehensive"]');
+};
+surveyOpen(surveySource);
+const rows=()=>[...d.querySelectorAll('.comprehensive-question')];
+const union=new Set(['drive','durability','supplementary'].flatMap(mode=>Array.from(api.eligibleTests(mode),t=>t.id)));
+assert(rows().length>12);assert.deepEqual(new Set(rows().map(r=>r.dataset.question)),new Set(Array.from(api.eligibleTests('comprehensive'),t=>t.id)));
+for(const id of union)assert(rows().some(r=>r.dataset.question===id));
+assert.equal(rows().length,new Set(rows().map(r=>r.dataset.question)).size);
+assert(!d.querySelector('#questionsPanel [data-pagejump]'));assert(!api.dayContext());assert(!d.querySelector('.comprehensive-question .score'));
+const question=()=>d.querySelector('[data-question="CR-0443"]');
+const expand=async()=>{question().querySelector('summary').click();await tick()};
+await expand();click('[data-test="CR-0443"][data-score="9"]');assert(question().open);
+const surveyNote=question().querySelector('[data-note]');surveyNote.value='independent note';surveyNote.dispatchEvent(new w.Event('input',{bubbles:true}));
+assert.equal(saved.records['comprehensive:general:CR-0443'].score,9);assert.equal(saved.records['drive:1:CR-0443'].score,4);
+assert.deepEqual(saved.mileage,surveySource.mileage);
+const surveySaved=structuredClone(saved);surveyOpen(surveySaved,true);await expand();assert(question().querySelector('.score.selected').disabled);assert.equal(question().querySelector('textarea').value,'independent note');
+surveyOpen({...surveySaved,config:{...surveySaved.config,gear:'Automatic'}});assert(!question());assert(d.querySelector('[data-question="CR-0447"]'));
+const search=d.getElementById('questionSearch');search.value='CR-0447';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+assert.equal(rows().length,1);
 assert.deepEqual(errors,[]);console.log('PASS app: setup, final drive program, Excel vehicle filters, route editing with frozen history, database snapshot reopen, actual/preview separation, custom static test scoring, legacy preservation.');dom.window.close();
 
 })().catch(error=>{console.error(error);process.exitCode=1});

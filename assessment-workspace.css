@@ -181,7 +181,7 @@ html[lang] body #assessmentName.assessment-name-latin {font-family:"Times New Ro
 }
 html body button,html body button strong {font-weight:400!important}
 
-#moduleLanding .gate-grid {grid-template-columns:repeat(5,minmax(0,1fr))}
+#moduleLanding .gate-grid {grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:1100px){#moduleLanding .gate-grid {grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){#moduleLanding .gate-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){#moduleLanding .gate-grid {grid-template-columns:minmax(0,1fr)}}
@@ -344,3 +344,14 @@ html[dir] body .scores button.score :is(strong,small,span) {display:block;width:
 html[dir] body #bamco-day-form input[data-numeric="mileage"],
 html[dir] body #bamco-day-form input[data-numeric="mileage"]::placeholder {text-align:center!important;text-justify:auto!important}
 html[lang="fa"] body #bamco-day-form input[data-numeric="mileage"] {font-family:"B Nazanin","BNazanin","Daily Mileage Nazanin",serif!important}
+
+body[data-view="comprehensive"] #kpis {grid-template-columns:repeat(3,minmax(0,1fr))}
+.comprehensive-question {border:1px solid #d5e5dc;border-radius:12px;margin-block:8px;background:#fff}
+.comprehensive-question > summary {display:flex;align-items:center;gap:12px;padding:12px 15px;cursor:pointer;list-style:none}
+.comprehensive-question > summary::-webkit-details-marker {display:none}
+.comprehensive-question > summary::after {content:"";width:8px;height:8px;flex:none;border:solid #53816c;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.comprehensive-question[open] > summary::after {transform:rotate(225deg)}
+.comprehensive-question > summary small,.comprehensive-question > summary strong {display:block}
+.comprehensive-question > summary small {color:#567469}
+.comprehensive-question > summary b {margin-inline-start:auto;color:#226c54;white-space:nowrap}
+.comprehensive-question .question {margin:0;border:0;border-top:1px solid #d5e5dc;border-radius:0 0 12px 12px}

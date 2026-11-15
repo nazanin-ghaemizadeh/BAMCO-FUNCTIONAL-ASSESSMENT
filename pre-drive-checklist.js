@@ -91,6 +91,9 @@
     ]]
   ];
   const labels = [
+    ['ارزیابی جامع خودرو','Comprehensive vehicle assessment','车辆综合评估'],
+    ['فهرست آزمون‌ها','Test list','试验列表'],
+    ['آزمونی یافت نشد.','No matching tests.','未找到匹配的试验。'],
     ['چک‌لیست پیش از پیمایش','Pre-drive checklist','出发前检查清单'],
     ['توضیحات','Comments','备注'],
     ['ذخیره فرم روزانه','Save daily form','保存每日表单'],

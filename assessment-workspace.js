@@ -5,25 +5,23 @@ const $ = id => document.getElementById(id);
 const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
 const app = window.BAMCO_ASSESSMENT;
-const createClient = () => window.supabase.createClient(
-  'https://cwpfzvcwuiawjtvsnpkq.supabase.co',
-  'sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM',
-  {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}
-);
-let client=window.supabase?createClient():null,clientPending;
+const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
+const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
+async function requestRpc(name,args={}){
+ try{
+  const response=await fetch(apiURL+name,{method:'POST',headers:{apikey:apiKey,'Content-Type':'application/json'},body:JSON.stringify(args)});
+  const data=await response.json();
+  return response.ok?{data,error:null}:{data:null,error:data};
+ }catch(error){return {data:null,error}}
+}
+const listCache=new Map(),listRequests=new Map();
+let listEpoch=0;
 const externalScripts=new Map();
 function loadExternal(url){
  if(externalScripts.has(url))return externalScripts.get(url);
  const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
  externalScripts.set(url,pending);return pending;
 }
-async function ensureClient(){
- if(client)return client;
- if(!clientPending)clientPending=(async()=>{if(!window.supabase)await loadExternal('https://unpkg.com/@supabase/supabase-js@2.49.8/dist/umd/supabase.js');client=createClient();return client})().catch(error=>{clientPending=null;throw error});
- return clientPending;
-}
-
-
 const labels = {
   brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
   brandTitle:['ارزیابی عملکرد و دوام خودرو','Vehicle Performance and Durability Assessment','整车性能与耐久性评估'],
@@ -157,8 +155,24 @@ function randomKey() {
 }
 
 async function ownerRequest(operation,args = {}) {
- try {const connection=await ensureClient();return await connection.rpc('bamco_assessment',{operation,args})}
- catch(error){return {error}}
+ const result=await requestRpc('bamco_assessment',{operation,args});
+ if(['create','edit','delete'].includes(operation)&&!result.error&&result.data){
+  listEpoch++;listCache.clear();listRequests.clear();
+ }
+ return result;
+}
+
+function loadList(status,fresh=false){
+ if(listRequests.has(status))return listRequests.get(status);
+ const cached=listCache.get(status);
+ if(!fresh&&cached&&Date.now()-cached.at<15000)return Promise.resolve({data:cached.rows,error:null});
+ const epoch=listEpoch;
+ const request=ownerRequest('list',{status}).then(result=>{
+  if(!result.error&&Array.isArray(result.data)&&epoch===listEpoch)listCache.set(status,{rows:result.data,at:Date.now()});
+  return result;
+ }).finally(()=>{if(listRequests.get(status)===request)listRequests.delete(status)});
+ listRequests.set(status,request);
+ return request;
 }
 
 function node(tag, text, className) {
@@ -283,20 +297,24 @@ async function navigate(next) {
   poll = null;
   const generation = ++syncGeneration;
   screen = next;
-  rows = [];
+  const status=next==='history'?'completed':'active';
+  rows = ['active','history'].includes(next)?listCache.get(status)?.rows||[]:[];
   notice = '';
-  if (['active','history'].includes(next)) notice = 'load';
+  if (['active','history'].includes(next)&&!listCache.has(status)) notice = 'load';
   render();
   if (next === 'observer') {
-    try{await Promise.all([ensureClient(),window.L?Promise.resolve():loadExternal('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js')])}catch(error){if(generation===syncGeneration)report(error);return}
+    try{await (window.L?Promise.resolve():loadExternal('./vendor/leaflet-1.9.4.js'))}catch(error){if(generation===syncGeneration)report(error);return}
     if(generation!==syncGeneration)return;
     render();
     await refreshMap();
     if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
     return;
   }
+  if(next==='home'){
+   loadList('active');loadList('completed');
+  }
   if (!['active','history'].includes(next)) return;
-  const {data,error} = await ownerRequest('list',{status:next === 'history' ? 'completed' : 'active'});
+  const {data,error} = await loadList(status,true);
   if (generation !== syncGeneration) return;
   if (error) {report(error);return}
   rows = Array.isArray(data) ? data : [];
@@ -348,7 +366,8 @@ function renderRows() {
     const heading = node('div','','assessment-row-heading');
     heading.append(node('bdi',row.title,'assessment-row-title'));
     const actions = node('div','','assessment-row-actions');
-    actions.append(button('open',()=>openAssessment(row.id),'assessment-action assessment-open-action'));
+    const open=button('open',()=>openAssessment(row.id,open),'assessment-action assessment-open-action');
+    actions.append(open);
     actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
@@ -381,7 +400,10 @@ async function mutate(row,values) {
   await navigate(screen);
 }
 
-async function openAssessment(id) {
+async function openAssessment(id,control) {
+  if(control?.disabled)return;
+  if(control){control.disabled=true;control.setAttribute('aria-busy','true')}
+  try{
   const generation = ++syncGeneration;
   const {data,error} = await ownerRequest('open',{id});
   if (generation !== syncGeneration) return;
@@ -399,6 +421,7 @@ async function openAssessment(id) {
   editor.classList.remove('hidden');
   app.open(data.snapshot,queueSave,data.status !== 'active');
   render();
+  }finally{if(control?.isConnected){control.disabled=false;control.removeAttribute('aria-busy')}}
 }
 
 function queueSave(snapshot) {
@@ -624,7 +647,7 @@ async function refreshMap() {
   if (!map || refreshing) return;
   const generation = syncGeneration;
   refreshing = true;
-  const result = !client ? {error:true} : await client.rpc('bamco_live_locations');
+  const result = await requestRpc('bamco_live_locations');
   const data = Array.isArray(result.data) ? result.data : [];
   refreshing = false;
   if (generation !== syncGeneration || !map) return;
@@ -666,7 +689,7 @@ window.BAMCO_CASES={
  },
  saveStatus(){return syncState},
  current(){return current?{id:current.id,title:current.title,status:current.status,createdAt:current.created_at,updatedAt:current.updated_at,revision:current.revision}:null},
- async listActive(){const {data,error}=await ownerRequest('list',{status:'active'});if(error)throw error;return Array.isArray(data)?data:[]},
+ async listActive(){const {data,error}=await loadList('active',true);if(error)throw error;return Array.isArray(data)?data:[]},
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
 };
 window.BAMCO_WORKSPACE_READY=true;

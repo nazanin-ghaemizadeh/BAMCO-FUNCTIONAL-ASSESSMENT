@@ -374,7 +374,7 @@ renderDayNavigation();
 const workspace=byId('workPanel').querySelector('.workspace');
 workspace.classList.toggle('hidden',Boolean(daily)&&['days','menu'].includes(dayScreen));
 workspace.classList.toggle('assessment-single-section',Boolean(daily)&&dayScreen!=='scores');
-byId('kpis').classList.toggle('hidden',Boolean(daily));
+byId('kpis').classList.toggle('hidden',Boolean(daily)||state.tab==='comprehensive');
 byId('schedulePanel').classList.toggle('hidden',state.tab==='comprehensive'||Boolean(daily)&&dayScreen==='scores');
 byId('questionsPanel').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 workspace.querySelector('.sidebar').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');

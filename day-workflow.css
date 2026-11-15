@@ -516,11 +516,11 @@ html[dir=ltr] #assessmentPageActions :is(#dayScoresExcel,#dayFormExcel){order:0}
 .pre-drive-comment textarea {display:block; margin:2px 0 6px; resize:vertical; box-sizing:border-box}
 
 /* Reserve the physical left edge for the form download, including wrapped toolbars. */
-#assessmentPageActions:has(> #dayFormExcel:not([hidden])) {
+#assessmentPageActions:has(> :is(#dayFormExcel,#dayScoresExcel):not([hidden])) {
   position:relative; padding-left:54px; min-height:44px;
 }
-#assessmentPageActions #dayFormExcel {position:absolute; left:0; top:50%; transform:translateY(-50%)}
-html[dir=ltr] #assessmentPageActions:has(> #dayFormExcel:not([hidden])) {justify-content:flex-end}
+#assessmentPageActions :is(#dayFormExcel,#dayScoresExcel) {position:absolute; left:0; top:50%; transform:translateY(-50%)}
+html[dir=ltr] #assessmentPageActions:has(> :is(#dayFormExcel,#dayScoresExcel):not([hidden])) {justify-content:flex-end}
 
 @container (max-width:36rem) {
   .pre-drive-grid {gap:8px}

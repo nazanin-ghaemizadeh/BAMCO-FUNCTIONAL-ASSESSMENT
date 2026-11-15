@@ -4,7 +4,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
 (async()=>{
   const errors=[], console=new VirtualConsole();
   console.on('jsdomError',e=>errors.push(e.message));
-  const w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console}).window;
+  const w=new JSDOM(fs.readFileSync('case.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console}).window;
   const d=w.document;
   w.structuredClone=structuredClone;w.ExcelJS=Excel;w.scrollTo=()=>{};
   for(const f of ['translations-en.js','translations-zh.js','pre-drive-checklist.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','polish.js','day-workflow.js','day-scores.js']) w.eval(fs.readFileSync(f,'utf8'));

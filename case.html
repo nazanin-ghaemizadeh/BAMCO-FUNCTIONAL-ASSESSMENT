@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#153a60"><meta name="description" content="سامانه مستقل آزمون قابلیت رانندگی و دوام عملکردی و بررسی استاتیک خودروسازان بم">
+<link data-style="zh" data-href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap">
+<title>خودروسازان بم | ارزیابی عملکرد و دوام خودرو</title>
+<link rel="icon" type="image/webp" id="brandIcon">
+<style>[hidden]{display:none!important}</style>
+<link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=daily-layout-1"><link data-style="case" data-href="./day-workflow.css?v=comprehensive-toolbar-3"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=case-pages-1"><link data-style="case" data-href="./planning.css?v=20261111-controls-2"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+</head>
+<body data-view="modules">
+<header class="app-header">
+  <div class="brand"><img class="brand-logo original-brand-logo" src="data:image/webp;base64,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" alt="نشان خودروسازان بم"><div><b id="brandName">خودروسازان بم</b><strong id="brandTitle">ارزیابی عملکرد و دوام خودرو</strong></div></div>
+  <div class="header-right headerActions"><div id="assessmentLanguages" role="group" aria-label="انتخاب زبان">
+    <button type="button" data-language="fa" lang="fa" aria-label="فارسی" title="فارسی" aria-pressed="true"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fff" d="M0 0h30v20H0z"/><path fill="#239f40" d="M0 0h30v6.7H0z"/><path fill="#da232d" d="M0 13.3h30V20H0z"/><path fill="#da232d" d="M15 7.4c.8 1.2 1.3 2.7.5 4.1 1.3-.5 1.8-1.6 1.5-2.9 1.3 1.6.4 3.6-1.7 4l-.3.5-.3-.5c-2.1-.4-3-2.4-1.7-4-.3 1.3.2 2.4 1.5 2.9-.8-1.4-.3-2.9.5-4.1z"/></svg></button>
+    <button type="button" data-language="en" lang="en" aria-label="English" title="English" aria-pressed="false"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#16366c" d="M0 0h30v20H0z"/><path stroke="#fff" stroke-width="4" d="m0 0 30 20m0-20L0 20"/><path stroke="#c8102e" stroke-width="1.5" d="m0 0 30 20m0-20L0 20"/><path stroke="#fff" stroke-width="7" d="M15 0v20M0 10h30"/><path stroke="#c8102e" stroke-width="4" d="M15 0v20M0 10h30"/></svg></button>
+    <button type="button" data-language="zh" lang="zh" aria-label="中文" title="中文" aria-pressed="false"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#de2910" d="M0 0h30v20H0z"/><path fill="#ffde00" d="m5 2 1 2.5 2.8.1-2.2 1.7.7 2.7L5 7.4 2.7 9l.7-2.7L1.2 4.6 4 4.5z"/><g fill="#ffde00"><path id="bamcoFlagStar" d="m10 1 .3.7.8.1-.6.5.2.8-.7-.4-.7.4.2-.8-.6-.5.8-.1z"/><use href="#bamcoFlagStar" x="2" y="2"/><use href="#bamcoFlagStar" x="2" y="5"/><use href="#bamcoFlagStar" y="7"/></g></svg></button>
+  </div><span id="headerVehicle" class="hidden" aria-hidden="true"></span></div>
+</header>
+<main class="main">
+<section id="caseEntry" class="surface case-entry" aria-live="polite">
+<h1>پرونده خودرو</h1><p id="caseMessage" role="status">در حال باز کردن پرونده…</p>
+<a class="secondary" id="caseReturn" href="./?view=active">بازگشت</a>
+<button class="primary" id="caseRetry" type="button" hidden>تلاش دوباره</button>
+</section>
+<div id="caseView" hidden>
+<div class="hero hidden" id="innerHero"><div><h1 id="pageTitle">تنظیم مشخصات خودرو و برنامه آزمون</h1><p id="pageSub"></p></div><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div></div>
+<section id="assessmentEditorBar" class="hidden">
+  <strong id="assessmentName" dir="auto"></strong>
+  <nav id="assessmentPageActions" aria-label="عملیات صفحه">
+    <button type="button" class="assessment-action" id="assessmentBack"></button>
+    <button type="button" class="secondary hidden" id="backModulesBtn" data-open="modules">بازگشت به بخش‌ها</button>
+    <span id="assessmentTabActions"></span>
+    <button id="assessmentShare" class="assessment-action" type="submit" form="assessmentGps"></button>
+    <button id="assessmentStop" class="assessment-action" type="button" disabled></button>
+    <span id="dayFormActions" hidden>
+      <button id="bamco-day-start" type="submit" form="bamco-day-form" class="primary">ذخیره فرم روزانه</button>
+      <span id="bamco-live-state" role="status"></span>
+    </span>
+    <button id="dayFormExcel" type="button" class="secondary" hidden title="دانلود اکسل فرم روزانه" aria-label="دانلود اکسل فرم روزانه"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7zM17 3v5h4M3 8h11v11H3zM6 11l5 5m0-5-5 5"/></svg></button>
+  </nav>
+  <span id="assessmentSync" role="status"></span>
+  <form id="assessmentGps" class="hidden">
+    <span id="assessmentGpsLabel"></span>
+    <span id="assessmentGpsStatus" role="status"></span>
+  </form>
+</section><section id="moduleLanding" class="landing-shell hidden"></section>
+ <section id="setupPanel" class="surface setup hidden">
+
+   <form id="vehicleForm">
+   <div class="formgrid">
+    <div class="field"><label for="vclass">رده خودرو</label><select id="vclass" lang="en"><option>M1</option><option>N1</option></select></div>
+    <div class="field"><label for="body">نوع بدنه</label><select id="body"><option>Sedan</option><option>SUV</option><option>Crossover</option><option>Pickup</option><option>Station Wagon</option><option>Hatchback</option><option>Off-road</option></select></div>
+    <div class="field"><label for="power">قوای محرکه</label><select id="power"><option>ICE</option><option>HEV</option><option>PHEV</option><option>BEV</option><option>EREV</option></select></div>
+    <div class="field"><label for="gear">گیربکس</label><select id="gear"><option>Manual</option><option selected>Automatic</option></select></div>
+    <div class="field"><label for="driveType">سیستم محرک</label><select id="driveType" lang="en"><option>FWD</option><option>RWD</option><option>AWD</option><option>4WD</option></select></div>
+    <div class="field"><label for="twoDiff">خودرو دو دیفرانسیل است؟</label><select id="twoDiff"><option value="no">خیر</option><option value="yes">بله</option></select></div>
+    <div class="field"><label for="driveKm">هدف قابلیت رانندگی (کیلومتر)</label><input id="driveKm" type="text" inputmode="numeric" data-numeric="true" min="1" max="20000" value="6930" readonly required></div>
+    <div class="field"><label for="durKm">هدف پیمایش دوام (کیلومتر)</label><input id="durKm" type="text" inputmode="numeric" data-numeric="true" min="1" max="200000" value="5000" required></div>
+    <div class="field"><label for="durDays">تعداد روزهای دوام (محاسبه خودکار)</label><input id="durDays" type="text" readonly aria-readonly="true" value="۱۳"></div>
+   </div>
+   <section class="durability-planner-setup" aria-labelledby="durabilityCapsTitle">
+    <h2 id="durabilityCapsTitle">سقف پیمایش روزانه مسیرهای دوام</h2>
+    <div id="durabilityCaps" class="formgrid"></div>
+    <div id="durabilityPreview" aria-live="polite"></div>
+   </section>
+   <div class="info-bar" id="setupInfo">با تغییر روزها و مسافت، تعداد و هدف کیلومتر هر روز، روزهای کنترل ۵٬۰۰۰ کیلومتری و فهرست آزمون‌ها بازتنظیم می‌شوند.</div>
+   <div class="toolbar"><button type="submit" class="primary">تأیید و ورود به ارزیابی ←</button><span class="tiny">مقادیر و نمره‌ها در دیتابیس این ارزیابی ذخیره می‌شوند.</span></div>
+   </form>
+ </section>
+ <section id="workPanel" class="hidden">
+   <section id="dayNavigation" class="hidden" aria-label="انتخاب روز و بخش روزانه"></section>
+   <section id="dayProgressRoad" hidden aria-labelledby="dayProgressTitle">
+    <div class="day-progress-heading">
+     <div><h2 id="dayProgressTitle"></h2><p id="dayProgressCount"></p></div>
+     <strong id="dayProgressPercent" aria-hidden="true"></strong>
+    </div>
+    <div class="day-road-meter" role="progressbar" aria-labelledby="dayProgressTitle" aria-describedby="dayProgressCount" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+     <div class="day-road-trail" aria-hidden="true"><div class="day-road-distance"></div></div>
+     <span class="day-road-flag" aria-hidden="true"></span>
+     <div class="day-road-journey" aria-hidden="true">
+      <!-- RELY R8 Luxury, black side profile from https://relyr8.com/uploads/brochure_luxury.pdf (p. 2). -->
+      <svg class="day-road-car" viewBox="0 0 237 97" aria-hidden="true" focusable="false">
+       <title>Chery RELY R8</title>
+       <defs>
+        <image id="road-r8-photo" data-href="./assets/rely-r8-black.jpg" width="237" height="97"/>
+        <clipPath id="road-r8-outline">
+         <path d="M6 51 8 39 12 34Q24 28 62 26L78 16Q87 11 99 9L107 7l3 1 25 0 1-2 7 1 2 2 8 1q4 0 5 8l2 10 48 0 16 2q3 1 3 6l1 16-1 3 2 4-1 5-27 5q-2 19-19 19-15 0-18-15l-105-1q-2 15-17 15-14 1-18-11l-1-7-15-3-3-2-1-11z"/>
+        </clipPath>
+        <clipPath id="road-r8-front-hub"><circle cx="41" cy="70" r="9"/></clipPath>
+        <clipPath id="road-r8-rear-hub"><circle cx="182" cy="71" r="9"/></clipPath>
+       </defs>
+       <ellipse cx="120" cy="88" rx="106" ry="3" fill="#314239" opacity=".15"/>
+       <g class="day-road-dust" fill="#b28d65">
+        <ellipse cx="210" cy="76" rx="10" ry="4"/>
+        <ellipse cx="218" cy="72" rx="7" ry="4"/>
+        <circle cx="225" cy="68" r="2.5"/>
+       </g>
+       <g class="day-road-body">
+        <use href="#road-r8-photo" clip-path="url(#road-r8-outline)"/>
+        <g clip-path="url(#road-r8-front-hub)"><use class="day-road-spokes" href="#road-r8-photo" style="transform-origin:41px 70px"/></g>
+        <g clip-path="url(#road-r8-rear-hub)"><use class="day-road-spokes" href="#road-r8-photo" style="transform-origin:182px 71px"/></g>
+       </g>
+      </svg>
+     </div>
+    </div>
+   </section>
+   <div class="kpis" id="kpis"></div>
+   <div class="workspace" style="margin-top:18px">
+     <div class="content">
+      <div class="surface panel" id="schedulePanel"></div>
+      <div class="surface panel" id="questionsPanel"></div>
+     </div>
+     <aside class="surface sidebar"><h3>شاخص‌های ارزیابی</h3><div id="categories" class="cat-scroll"></div></aside>
+   </div>
+ </section>
+ <section class="surface panel hidden" id="resultsPanel"></section>
+ <section id="comprehensiveDashboard" hidden></section>
+ 
+</div>
+</main>
+<input id="importBackup" type="file" accept=".json" class="hidden">
+<div id="toast" class="toast hidden" role="status"></div>
+<template id="caseAssets">
+<script src="./planning-translations.js?v=hierarchy-1"></script>
+<script src="./dashboard-translations.js?v=20261111-reference-3"></script>
+<script src="./pre-drive-checklist.js?v=comprehensive-1"></script>
+<script src="./i18n.js?v=startup-1"></script>
+<script src="./data.js?v=20261111-final-1"></script>
+<script src="./durability-planner.js?v=editable-setup-1"></script>
+<script src="./legacy-planner.js?v=20261111"></script>
+<script src="./route-map.js?v=startup-1"></script>
+<script src="./review-contract.js?v=20261111-reference-1"></script>
+<script src="./report-export.js?v=20261111-reference-2"></script>
+<script src="./report-charts.js?v=20261111-reference-3"></script>
+<script src="./workbook-metadata.js?v=20261111-dashboard-1"></script>
+<script src="./report-model.js?v=editable-setup-1"></script>
+<script src="./app.js?v=case-pages-1"></script>
+<script src="./polish.js?v=weighting-card-2"></script>
+<script src="./day-workflow.js?v=startup-1"></script>
+<script src="./snapshot-merge.js?v=1"></script>
+<script src="./report-ui.js?v=hierarchy-1"></script>
+<script src="./day-pdf.js?v=20261114-2"></script>
+<script src="./day-scores.js?v=comprehensive-scores-2"></script>
+<script src="./manager-dashboard.js?v=case-pages-1"></script>
+</template>
+<template id="caseDictionaries">
+<script data-locale="en" src="./translations-en.js?v=startup-1"></script>
+<script data-locale="zh" src="./translations-zh.js?v=startup-1"></script>
+</template>
+<script id="workspace-entry">
+(() => {
+'use strict';
+
+const $ = id => document.getElementById(id);
+const hub = $('assessmentHub');
+const editor = $('assessmentEditorBar');
+const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
+let app = window.BAMCO_ASSESSMENT;
+const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
+const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
+async function requestRpc(name,args={}){
+ try{
+  const response=await fetch(apiURL+name,{method:'POST',headers:{apikey:apiKey,'Content-Type':'application/json'},body:JSON.stringify(args)});
+  const data=await response.json();
+  return response.ok?{data,error:null}:{data:null,error:data};
+ }catch(error){return {data:null,error}}
+}
+const listCache=new Map(),listRequests=new Map();
+let listEpoch=0;
+const externalScripts=new Map();
+function loadExternal(url){
+ if(externalScripts.has(url))return externalScripts.get(url);
+ const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
+ externalScripts.set(url,pending);return pending;
+}
+const styleLoads = new Map();
+function loadStyles(group) {
+  return Promise.all([...document.querySelectorAll('link[data-style="'+group+'"]')].map(link=>{
+    if (styleLoads.has(link)) return styleLoads.get(link);
+    const pending = new Promise((resolve,reject)=>{
+      link.onload = resolve;
+      link.onerror = () => reject(new Error('Stylesheet unavailable'));
+      link.rel = 'stylesheet';
+      link.href = link.dataset.href;
+    }).catch(error=>{
+      link.removeAttribute('href');
+      link.removeAttribute('rel');
+      styleLoads.delete(link);
+      throw error;
+    });
+    styleLoads.set(link,pending);
+    return pending;
+  }));
+}
+
+let editorLoad;
+function loadEditor() {
+  if (app) return Promise.resolve(app);
+  if (!editorLoad) {
+    window.BAMCO_TRANSLATIONS ??= {en:{},zh:{}};
+    const scripts = [...$('caseAssets').content.querySelectorAll('script[src]')];
+    // Fetch in parallel while preserving initialization order and retrying only failed files.
+    const hints = scripts.map(source=>{
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'script';
+      link.href = source.getAttribute('src');
+      document.head.append(link);
+      return link;
+    });
+    const initialize = async () => {
+      for (const source of scripts) await loadExternal(source.getAttribute('src'));
+      if (!window.BAMCO_ASSESSMENT) throw new Error('Editor unavailable');
+    };
+    editorLoad = Promise.all([initialize(),loadStyles('case'),loadStyles('map')])
+      .then(()=>app=window.BAMCO_ASSESSMENT)
+      .catch(error=>{editorLoad=null;throw error})
+      .finally(()=>hints.forEach(link=>link.remove()));
+  }
+  return editorLoad;
+}
+
+function loadDictionary(lang) {
+  const source = $('caseDictionaries').content.querySelector('[data-locale="'+lang+'"]');
+  return source ? loadExternal(source.getAttribute('src')) : Promise.resolve();
+}
+const labels = {
+  opening:['در حال باز کردن پرونده…','Opening vehicle case…','正在打开车辆档案…'],
+  caseError:['پرونده باز نشد. دوباره تلاش کنید.','Could not open this case. Please try again.','无法打开此档案，请重试。'],
+  brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
+  brandTitle:['ارزیابی عملکرد و دوام خودرو','Vehicle Performance and Durability Assessment','整车性能与耐久性评估'],
+  brandAlt:['نشان خودروسازان بم','Bam Automobile Company logo','巴姆汽车公司标志'],
+  language:['انتخاب زبان','Choose language','选择语言'],
+  welcomeBefore:['کیفیت از ','Quality starts with ','品质源于'],
+  welcomeAccent:['ارزیابی دقیق','precise assessment','精准评估'],
+  welcomeAfter:[' آغاز می‌شود.','.','。'],
+  activeCta:['ورود به ارزیابی‌ها','View active assessments','查看进行中的评估'],
+  historyCta:['مشاهده نتایج ثبت‌شده','Browse completed assessments','查看已完成的评估'],
+  evaluatorCta:['ثبت و مدیریت ارزیابی','Record and manage assessments','记录和管理评估'],
+  observerCta:['مشاهده موقعیت خودرو','View vehicle location','查看车辆位置'],
+  weighting:['وزن‌دهی','Weighting','权重设置'],
+  weightingCta:['وزن شاخص‌ها و زیرشاخص‌ها · به‌زودی','Criterion and subcriterion weights · Coming soon','指标与子指标权重 · 即将推出'],
+  active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
+  history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
+  evaluator:['ارزیاب','Evaluator','评估员'],
+  observer:['نظارت بر موقعیت مکانی','Location Monitoring','位置监控'],
+  back:['بازگشت','Back','返回'],
+  create:['ارزیابی جدید','New assessment','新建评估'],
+  name:['عنوان ارزیابی','Assessment title','评估名称'],
+  open:['باز کردن','Open','打开'],
+  rename:['ویرایش نام','Rename','重命名'],
+  finish:['پایان ارزیابی','Complete assessment','完成评估'],
+  reopen:['بازگشایی','Reopen','重新开启'],
+  remove:['حذف ارزیابی','Delete assessment','删除评估'],
+  confirm:['ارزیابی و داده‌های آن برای همیشه حذف شوند؟','Permanently delete the assessment and its data?','永久删除此评估及其数据？'],
+  empty:['ارزیابی‌ای در این بخش وجود ندارد.','There are no assessments here.','此处暂无评估。'],
+  load:['در حال اتصال…','Connecting…','正在连接…'],
+  error:['ارتباط با سامانه برقرار نشد.','Could not connect to the service.','无法连接到服务。'],
+  retry:['تلاش دوباره','Retry','重试'],
+  saving:['در حال ذخیره…','Saving…','正在保存…'],
+  saved:['','',''],
+  unsaved:['تغییرات ذخیره نشد. دوباره تلاش کنید.','Changes could not be saved. Export a backup or retry.','更改未保存。请导出备份或重试。'],
+  conflict:['این ارزیابی در جای دیگری تغییر کرده است. دوباره آن را باز کنید.','This assessment changed elsewhere. Export a backup and reopen it.','此评估已在其他位置更改。请导出备份后重新打开。'],
+  overlap:['همین اطلاعات در دو نسخه ویرایش شده‌اند. برای موارد زیر نسخه دلخواه را انتخاب کنید.','These fields changed in both copies. Choose which values to save.','这些字段已同时修改。请选择要保存的值。'],
+  confirmed:['تغییرات انتخاب‌شده ذخیره شدند.','Selected changes saved.','所选更改已保存。'],
+  mine:['ثبت مقادیر من','Save my values','保存我的值'],
+  theirs:['پذیرش مقادیر سرور','Use server values','使用服务器值'],
+  unavailable:['این ارزیابی دیگر برای ویرایش در دسترس نیست.','This assessment is no longer editable.','此评估已不可编辑。'],
+  leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
+  share:['اشتراک موقعیت مکانی','Share location','共享位置'],
+  stop:['توقف موقعیت مکانی','Stop sharing','停止共享'],
+  gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
+  gpsError:['GPS در دسترس نیست. مجوز موقعیت و اتصال را بررسی کنید.','GPS is unavailable. Check location permissions and your connection.','定位不可用。请检查定位权限和网络。'],
+  position:['آخرین موقعیت','Latest location','最新位置'],
+  backup:['دریافت نسخه پشتیبان','Download backup','下载备份'],
+  partial:['متن تخصصی بانک آزمون فعلاً فارسی است.','The technical test bank is currently in Persian.','专业试验题库目前为波斯语。']
+};
+
+const interfaceText = [
+  ['#pageTitle','بخش‌های ارزیابی','Assessment modules','评估模块'],
+  ['#pageTitle','تنظیم مشخصات خودرو و برنامه آزمون','Vehicle and test plan setup','车辆与试验计划设置'],
+  ['#pageTitle','آزمون قابلیت رانندگی','Drivability testing','驾驶性能试验'],
+  ['#pageTitle','آزمون دوام عملکردی','Functional durability testing','功能耐久试验'],
+  ['#pageTitle','بررسی استاتیک','Static inspection','静态检查'],
+  ['#pageTitle','نتایج و میانگین‌ها','Results and averages','结果与平均值'],
+  ['#pageSub','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.','Vehicle details and program length determine test selection and scheduling.','车辆信息及计划周期决定试验筛选和排程。'],
+  ['#pageSub','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا','26-day program with test criteria and routes','26 天试验计划，含指标及路线'],
+  ['#pageSub','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف','Daily monitoring through the target mileage','每日监测直至达到目标里程'],
+  ['#pageSub','ارزیابی‌های مستقل از برنامه کیلومتری','Assessments outside the mileage schedule','独立于里程计划的评估'],
+  ['#pageSub','خلاصه نمره هر شاخص و هر حوزه ارزیابی','Score summary by criterion and category','各指标及类别的评分汇总'],
+  ['#moduleLanding [data-open="drive"] strong','قابلیت رانندگی','Drivability','驾驶性能'],
+  ['#moduleLanding [data-open="durability"] strong','آزمون دوام','Durability testing','耐久试验'],
+  ['#moduleLanding [data-open="supplementary"] strong','بررسی استاتیک','Static inspection','静态检查'],
+  ['#moduleLanding [data-open="results"] strong','گزارش و نتایج','Reports and results','报告与结果'],
+  ['#moduleLanding .gate-cta','ورود به بخش ←','Open module →','进入模块 →'],
+  ['#moduleLanding [data-open="setup"] strong','ویرایش مشخصات','Edit specifications','编辑车辆信息'],
+  ['label[for="vclass"]','رده خودرو','Vehicle class','车辆类别'],
+  ['label[for="body"]','نوع بدنه','Body type','车身类型'],
+  ['label[for="power"]','قوای محرکه','Powertrain','动力总成'],
+  ['label[for="gear"]','گیربکس','Transmission','变速箱'],
+  ['label[for="driveType"]','سیستم محرک','Drivetrain','驱动形式'],
+  ['label[for="driveKm"]','هدف قابلیت رانندگی (کیلومتر)','Drivability distance target (km)','驾驶性能目标里程（公里）'],
+  ['label[for="durKm"]','هدف پیمایش دوام (کیلومتر)','Durability distance target (km)','耐久目标里程（公里）'],
+  ['label[for="durDays"]','تعداد روزهای دوام (محاسبه خودکار)','Durability days (calculated)','耐久天数（自动计算）'],
+  ['#vehicleForm button[type="submit"]','تأیید و ورود به ارزیابی ←','Confirm and open assessment →','确认并进入评估 →'],
+  ['#vehicleForm .toolbar .tiny','مقادیر و نمره‌ها در دیتابیس این ارزیابی ذخیره می‌شوند.','Values and scores are stored with this assessment.','数值及评分保存在本评估的数据库中。'],
+  ['#workPanel .sidebar h3','شاخص‌های ارزیابی','Assessment criteria','评估指标']
+];
+
+function translateInterface() {
+  if (!current) return;
+  const index = ['fa','en','zh'].indexOf(language) + 1;
+  for (const [selector,...values] of interfaceText) {
+    for (const element of document.querySelectorAll(selector)) {
+      if (values.includes(element.textContent)) element.textContent = values[index-1];
+    }
+  }
+  $('backModulesBtn').textContent = ['بازگشت','Back','返回'][index-1];
+  const setupInfo = $('setupInfo');
+  const average = setupInfo.dataset.average;
+  if (average) {
+    const km = Number(average).toLocaleString(language === 'fa' ? 'fa-IR' : language);
+    setupInfo.textContent = [
+      'میانگین لازم: '+km+' کیلومتر در روز. مسافت هدف هر نوع مسیر و روزهای کنترل، بعد از شروع برنامه محاسبه می‌شوند.',
+      'Required average: '+km+' km/day. Route targets and inspection days are calculated when the program starts.',
+      '每日平均需行驶 '+km+' 公里。启动计划后将计算各类路线的目标里程和检查日期。'
+    ][index-1];
+  }
+
+}
+document.addEventListener('bamco:render',translateInterface);
+
+let language = 'fa';
+try {
+  const stored = localStorage.getItem('bamco-assessment-language');
+  if (['fa','en','zh'].includes(stored)) language = stored;
+} catch {}
+const tr = key => labels[key][['fa','en','zh'].indexOf(language)] || labels[key][0];
+const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-language]')];
+
+labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
+labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
+labels.created=['ایجاد','Created','创建时间'];
+labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
+labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
+labels.newAssessmentTitle=['ایجاد ارزیابی جدید','Create a new assessment','创建新评估'];
+labels.activeListTitle=['ارزیابی‌های در حال اجرا','Assessments in progress','进行中的评估'];
+labels.historyListTitle=['ارزیابی‌های خاتمه‌یافته','Completed assessments','已完成的评估'];
+labels.activeStatus=['در حال ارزیابی','In progress','进行中'];
+labels.completedStatus=['خاتمه‌یافته','Completed','已完成'];
+labels.assessmentCount=['ارزیابی','assessment','项评估'];
+
+let gpsStatus = '';
+let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
+let map, markers, poll, watch = null, heartbeat = null, locationSession = '', gpsGeneration = 0, gpsWrite = Promise.resolve(), refreshing = false, mapFitted = false;
+
+function randomKey() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
+}
+
+async function ownerRequest(operation,args = {}) {
+ const result=await requestRpc('bamco_assessment',{operation,args});
+ if(['create','edit','delete'].includes(operation)&&!result.error&&result.data){
+  listEpoch++;listCache.clear();listRequests.clear();
+ }
+ return result;
+}
+
+function loadList(status,fresh=false){
+ if(listRequests.has(status))return listRequests.get(status);
+ const cached=listCache.get(status);
+ if(!fresh&&cached&&Date.now()-cached.at<15000)return Promise.resolve({data:cached.rows,error:null});
+ const epoch=listEpoch;
+ const request=ownerRequest('list',{status}).then(result=>{
+  if(!result.error&&Array.isArray(result.data)&&epoch===listEpoch)listCache.set(status,{rows:result.data,at:Date.now()});
+  return result;
+ }).finally(()=>{if(listRequests.get(status)===request)listRequests.delete(status)});
+ listRequests.set(status,request);
+ return request;
+}
+
+function node(tag, text, className) {
+  const element = document.createElement(tag);
+  if (text) element.textContent = text;
+  if (className) element.className = className;
+  return element;
+}
+
+function button(key, action, className = 'assessment-action') {
+  const control = node('button', tr(key), className);
+  control.type = 'button';
+  control.onclick = action;
+  return control;
+}
+
+function field(type, key, value = '') {
+  const input = node('input');
+  input.type = type;
+  input.placeholder = tr(key);
+  input.setAttribute('aria-label', tr(key));
+  input.required = true;
+  input.value = value;
+  return input;
+}
+
+function renderWelcome() {
+  if (!hub.querySelector('[data-boot-screen]')) hub.replaceChildren(...welcome.map(el=>el.cloneNode(true)));
+  if (hub.dataset.language === language && hub.dataset.welcome === 'true') return;
+  const title = hub.querySelector('h1');
+  title.replaceChildren(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
+  for (const card of hub.querySelectorAll('.gate-card')) {
+    const key = card.dataset.bootScreen || 'weighting';
+    card.setAttribute('aria-label',tr(key));
+    card.querySelector('strong').textContent = tr(key);
+    card.querySelector('.gate-cta').textContent = tr(key+'Cta');
+    card.removeAttribute('aria-busy');
+  }
+  hub.dataset.language = language;
+  hub.dataset.welcome = 'true';
+}
+hub?.addEventListener('click', event=>{
+  const target = event.target.closest('[data-boot-screen]');
+  if (target) navigate(target.dataset.bootScreen);
+});
+
+function report(error) {
+  console.error(error);
+  notice = 'error';
+  render();
+}
+
+function locale() {
+  return language === 'fa' ? 'fa-IR' : language === 'zh' ? 'zh-CN' : 'en-GB';
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? '' : date.toLocaleString(locale(),{dateStyle:'medium',timeStyle:'short'});
+}
+
+function render() {
+  document.documentElement.lang = language;
+  document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+  if (window.BAMCO_I18N && window.BAMCO_I18N.language!==language) window.BAMCO_I18N.setLanguage(language);
+  if (current) translateInterface();
+  $('assessmentLanguages').setAttribute('aria-label',tr('language'));
+  for (const control of languageButtons) control.setAttribute('aria-pressed',String(control.dataset.language === language));
+  $('brandName').textContent = tr('brandName');
+  $('brandTitle').textContent = tr('brandTitle');
+  document.querySelector('.brand-logo').alt = tr('brandAlt');
+  document.title = tr('brandName')+' | '+tr('brandTitle');
+  if (editor) {
+    $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
+    $('assessmentGpsLabel').textContent = tr('locationShareTitle');
+    $('assessmentBack').textContent = tr('back');
+    $('assessmentShare').textContent = tr('share');
+    $('assessmentStop').textContent = tr('stop');
+    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
+    if (!current) {
+      $('caseReturn').textContent=tr('back');
+      $('caseRetry').textContent=tr('retry');
+      $('caseMessage').textContent=tr(notice || 'opening');
+      return;
+    }
+    $('assessmentSync').textContent = syncState ? tr(syncState) : '';
+    if (syncState === 'overlap' && overlapReview) showOverlaps($('assessmentSync'));
+    if (pending && !saving && syncState === 'unsaved') $('assessmentSync').append(' ',button('retry',flush));
+    return;
+  }
+
+  if (map) {map.remove();map = null}
+  hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
+  if (screen === 'home') { renderWelcome(); return }
+  delete hub.dataset.welcome;
+  const title = node('h1',tr(screen),'gate-title welcome-title');
+  const divider = node('div','','welcome-divider');
+  divider.setAttribute('aria-hidden','true');
+  divider.append(node('i'),node('i'),node('i'));
+  hub.replaceChildren(title,divider);
+  if (notice) {
+    const status = node('p',tr(notice));
+    status.setAttribute('role','status');
+    hub.append(status);
+  }
+  if (screen !== 'home') {
+    const toolbar = node('div','','assessment-page-toolbar');
+    const backButton = button('back',()=>navigate('home'),'assessment-action assessment-back-action');
+    backButton.setAttribute('aria-label',tr('back'));
+    toolbar.append(backButton);
+    divider.after(toolbar);
+  }
+  if (screen === 'active' || screen === 'history') renderRows();
+  if (screen === 'observer') {
+    renderMap();
+  }
+}
+
+function listScreen() {
+  const query=new URLSearchParams(location.search);
+  const value=query.has('observer')?'observer':query.get('view');
+  return ['active','history','observer'].includes(value)?value:'home';
+}
+function caseURL(id) {
+  const url=new URL('./case.html',location.href);
+  url.searchParams.set('id',id);
+  if(screen==='history')url.searchParams.set('from','history');
+  return url.href;
+}
+async function navigate(next,writeURL=true) {
+  if(writeURL && next!==listScreen()){
+    const url=new URL(location.href);
+    url.searchParams.delete('observer');
+    if(next==='home')url.searchParams.delete('view');else url.searchParams.set('view',next);
+    history.pushState(null,'',url);
+  }
+  clearInterval(poll);
+  poll = null;
+  const generation = ++syncGeneration;
+  screen = next;
+  const status=next==='history'?'completed':'active';
+  rows = ['active','history'].includes(next)?listCache.get(status)?.rows||[]:[];
+  notice = '';
+  if (['active','history'].includes(next)&&!listCache.has(status)) notice = 'load';
+  render();
+  if (next === 'observer') {
+    try{await Promise.all([loadStyles('map'),window.L?Promise.resolve():loadExternal('./vendor/leaflet-1.9.4.js')])}catch(error){if(generation===syncGeneration)report(error);return}
+    if(generation!==syncGeneration)return;
+    render();
+    await refreshMap();
+    if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
+    return;
+  }
+  if(next==='home'){
+   loadList('active');loadList('completed');
+  }
+  if (!['active','history'].includes(next)) return;
+  const {data,error} = await loadList(status,true);
+  if (generation !== syncGeneration) return;
+  if (error) {report(error);return}
+  rows = Array.isArray(data) ? data : [];
+  notice = '';
+  render();
+}
+
+function renderRows() {
+  if (screen === 'active') {
+    const createPanel = node('section','','assessment-create-panel');
+    const createHeading = node('div','','assessment-create-heading');
+    createHeading.append(node('span','+','assessment-create-icon'),node('h2',tr('newAssessmentTitle')));
+    const form = node('form','','assessment-create-form');
+    const title = field('text','name');
+    title.maxLength = 120;
+    const createButton = node('button',tr('create'),'assessment-action assessment-create-action');
+    form.append(title,createButton);
+    form.onsubmit = async event => {
+      event.preventDefault();
+      await create(title.value,{},createButton);
+    };
+    createPanel.append(createHeading,form);
+    hub.append(createPanel);
+  }
+
+  const list = node('section','','assessment-list-section');
+  const listHeading = node('div','','assessment-list-heading');
+  listHeading.append(
+    node('h2',tr(screen === 'active' ? 'activeListTitle' : 'historyListTitle')),
+    node('span',rows.length.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count')
+  );
+  list.append(listHeading);
+  const grid = node('div','','assessment-card-grid');
+  if (rows.length === 1) grid.classList.add('is-single');
+  list.append(grid);
+  if (!rows.length && !notice) {
+    const empty = node('div','','assessment-empty-state');
+    empty.append(node('span','✓','assessment-empty-icon'),node('p',tr('empty')));
+    grid.append(empty);
+  }
+  for (const row of rows) {
+    const item = node('article','','surface assessment-row');
+    const top = node('div','','assessment-row-top');
+    const active = row.status === 'active';
+    top.append(
+      node('span',tr(active ? 'activeStatus' : 'completedStatus'),'assessment-status '+(active ? 'is-active' : 'is-completed')),
+      node('small',tr('created')+': '+formatDate(row.created_at),'assessment-row-meta')
+    );
+    const heading = node('div','','assessment-row-heading');
+    heading.append(node('bdi',row.title,'assessment-row-title'));
+    const actions = node('div','','assessment-row-actions');
+    const open=node('a',tr('open'),'assessment-action assessment-open-action');
+    open.href=caseURL(row.id);
+    actions.append(open);
+    actions.append(button('rename',()=>{
+      const title = prompt(tr('name'),row.title)?.trim();
+      if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
+    },'assessment-action assessment-secondary-action'));
+    actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
+    actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
+    item.append(heading,top,actions);
+    grid.append(item);
+  }
+  hub.append(list);
+}
+
+async function create(title,snapshot,control) {
+  title = title.trim();
+  if (!title || title.length > 120 || control.disabled) return;
+  control.disabled = true;
+  const generation = syncGeneration;
+  const {data,error} = await ownerRequest('create',{title,snapshot});
+  control.disabled = false;
+  if (generation !== syncGeneration) return;
+  if (error || !data) {report(error || 'Create failed');return}
+  location.assign(caseURL(data.id));
+}
+
+async function mutate(row,values) {
+  const generation = syncGeneration;
+  const {data,error} = await ownerRequest(values ? 'edit' : 'delete',{id:row.id,revision:row.revision,...values});
+  if (generation !== syncGeneration) return;
+  if (error || !data) {report(error || tr('conflict'));return}
+  await navigate(screen);
+}
+
+async function openAssessment(id) {
+  const retry=$('caseRetry');
+  const caseView=$('caseView');
+  const entry=$('caseEntry');
+  retry.hidden=true;
+  notice='';
+  render();
+  try {
+    if(!id)throw new Error('Missing case ID');
+    const [result]=await Promise.all([ownerRequest('open',{id}),loadEditor(),loadDictionary(language)]);
+    if(result.error || result.data?.id!==id)throw result.error || new Error('Case unavailable');
+    const data=result.data;
+    if(!data.snapshot || typeof data.snapshot!=='object' || Array.isArray(data.snapshot))throw new Error('Invalid case snapshot');
+    let requested;
+    do {requested=language;await loadDictionary(requested)} while(requested!==language);
+    current={...data,snapshot:structuredClone(data.snapshot)};
+    syncState='';
+    $('assessmentName').textContent=data.title;
+    $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
+    $('assessmentShare').disabled=false;
+    $('assessmentStop').disabled=true;
+    $('assessmentGps').classList.toggle('hidden',data.status!=='active');
+    window.BAMCO_I18N?.setLanguage(language);
+    app.open(data.snapshot,queueSave,data.status!=='active');
+    render();
+    editor.classList.remove('hidden');
+    entry.hidden=true;
+    caseView.hidden=false;
+    window.scrollTo({top:0,behavior:'instant'});
+  } catch(error) {
+    console.error(error);
+    current=null;
+    editor.classList.add('hidden');
+    caseView.hidden=true;
+    entry.hidden=false;
+    notice='caseError';
+    retry.hidden=!id;
+    render();
+  }
+}
+
+function queueSave(snapshot) {
+  pending = structuredClone(snapshot);
+  if(syncState!=='overlap' && syncState!=='unavailable') flush();
+}
+
+let overlapReview=null;
+
+function showOverlaps(host) {
+  const review=overlapReview;
+  const fieldNames={score:['نمره','Score','评分'],note:['یادداشت','Note','备注'],photo:['تصویر','Photo','图片']};
+  const valueText=value=>{
+    if(typeof value==='string' && value.startsWith('data:image/'))return '📷';
+    if(value && typeof value==='object')return Array.isArray(value) ? '('+value.length+')' : Object.keys(value).join('، ');
+    return value===undefined ? '—' : String(value);
+  };
+  for(const {path,mine,theirs} of review.conflicts){
+    const line=document.createElement('div');
+    line.dir='auto';
+    const testId=path[0]==='records'?path[1].split(':').slice(2).join(':'):null;
+    const test=testId && app.currentTests?.().find(t=>t.id===testId);
+    const field=fieldNames[path.at(-1)]?.[['fa','en','zh'].indexOf(language)] || path.at(-1);
+    line.textContent=[test?.name || path.slice(0,-1).join(' / '),field].join(' · ')+' · '+tr('mine')+' («'+valueText(mine)+'») · '+tr('theirs')+' («'+valueText(theirs)+'»)';
+    host.append(line);
+  }
+  for(const choice of ['mine','theirs'])host.append(button(choice,async()=>{
+    if(current!==review.row || saving)return;
+    await flush({...review,choice});
+    if(current===review.row && syncState==='saved'){
+      const status=$('dayScoresSave')?.querySelector('[role=status]') || $('assessmentSync');
+      status.textContent=tr('confirmed');
+    }
+  }));
+}
+
+async function flush(decision) {
+  if(saving)return saving;
+  if(!current || !pending || syncState==='unavailable')return;
+  if(syncState==='overlap' && !decision?.choice)return;
+  const row=current;
+  saving=(async()=>{
+    let retries=0;
+    while(current===row && pending){
+      const snapshot=pending;
+      pending=null;
+      syncState='saving';
+      render();
+      const {data,error}=await ownerRequest('save',{id:row.id,revision:row.revision,snapshot});
+      if(current!==row)return;
+      if(!error && Number.isInteger(data?.revision)){
+        row.snapshot=snapshot;
+        row.revision=data.revision;
+        overlapReview=null;
+        syncState='saved';
+        retries=0;
+        continue;
+      }
+      pending??=snapshot;
+      if(error || ++retries>3){syncState='unsaved';return}
+      const latest=await ownerRequest('open',{id:row.id});
+      if(current!==row)return;
+      if(latest.error){syncState='unsaved';return}
+      const server=latest.data;
+      if(!server || server.id!==row.id || server.status!=='active' || !server.snapshot || !Number.isInteger(server.revision)){
+        syncState='unavailable';return;
+      }
+      const merged=window.BAMCO_RECONCILE(row.snapshot||{},pending,server.snapshot,decision?.choice==='theirs');
+      if(merged.conflicts.length){
+        const approved=decision?.choice && decision.row===row && decision.revision===server.revision &&
+          JSON.stringify(decision.conflicts)===JSON.stringify(merged.conflicts);
+        if(!approved){
+          overlapReview={row,revision:server.revision,conflicts:merged.conflicts};
+          syncState='overlap';return;
+        }
+      }
+      decision=null;
+      overlapReview=null;
+      row.snapshot=server.snapshot;
+      row.revision=server.revision;
+      pending=structuredClone(merged.snapshot);
+      app.applyReconciledSnapshot(structuredClone(merged.snapshot));
+    }
+  })();
+  try{await saving}finally{saving=null;render()}
+}
+
+if(editor) $('assessmentBack').onclick = async () => {
+  const row = current;
+  await flush();
+  if (!row || current !== row) return;
+  if (pending && !confirm(tr('leave'))) return;
+  if (watch !== null || locationSession) await stopGps();
+  if (current !== row) return;
+  const next = current.status === 'active' ? 'active' : 'history';
+  pending = null;
+  const listURL=new URL('./?view='+next,location.href);
+  const source=document.referrer?new URL(document.referrer):null;
+  if(!history.state?.from&&source?.origin===listURL.origin&&source.pathname===listURL.pathname&&source.searchParams.get('view')===next&&history.length>1)history.back();
+  else location.replace(listURL.href);
+};
+
+function setGpsStatus(key) {
+  gpsStatus = key;
+  $('assessmentGpsStatus').textContent = key ? tr(key) : '';
+}
+
+function gpsUpdate(operation,values = {}) {
+  const id = current?.id;
+  const session = locationSession;
+  if (!id || !session) return Promise.resolve(false);
+  gpsWrite = gpsWrite.then(async () => {
+    const {data,error} = await ownerRequest(operation,{id,session,...values});
+    return !error && Boolean(data);
+  }).catch(()=>false);
+  return gpsWrite;
+}
+
+function firstPosition(options) {
+  return new Promise((resolve,reject)=>{
+    if (!navigator.geolocation) {reject(new Error('Geolocation unavailable'));return}
+    navigator.geolocation.getCurrentPosition(resolve,reject,options);
+  });
+}
+
+if(editor) $('assessmentGps').onsubmit = async event => {
+  event.preventDefault();
+  if (!current || watch !== null || locationSession) return;
+  if (!navigator.geolocation) {setGpsStatus('gpsError');return}
+  const row = current;
+  const generation = ++gpsGeneration;
+  const options = {enableHighAccuracy:true,maximumAge:5000,timeout:20000};
+  $('assessmentBack').disabled = true;
+  $('assessmentShare').disabled = true;
+  setGpsStatus('locationRequest');
+  let first;
+  try {
+    first = await firstPosition(options);
+  } catch (error) {
+    console.error(error);
+    $('assessmentBack').disabled = false;
+    $('assessmentShare').disabled = false;
+    setGpsStatus('gpsError');
+    return;
+  }
+  if (current !== row || generation !== gpsGeneration) return;
+  const session = randomKey();
+  const start = await ownerRequest('gps_start',{id:row.id,session});
+  $('assessmentBack').disabled = false;
+  if (start.error || !start.data) {
+    $('assessmentShare').disabled = false;
+    setGpsStatus('error');
+    return;
+  }
+  locationSession = session;
+  $('assessmentStop').disabled = false;
+  setGpsStatus('keepOpen');
+  let last = 0;
+  let writing = false;
+  const publish = async position => {
+    if (generation !== gpsGeneration || writing || Date.now()-last < 4000) return;
+    writing = true;
+    last = Date.now();
+    const coords = position.coords;
+    const ok = await gpsUpdate('gps_point',{
+      latitude:coords.latitude,
+      longitude:coords.longitude,
+      accuracy:Math.max(0,coords.accuracy||0)
+    });
+    writing = false;
+    if (generation === gpsGeneration) setGpsStatus(ok?'keepOpen':'gpsError');
+  };
+  await publish(first);
+  const onLocationError = error => {
+    console.error(error);
+    if (generation === gpsGeneration) setGpsStatus('gpsError');
+  };
+  watch = navigator.geolocation.watchPosition(publish,onLocationError,options);
+  heartbeat = setInterval(()=>navigator.geolocation.getCurrentPosition(publish,onLocationError,options),30000);
+};
+
+async function stopGps() {
+  ++gpsGeneration;
+  clearInterval(heartbeat);
+  heartbeat = null;
+  if (watch !== null) navigator.geolocation.clearWatch(watch);
+  watch = null;
+  const session = locationSession;
+  if (!session) {
+    $('assessmentShare').disabled = false;
+    $('assessmentStop').disabled = true;
+    setGpsStatus('');
+    return true;
+  }
+  const ok = await gpsUpdate('gps_stop');
+  locationSession = '';
+  $('assessmentShare').disabled = false;
+  $('assessmentStop').disabled = true;
+  setGpsStatus(ok ? '' : 'error');
+  return ok;
+}
+if(editor) $('assessmentStop').onclick = stopGps;
+
+function renderMap() {
+  const panel = node('div');
+  panel.id = 'assessmentMap';
+  const status = node('p',tr('gpsWait'));
+  status.id = 'assessmentMapStatus';
+  status.setAttribute('role','status');
+  hub.append(panel,status);
+  if (!window.L) return;
+  map = L.map(panel).setView([32,53],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,
+    attribution:'© OpenStreetMap'
+  }).addTo(map);
+  markers = L.featureGroup().addTo(map);
+  mapFitted = false;
+  setTimeout(()=>map?.invalidateSize(),0);
+}
+
+async function refreshMap() {
+  if (!map || refreshing) return;
+  const generation = syncGeneration;
+  refreshing = true;
+  const result = await requestRpc('bamco_live_locations');
+  const data = Array.isArray(result.data) ? result.data : [];
+  refreshing = false;
+  if (generation !== syncGeneration || !map) return;
+  markers.clearLayers();
+  $('assessmentMapStatus').textContent = result.error ? tr('error') :
+    data.length ? data.length.toLocaleString(locale())+' '+tr('liveCount') : tr('gpsWait');
+  if (result.error) return;
+  for (const point of data) {
+    const popup = node('div','','assessment-map-popup');
+    popup.append(node('strong',point.title));
+    popup.append(node('span',formatDate(point.recorded_at)));
+    if (Number.isFinite(Number(point.accuracy_m))) {
+      const accuracyLabel = language === 'fa' ? 'دقت: ' : language === 'zh' ? '精度：' : 'Accuracy: ';
+      popup.append(node('span',accuracyLabel+Math.round(Number(point.accuracy_m)).toLocaleString(locale())+(language==='zh'?' 米':' m')));
+    }
+    L.marker([point.latitude,point.longitude]).bindPopup(popup).addTo(markers);
+  }
+  if (!mapFitted && data.length) {
+    map.fitBounds(markers.getBounds(),{maxZoom:15,padding:[28,28]});
+    mapFitted = true;
+  }
+}
+
+let languageRequest=0;
+for (const control of languageButtons) control.onclick = async () => {
+  const next = control.dataset.language;
+  const request = ++languageRequest;
+  if (next==='zh') loadStyles('zh').catch(()=>{});
+  if (current) {
+    try { await loadDictionary(next) }
+    catch { if(request===languageRequest) alert(tr('error')); return }
+  }
+  if (request!==languageRequest) return;
+  language = next;
+  try {localStorage.setItem('bamco-assessment-language',language)} catch {}
+  render();
+  if (screen === 'observer') refreshMap();
+};
+window.addEventListener('beforeunload',event => {
+  if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}
+});
+
+window.BAMCO_CASES={
+ async saveNow(snapshot){
+  if(!current||current.status!=='active'||app.isReadOnly())return false;
+  const row=current;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
+  return current===row&&!pending&&syncState==='saved';
+ },
+ saveStatus(){return syncState},
+ current(){return current?{id:current.id,title:current.title,status:current.status,createdAt:current.created_at,updatedAt:current.updated_at,revision:current.revision}:null},
+ async listActive(){const {data,error}=await loadList('active',true);if(error)throw error;return Array.isArray(data)?data:[]},
+ async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
+};
+window.BAMCO_WORKSPACE_READY=true;
+if(language==='zh') loadStyles('zh').catch(()=>{});
+if (hub) {
+  window.addEventListener('popstate',()=>navigate(listScreen(),false));
+  window.addEventListener('pageshow',e=>{if(e.persisted)navigate(listScreen(),false)});
+  navigate(window.BAMCO_BOOT_SCREEN || listScreen());
+} else if (editor) {
+  const query=new URLSearchParams(location.search);
+  const id=query.get('id');
+  $('brandIcon').href=document.querySelector('.brand-logo').src;
+  $('caseReturn').href='./?view='+(query.get('from')==='history'?'history':'active');
+  $('caseRetry').onclick=()=>openAssessment(id);
+  openAssessment(id);
+}
+})();
+
+</script>
+</body>
+</html>

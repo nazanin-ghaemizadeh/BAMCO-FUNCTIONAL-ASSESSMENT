@@ -1,12 +1,12 @@
 const {JSDOM,VirtualConsole}=require('jsdom'),fs=require('fs'),assert=require('assert');
 (async()=>{
 const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
-const dom=new JSDOM(fs.readFileSync('./index.html','utf8'),{url:'https://preview.example',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window,d=w.document;
+const dom=new JSDOM(fs.readFileSync('./case.html','utf8'),{url:'https://preview.example',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window,d=w.document;
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.structuredClone=structuredClone;w.fetch=async()=>{throw Error('offline test')};
 for(const f of ['data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','report-charts.js','workbook-metadata.js','report-model.js','app.js','polish.js','pre-drive-checklist.js','day-workflow.js','report-ui.js'])w.eval(fs.readFileSync('./'+f,'utf8'));
 const api=w.BAMCO_ASSESSMENT;let saved;
 const click=s=>{require('./navigation.cjs')(d,s);if(s==='[data-open="results"]'&&d.getElementById('assessmentDashboard'))return;assert(d.querySelector(s),s);d.querySelector(s).click()},set=(id,v)=>{d.getElementById(id).value=v;d.getElementById(id).dispatchEvent(new w.Event('change',{bubbles:true}))},submit=id=>d.getElementById(id).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
-api.open({setupComplete:false},v=>saved=structuredClone(v),false);
+api.open({setupComplete:false},v=>saved=structuredClone(v),false);d.querySelector('[data-open="setup"]').click();
 assert.equal(d.getElementById('driveKm').value,'۶۹۳۰');assert(d.getElementById('driveKm').readOnly);
 set('twoDiff','yes');set('driveType','4WD');set('body','Pickup');set('gear','Manual');set('share-urban','20');set('share-hot','20');submit('vehicleForm');assert(saved);assert.equal(saved.durabilitySchedule.length,saved.config.durDays);
 assert.equal(api.drivePlan().reduce((s,p)=>s+p.km,0),6930);assert.equal(api.drivePlan().length,26);

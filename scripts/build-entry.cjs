@@ -37,7 +37,15 @@ const css = sheets.map(link => {
   return critical(source.sheet.cssRules);
 }).join('\n');
 const entry = fs.readFileSync('assessment-workspace.js','utf8').replace(/<\/script/gi,'<\\/script');
-const generated = html.replace(/(<script id="workspace-entry">)[\s\S]*?(<\/script>)/, (_,open,close)=>open+'\n'+entry+close).replace(/(<style id="landing-critical">)[\s\S]*?(<\/style>)/, (_,open,close) => open+'\n'+css+'\n'+close);
-if (process.argv.includes('--check')) {
-  if (html !== generated) throw new Error('Run node scripts/build-entry.cjs to refresh the entry HTML.');
-} else fs.writeFileSync('index.html', generated);
+function withController(source) {
+  return source.replace(/(<script id="workspace-entry">)[\s\S]*?(<\/script>)/, (_,open,close)=>open+'\n'+entry+close);
+}
+const landing = withController(html).replace(/(<style id="landing-critical">)[\s\S]*?(<\/style>)/, (_,open,close)=>open+'\n'+css+'\n'+close);
+const sharedHeader = /<header class="app-header">[\s\S]*?<\/header>/;
+const caseSource = fs.readFileSync('case.html','utf8');
+const casePage = withController(caseSource.replace(sharedHeader,()=>html.match(sharedHeader)[0]));
+for (const [path,original,result] of [['index.html',html,landing],['case.html',caseSource,casePage]]) {
+  if (process.argv.includes('--check')) {
+    if (original!==result) throw new Error('Run npm run build:entry to refresh '+path);
+  } else fs.writeFileSync(path,result);
+}

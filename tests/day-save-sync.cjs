@@ -1,9 +1,9 @@
 const {JSDOM,VirtualConsole}=require('jsdom'),fs=require('fs'),assert=require('assert');
 (async()=>{
-const vc=new VirtualConsole(),w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test',runScripts:'outside-only',virtualConsole:vc}).window;w.structuredClone=structuredClone;w.BAMCO_ASSESSMENT={isReadOnly:()=>false};let calls=[],respond;
+const vc=new VirtualConsole(),w=new JSDOM(fs.readFileSync('case.html','utf8'),{url:'https://example.test',runScripts:'outside-only',virtualConsole:vc}).window;w.structuredClone=structuredClone;w.BAMCO_ASSESSMENT={isReadOnly:()=>false};let calls=[],respond;
 w.fetch=async(url,options)=>{const body=JSON.parse(options.body);calls.push(body);const result=await respond(body);return {ok:!result.error,json:async()=>result.error||result.data}};
 
-let source=fs.readFileSync('assessment-workspace.js','utf8').replace("navigate(window.BAMCO_BOOT_SCREEN || (location.search === '?observer' ? 'observer' : 'home'));", "window.testSetCurrent=(snapshot={})=>{current={id:'case-1',title:'Test',status:'active',revision:1,snapshot};pending=null;overlapReview=null;syncState=''};");w.eval(source);w.testSetCurrent();
+let source=fs.readFileSync('assessment-workspace.js','utf8').replace("  openAssessment(id);", "window.testSetCurrent=(snapshot={})=>{current={id:'case-1',title:'Test',status:'active',revision:1,snapshot};pending=null;overlapReview=null;syncState=''};");w.eval(source);w.testSetCurrent();
 w.eval(fs.readFileSync('snapshot-merge.js','utf8'));
 respond=()=>({error:Error('offline')});assert.equal(await w.BAMCO_CASES.saveNow({records:{a:{score:8}}}),false);assert.equal(calls.length,1);
 respond=()=>({data:{revision:2}});assert.equal(await w.BAMCO_CASES.saveNow({records:{a:{score:9}}}),true);assert.equal(calls.at(-1).args.snapshot.records.a.score,9);assert.equal(calls.at(-1).args.revision,1);

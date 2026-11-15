@@ -1,5 +1,5 @@
 const {JSDOM}=require('jsdom'),fs=require('fs'),assert=require('assert');
-const w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true}).window,d=w.document;
+const w=new JSDOM(fs.readFileSync('case.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true}).window,d=w.document;
 w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.structuredClone=structuredClone;w.fetch=async()=>{throw Error('offline')};
 w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
 for(const f of ['data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','polish.js','pre-drive-checklist.js','day-workflow.js'])w.eval(fs.readFileSync(f,'utf8'));

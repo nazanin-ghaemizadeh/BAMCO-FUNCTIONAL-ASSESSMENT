@@ -11,7 +11,6 @@ function normalizeConfig(config={},complete=false){
  const result={...defaultConfig,...config,driveKm:6930,routeCaps:{...config.routeCaps}};
  if(config.twoDiff===undefined)result.twoDiff=['AWD','4WD'].includes(result.driveType)?'yes':'no';
  if(complete&&config.durDays!==undefined&&!config.durabilityPlannerVersion)result.durabilityPlannerVersion=0;
- if(result.durabilityPlannerVersion===1)result.durDays=window.BAMCO_LEGACY_PLANNER.calculate({target:num(result.durKm),twoDiff:result.twoDiff,caps:result.routeCaps,startOdo:num(result.startOdo)}).days;
  return result;
 }
 function twoDifferentials(){return conf().twoDiff==='yes'}
@@ -29,7 +28,6 @@ const fa=s=>String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ة/g,
 let cloudSave, readOnly = false, dayScreen = 'days';
 function snapshot(){return {config:state.config,records:state.records,mileage:state.mileage,setupComplete:state.setupComplete,missions:state.missions||{},durabilitySchedule:state.durabilitySchedule,checkpointAssignments:state.checkpointAssignments||{}}}
 function save(){if(readOnly)return false;if(cloudSave){cloudSave(snapshot());return true}try{localStorage.setItem(KEY,JSON.stringify(snapshot()));return true}catch(e){toast('حافظه مرورگر پر شده است؛ نسخه پشتیبان بگیرید.');return false}}
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v){state.config=normalizeConfig(v.config||{},Boolean(v.setupComplete));delete state.config.cabin;delete state.config.seatRows;delete state.config.offroad;state.records=v.records||{};state.missions=v.missions||{};state.durabilitySchedule=v.durabilitySchedule;state.checkpointAssignments=v.checkpointAssignments||{};state.mileage=v.mileage||{drive:{},durability:{}};state.setupComplete=Boolean(v.setupComplete);state.tab=state.setupComplete?'drive':'setup';}}catch(e){console.warn('Cannot read saved assessment',e)}}
 let tm;function toast(s){const t=byId('toast');t.textContent=s;t.classList.remove('hidden');clearTimeout(tm);tm=setTimeout(()=>t.classList.add('hidden'),3200)}
 function conf(){return state.config}
 function parts(s){return String(s||'').split(/\s*\/\s*|\s*\|\s*/).map(x=>x.trim()).filter(Boolean)}
@@ -47,9 +45,13 @@ function targetRows(){return planner.calculate(plannerConfig()).rows}
 function activeRoutes(){const a=DB.routes.filter(r=>(conf().body==='Off-road'||conf().driveType==='4WD')||(!/خارج.?جاده|خاکی/i.test(r.name)));const total=a.reduce((v,x)=>v+Math.max(0,x.durShare),0);return a.map(x=>({...x,share:x.durShare/total}))}
 function dayCategoryPlan(){
  if(state.durabilitySchedule)return state.durabilitySchedule;
- if(conf().durabilityPlannerVersion===2)return planner.calculate(plannerConfig()).schedule;
- if(conf().durabilityPlannerVersion===1)return window.BAMCO_LEGACY_PLANNER.calculate(plannerConfig()).schedule;
- return legacyDayCategoryPlan();
+ const version=conf().durabilityPlannerVersion;
+ const plan=version===2?planner.calculate(plannerConfig()).schedule:
+   version===1?window.BAMCO_LEGACY_PLANNER.calculate(plannerConfig()).schedule:legacyDayCategoryPlan();
+ if(!state.setupComplete)return plan;
+ state.durabilitySchedule=plan.map(p=>({...p,routeId:p.routeId||dayRouteAppearance(p).kind}));
+ state.config.durDays=plan.length;
+ return state.durabilitySchedule;
 }
 function legacyDayCategoryPlan(){
 const n=Math.max(1,Math.min(365,num(conf().durDays)||90)),totalKm=Math.max(100,num(conf().durKm)||45000),routes=activeRoutes();
@@ -253,7 +255,7 @@ function renderDayNavigation(){
 }
 function navigateDay(section){
  if(!dayContext()||!['days','menu','form','route','scores'].includes(section))return;
- dayScreen=section;render();window.scrollTo({top:0,behavior:'smooth'});
+ dayScreen=section;finishNavigation();
 }
 
 function renderSchedule(){
@@ -295,35 +297,95 @@ html+='<div class="toolbar"><button class="secondary" data-pagejump="'+(page-1)+
 byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'')
 }
 
-const assessmentNames={drive:'قابلیت رانندگی',durability:'آزمون دوام',supplementary:'بررسی استاتیک',comprehensive:'ارزیابی جامع'};
-const gateTabs=['modules','assessmentTypes',...Object.keys(assessmentNames).map(key=>key+'Menu')];
+const modes={
+ drive:{label:'قابلیت رانندگی',activity:'تقویم روزانه',path:'calendar'},
+ durability:{label:'آزمون دوام',activity:'تقویم روزانه',path:'calendar'},
+ supplementary:{label:'بررسی استاتیک',activity:'امتیازدهی',path:'scores'},
+ comprehensive:{label:'ارزیابی جامع',activity:'امتیازدهی',path:'scores'}
+};
+const pages=new Map();
 let dashboardModule=null;
-function moduleCards(items){
- return '<div class="gate-grid">'+items.map(([target,label,icon,attribute='data-open'])=>'<button type="button" class="gate-card" data-gate-icon="'+icon+'" '+attribute+'="'+target+'"><span class="gate-illustration"></span><strong>'+label+'</strong><span class="gate-cta">ورود به بخش ←</span></button>').join('')+'</div>';
+function definePage(tab,path,parent,title,cards=null,scope=null){
+ pages.set(tab,{tab,path,parent,title,cards,scope});
 }
-function backDestination(){
- if(state.tab==='assessmentTypes'||state.tab==='setup')return 'modules';
- if(state.tab.endsWith('Menu'))return 'assessmentTypes';
- if(state.tab==='results')return dashboardModule?dashboardModule+'Menu':'modules';
- return assessmentNames[state.tab]?state.tab+'Menu':'modules';
+definePage('modules','',null,'پرونده خودرو',[['setup','ویرایش مشخصات','editSetup'],['assessmentTypes','انتخاب نوع ارزیابی','comprehensive']]);
+definePage('setup','specifications','modules','تنظیم مشخصات خودرو و برنامه آزمون');
+definePage('assessmentTypes','types','modules','انتخاب نوع ارزیابی',Object.entries(modes).map(([key,m])=>[key+'Menu',m.label,key]));
+for(const [key,mode] of Object.entries(modes)){
+ const path='types/'+key,menu=key+'Menu';
+ definePage(menu,path,'assessmentTypes',mode.label,[[key,mode.activity,key],[key+'Dashboard','داشبورد مدیریتی','results']]);
+ definePage(key,path+'/'+mode.path,menu,mode.label);
+ definePage(key+'Dashboard',path+'/dashboard',menu,'داشبورد مدیریتی '+mode.label,null,key);
+}
+const pathPages=new Map([...pages.values()].map(page=>[page.path,page]));
+function currentPage(){
+ return pages.get(state.tab==='results'&&dashboardModule?dashboardModule+'Dashboard':state.tab);
 }
 function renderGate(){
- const landing=byId('landing'),modules=byId('moduleLanding');
- landing.classList.toggle('hidden',state.tab!=='home');
- modules.classList.toggle('hidden',!gateTabs.includes(state.tab));
+ const page=currentPage(),modules=byId('moduleLanding');
+ modules.classList.toggle('hidden',!page?.cards);
+ modules.replaceChildren();
+ if(page?.cards){
+   const grid=document.createElement('div');grid.className='gate-grid';
+   for(const [destination,label,icon] of page.cards){
+     const card=document.createElement('button');card.type='button';card.className='gate-card';card.dataset.gateIcon=icon;
+     const scope=pages.get(destination).scope;
+     if(scope)card.dataset.moduleDashboard=scope;else card.dataset.open=destination;
+     card.innerHTML='<span class="gate-illustration" aria-hidden="true"></span><strong>'+label+'</strong><span class="gate-cta">ورود به بخش ←</span>';
+     grid.append(card);
+   }
+   modules.append(grid);
+ }
  byId('innerHero').classList.toggle('hidden',state.tab==='home');
- byId('legacySteps').classList.add('hidden');
  const back=byId('backModulesBtn');
- back.classList.toggle('hidden',['home','modules'].includes(state.tab)||Boolean(dayContext()&&dayScreen!=='days'));
- back.dataset.open=backDestination();
+ back.classList.toggle('hidden',state.tab==='home'||state.tab==='modules'||Boolean(dayContext()&&dayScreen!=='days'));
+ back.dataset.open=page?.parent||'modules';
  back.textContent='بازگشت';
  byId('assessmentBack').classList.toggle('hidden',state.tab!=='modules');
- if(state.tab==='modules')modules.innerHTML=moduleCards([['setup','ویرایش مشخصات','editSetup'],['assessmentTypes','انتخاب نوع ارزیابی','comprehensive']]);
- if(state.tab==='assessmentTypes')modules.innerHTML=moduleCards(Object.entries(assessmentNames).map(([key,label])=>[key+'Menu',label,key]));
- if(state.tab.endsWith('Menu')){
-  const mode=state.tab.slice(0,-4);
-  modules.innerHTML=moduleCards([[mode,['drive','durability'].includes(mode)?'تقویم روزانه':'امتیازدهی',mode],[mode,'داشبورد مدیریتی','results','data-module-dashboard']]);
+}
+function routePath(){
+ const page=currentPage();
+ if(!page)return '';
+ const daily=dayContext();
+ return daily&&dayScreen!=='days'?page.path+'/'+daily.day+(dayScreen==='menu'?'':'/'+dayScreen):page.path;
+}
+function caseDocument(){return location.pathname.endsWith('/case.html')}
+function finishNavigation(){
+ const path=routePath(),previous=location.hash.slice(1);
+ if(caseDocument()&&path!==previous){
+   const url=new URL(location.href);url.hash=path;
+   if(history.state?.from===path)history.back();
+   else history.pushState({from:previous},'',url);
  }
+ render();
+ window.scrollTo({top:0,behavior:'instant'});
+}
+function restoreRoute(){
+ const path=location.hash.slice(1);
+ let page=pathPages.get(path),section='days',day=1;
+ if(!page){
+   const daily=/^(types\/(?:drive|durability)\/calendar)\/([1-9]\d*)(?:\/(form|route|scores))?$/.exec(path);
+   if(daily && state.setupComplete){
+     const max=daily[1].includes('/drive/')?driveProgram().length:dayCategoryPlan().length;
+     day=Number(daily[2]);
+     if(day<=max){page=pathPages.get(daily[1]);section=daily[3]||'menu'}
+   }
+ }
+ page??=pages.get('modules');
+ if(!state.setupComplete&&!page.cards&&page.tab!=='setup')page=pages.get('setup');
+ activatePage(page);
+ dayScreen=section;
+ if(page.tab==='drive')state.driveDay=day;
+ if(page.tab==='durability')state.durDay=day;
+ const canonical=routePath();
+ if(path!==canonical){const url=new URL(location.href);url.hash=canonical;history.replaceState(null,'',url)}
+ render();window.scrollTo({top:0,behavior:'instant'});
+}
+window.addEventListener('popstate',()=>{if(cloudSave&&caseDocument()&&location.hash.slice(1)!==routePath())restoreRoute()});
+function activatePage(page){
+ dashboardModule=page.scope;
+ state.tab=page.scope&&page.scope!=='comprehensive'?'results':page.tab;
+ dayScreen='days';state.query='';state.category='همه';state.page=0;
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -364,9 +426,9 @@ document.body.dataset.view=state.tab;
 renderGate();
 const titles={home:['',''],modules:['پرونده خودرو',''],setup:['تنظیم مشخصات خودرو و برنامه آزمون','اطلاعات خودرو و طول برنامه، مبنای فیلتر و زمان‌بندی هستند.'],drive:['آزمون قابلیت رانندگی','برنامه ۲۶ روزه با شاخص‌ها و مسیرهای قابل‌اجرا'],durability:['آزمون دوام عملکردی','پایش روزانه و مقایسه عملکرد تا پایان کیلومتر هدف'],comprehensive:['ارزیابی جامع خودرو',''],supplementary:['بررسی استاتیک','ارزیابی‌های مستقل از برنامه کیلومتری'],results:['داشبورد و نتایج','خلاصه نمره هر شاخص و هر حوزه ارزیابی']};
 const daily=dayContext();
-const gateTitle=state.tab==='assessmentTypes'?'انتخاب نوع ارزیابی':state.tab.endsWith('Menu')?assessmentNames[state.tab.slice(0,-4)]:null;
+const page=currentPage();
 const sectionNames={menu:'',form:'فرم روزانه',route:'مسیر پیمایش',scores:'امتیازدهی'};
-byId('pageTitle').textContent=gateTitle||(state.tab==='results'&&dashboardModule?'داشبورد مدیریتی '+assessmentNames[dashboardModule]:titles[state.tab]?.[0]||'پرونده خودرو');
+byId('pageTitle').textContent=(page?.cards||page?.scope)?page.title:(titles[state.tab]?.[0]||page?.title||'پرونده خودرو');
 let pageContext=byId('pageContext');
 if(!pageContext){pageContext=document.createElement('div');pageContext.id='pageContext';pageContext.className='page-context';byId('pageTitle').insertAdjacentElement('afterend',pageContext)}
 pageContext.replaceChildren();
@@ -377,11 +439,9 @@ if(daily&&dayScreen!=='days'){
 }
 byId('pageSub').textContent=titles[state.tab]?.[1]||'';
 byId('headerVehicle').textContent=conf().vclass+' · '+conf().body+' · '+conf().power+' · '+conf().driveType;
-document.querySelectorAll('[data-tab]').forEach(e=>e.classList.toggle('active',e.dataset.tab===state.tab));
 byId('setupPanel').classList.toggle('hidden',state.tab!=='setup');
 byId('workPanel').classList.toggle('hidden',!['drive','durability','supplementary','comprehensive'].includes(state.tab));
 byId('resultsPanel').classList.toggle('hidden',state.tab!=='results');
-byId('editSetupBtn').classList.add('hidden');
 document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(el=>el.remove());
 renderDayNavigation();
 const workspace=byId('workPanel').querySelector('.workspace');
@@ -393,7 +453,7 @@ byId('questionsPanel').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='sc
 workspace.querySelector('.sidebar').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 if(state.tab==='setup')renderSetup();
 else if(state.tab==='results')renderResults();
-else if(state.tab!=='home'&&!gateTabs.includes(state.tab)){
+else if(Object.hasOwn(modes,state.tab)){
  if(!daily){const items=dayItems();renderKpis(items);if(state.tab!=='comprehensive')renderSchedule();renderQuestions()}
  else {
   byId('schedulePanel').replaceChildren();byId('questionsPanel').replaceChildren();
@@ -416,7 +476,15 @@ if(daily&&dayScreen!=='days'){
 }
 document.dispatchEvent(new Event('bamco:render'));
 }
-function changeTab(tab){if(tab!=='results')dashboardModule=null;if(!['setup','home'].includes(tab)&&!state.setupComplete){toast('ابتدا مشخصات خودرو را ثبت کنید.');return}dayScreen='days';state.tab=tab;state.category='همه';state.query='';state.page=0;render();window.scrollTo({top:0,behavior:'smooth'})}
+function changeTab(tab){
+ let page=pages.get(tab);
+ if(!page)return;
+ if(!state.setupComplete&&!page.cards&&tab!=='setup'){
+   toast('ابتدا مشخصات خودرو را ثبت کنید.');
+   page=pages.get('setup');
+ }
+ activatePage(page);finishNavigation();
+}
 function exportFile(content,name,mime){const blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 function exportJSON(){exportFile(JSON.stringify({schema:1,savedAt:new Date().toISOString(),...snapshot()},null,2),'BAMCO-assessment-backup.json','application/json;charset=utf-8');toast('فایل پشتیبان آماده شد.')}
 function csvCell(x){return '"'+String(x??'').replace(/"/g,'""')+'"'}
@@ -548,14 +616,9 @@ byId('vehicleForm').addEventListener('submit',async e=>{
  toast('مشخصات خودرو ثبت و برنامه دوام محاسبه شد.');
 });
 document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el)return;if(el.dataset.moduleDashboard){
- const mode=el.dataset.moduleDashboard;
- if(!assessmentNames[mode])return;
- if(mode==='comprehensive'){changeTab(mode);window.BAMCO_MANAGER?.open()}
- else{dashboardModule=mode;changeTab('results')}
- return;
+ changeTab(el.dataset.moduleDashboard+'Dashboard');return;
 }
-if(el.dataset.open){changeTab(el.dataset.open);return}if(el.dataset.tab){changeTab(el.dataset.tab);return}
-if(el.id==='editSetupBtn'){changeTab('setup');return}
+if(el.dataset.open){changeTab(el.dataset.open);return}
 if(el.dataset.daysection){navigateDay(el.dataset.daysection);return}
 if(el.dataset.day){
  const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),day=num(el.dataset.day);
@@ -582,12 +645,10 @@ window.BAMCO_ASSESSMENT={
       config:normalizeConfig(data.config||{},Boolean(data.setupComplete)),
       records:data.records||{},mileage:data.mileage||{drive:{},durability:{}},durabilitySchedule:data.durabilitySchedule,checkpointAssignments:data.checkpointAssignments||{},
       setupComplete:Boolean(data.setupComplete),missions:data.missions||{},driveDay:1,durDay:1,
-      category:'همه',query:'',page:0,tab:data.setupComplete?'modules':'setup'
+      category:'همه',query:'',page:0,tab:'modules'
     });
-    if(state.setupComplete&&!state.durabilitySchedule)state.durabilitySchedule=dayCategoryPlan().map(p=>({...p,routeId:p.routeId||dayRouteAppearance(p).kind}));
     if(state.durabilitySchedule)state.config.durDays=state.durabilitySchedule.length;
-    render();
-    window.scrollTo(0,0);
+    if(caseDocument())restoreRoute();else render();
   },
   applyReconciledSnapshot(data){
     state.config=normalizeConfig(data.config||{},Boolean(data.setupComplete));
@@ -608,8 +669,8 @@ window.BAMCO_ASSESSMENT={
     }
   },
   saveNow:save,trackPicture,async waitForImages(){while(pendingPictures.size)await Promise.all([...pendingPictures])},
-  openDashboard(mode){dashboardModule=assessmentNames[mode]?mode:null;changeTab('results')},
-  navigateModule(mode){if(assessmentNames[mode])changeTab(mode+'Menu')},reportMode(){return dashboardModule},
+  openDashboard(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Dashboard');else{dashboardModule=null;state.tab='results';dayScreen='days';render()}},
+  navigateModule(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Menu')},reportMode(){return dashboardModule},
   dayContext,scoreContext(){return state.tab==='comprehensive'?{tab:'comprehensive',key:'comprehensive:general',section:'scores'}:dayContext()},
   snapshot,sourceFields,buildExcelReport,exportFile,reportContext(){return {snapshot:snapshot(),drivePlan:driveProgram(),durabilityPlan:dayCategoryPlan(),categories}},eligibleTests:candidates,currentTests:dayItems,dayQuestionCards(){return dayContext()?.section==='scores'?dayItems().map(t=>({id:t.id,html:questionCard(t)})):[]},drivePlan:driveProgram,refresh:render,
   durabilityPlan(){return dayCategoryPlan()},
@@ -642,6 +703,6 @@ function staticTestForm(){return '<details class="static-test-builder"><summary>
 document.addEventListener('submit',e=>{if(e.target.id!=='staticTestForm')return;e.preventDefault();if(readOnly)return;const f=new FormData(e.target),test={id:'CUSTOM-'+crypto.randomUUID(),cat:f.get('cat'),sub:f.get('sub').trim(),name:f.get('name').trim(),profile:f.get('profile').trim(),measure:f.get('measure').trim(),vehicle:{},scope:['supplementary']};if(!test.name||!test.sub||!test.profile||!test.measure)return;state.missions??={};const previous=state.missions['supplementary:general']||{};state.missions['supplementary:general']={...previous,customTests:[...(previous.customTests||[]),test]};testById.set(test.id,test);save();render();toast('آزمون استاتیک افزوده شد.');});
 document.addEventListener('bamco:render',routeChoices);
 
-load();state.tab='home';render();
+state.tab='home';
 })();
 

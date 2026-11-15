@@ -1,8 +1,8 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM,VirtualConsole}=require('jsdom');
 (async()=>{
  const dom=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
- const w=dom.window,d=w.document,requests=[];let opened;
- w.structuredClone=structuredClone;w.BAMCO_ASSESSMENT={isReadOnly:()=>false,open:data=>opened=data};
+ const w=dom.window,d=w.document,requests=[];
+ w.structuredClone=structuredClone;
  w.fetch=(url,options)=>new Promise(resolve=>requests.push({url,body:JSON.parse(options.body),resolve}));
  w.eval(fs.readFileSync('assessment-workspace.js','utf8'));
  assert.equal(requests.length,2);assert(requests.every(r=>r.url.includes('/rest/v1/rpc/bamco_assessment')));
@@ -18,12 +18,12 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM,VirtualC
  [...d.querySelectorAll('.gate-card')].find(b=>b.textContent.includes('ارزیابی‌های فعال')).click();
  assert.equal(d.querySelectorAll('.assessment-row').length,1,'cached list renders before the refresh response');
  assert.equal(requests.length,3);
- const open=d.querySelector('.assessment-open-action');open.click();open.click();
- assert.equal(requests.filter(r=>r.body.operation==='open').length,1,'opening is coalesced by the disabled entry button');
- const entry=requests.find(r=>r.body.operation==='open');const fresh={...row,revision:5,snapshot:{records:{latest:{score:9}}}};
- entry.resolve({ok:true,json:async()=>fresh});await tick();
- assert.equal(opened.records.latest.score,9,'case contents always come from a fresh server response');
+ const open=d.querySelector('.assessment-open-action');
+ assert.equal(open.tagName,'A');
+ assert.equal(new URL(open.href).pathname,'/case.html');
+ assert.equal(new URL(open.href).searchParams.get('id'),'one');
+ assert.equal(new URL(w.location.href).searchParams.get('view'),'active');
+ assert(!d.getElementById('assessmentEditorBar'));
  requests[2].resolve({ok:true,json:async()=>[]});await tick();
- assert.equal(w.BAMCO_CASES.current().revision,5);
- dom.window.close();console.log('PASS homepage loading: direct RPC, welcome prefetch, shared requests, immediate cached lists and fresh case contents.');
+ dom.window.close();console.log('PASS homepage loading: direct RPC, welcome prefetch, shared requests, immediate cached lists and native case links.');
 })().catch(error=>{console.error(error);process.exit(1)});

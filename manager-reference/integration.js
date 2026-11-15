@@ -6,7 +6,6 @@
  document.getElementById('appShell').hidden=false;
  applyRole();
  const actions=document.querySelector('.headerActions .actionCard');
- const back=document.createElement('button');back.type='button';back.className='secondary';back.textContent='بازگشت به بخش‌های ارزیابی جامع';back.onclick=()=>{dashboardHost.close();dashboardHost.returnToMenu?.()};actions.prepend(back);
  const save=document.createElement('button');save.type='button';save.className='primary';save.textContent='ذخیره داشبورد';
  const status=document.createElement('span');status.setAttribute('role','status');
  save.disabled=dashboardData.readOnly;

@@ -1,11 +1,10 @@
 (()=>{
  'use strict';
  const app=window.BAMCO_ASSESSMENT;
- let frame,caseId,host,actions,previousTitle;
+ const host=document.getElementById('comprehensiveDashboard');
+ let frame,caseId,actions;
  function close(){
-  frame?.remove();host?.remove();actions?.remove();frame=null;host=null;actions=null;
-  document.body.classList.remove('manager-dashboard-open');
-  if(previousTitle!==undefined){if(app.scoreContext?.()?.tab==='comprehensive')document.getElementById('pageTitle').textContent=previousTitle;previousTitle=undefined}
+  frame?.remove();actions?.remove();frame=null;actions=null;host.hidden=true;
  }
  window.BAMCO_MANAGER={
   data(){return {snapshot:structuredClone(app.snapshot()),tests:structuredClone(app.eligibleTests('comprehensive')),categories:app.reportContext().categories,case:window.BAMCO_CASES.current(),settings:structuredClone(app.mission('comprehensive-dashboard:general')),readOnly:app.isReadOnly()}},
@@ -18,18 +17,14 @@
  function open(){
    if(frame)return;
    caseId=window.BAMCO_CASES.current()?.id;
-   previousTitle=document.getElementById('pageTitle').textContent;
-   document.getElementById('pageTitle').textContent='داشبورد مدیریتی ارزیابی جامع';
-   document.body.classList.add('manager-dashboard-open');
-   host=document.createElement('section');host.id='comprehensiveDashboard';
+   host.hidden=false;
    frame=document.createElement('iframe');frame.title='داشبورد مدیریتی ارزیابی جامع خودرو';
-   frame.src='./manager-reference/manager.html?v=hierarchy-1';
+   frame.src='./manager-reference/manager.html?v=case-pages-1';
    frame.style.cssText='display:block;width:100%;height:600px;border:0;background:transparent';
-   host.append(frame);document.getElementById('workPanel').insertAdjacentElement('afterend',host);
-   document.getElementById('assessmentEditorBar').scrollIntoView({block:'start',behavior:'smooth'});
+   host.append(frame);
  }
- document.addEventListener('bamco:render',()=>{if(app.scoreContext?.()?.tab!=='comprehensive')close()});
- window.BAMCO_MANAGER.open=open;
- window.BAMCO_MANAGER.returnToMenu=()=>app.navigateModule('comprehensive');
+ document.addEventListener('bamco:render',()=>{
+   if(document.body.dataset.view==='comprehensiveDashboard')open();else close();
+ });
  document.addEventListener('bamco:assessment-close',close);
 })();

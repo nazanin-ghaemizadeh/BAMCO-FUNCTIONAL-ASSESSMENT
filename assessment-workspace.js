@@ -4,7 +4,7 @@
 const $ = id => document.getElementById(id);
 const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
-const welcome = hub.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
+const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
 let app = window.BAMCO_ASSESSMENT;
 const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
 const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
@@ -75,6 +75,8 @@ function loadDictionary(lang) {
   return source ? loadExternal(source.getAttribute('src')) : Promise.resolve();
 }
 const labels = {
+  opening:['در حال باز کردن پرونده…','Opening vehicle case…','正在打开车辆档案…'],
+  caseError:['پرونده باز نشد. دوباره تلاش کنید.','Could not open this case. Please try again.','无法打开此档案，请重试。'],
   brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
   brandTitle:['ارزیابی عملکرد و دوام خودرو','Vehicle Performance and Durability Assessment','整车性能与耐久性评估'],
   brandAlt:['نشان خودروسازان بم','Bam Automobile Company logo','巴姆汽车公司标志'],
@@ -142,7 +144,6 @@ const interfaceText = [
   ['#moduleLanding [data-open="results"] strong','گزارش و نتایج','Reports and results','报告与结果'],
   ['#moduleLanding .gate-cta','ورود به بخش ←','Open module →','进入模块 →'],
   ['#moduleLanding [data-open="setup"] strong','ویرایش مشخصات','Edit specifications','编辑车辆信息'],
-  ['#editSetupBtn','ویرایش مشخصات خودرو','Edit vehicle details','编辑车辆信息'],
   ['label[for="vclass"]','رده خودرو','Vehicle class','车辆类别'],
   ['label[for="body"]','نوع بدنه','Body type','车身类型'],
   ['label[for="power"]','قوای محرکه','Powertrain','动力总成'],
@@ -267,7 +268,7 @@ function renderWelcome() {
   hub.dataset.language = language;
   hub.dataset.welcome = 'true';
 }
-hub.addEventListener('click', event=>{
+hub?.addEventListener('click', event=>{
   const target = event.target.closest('[data-boot-screen]');
   if (target) navigate(target.dataset.bootScreen);
 });
@@ -299,13 +300,19 @@ function render() {
   $('brandTitle').textContent = tr('brandTitle');
   document.querySelector('.brand-logo').alt = tr('brandAlt');
   document.title = tr('brandName')+' | '+tr('brandTitle');
-  $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
-  $('assessmentGpsLabel').textContent = tr('locationShareTitle');
-  $('assessmentBack').textContent = tr('back');
-  $('assessmentShare').textContent = tr('share');
-  $('assessmentStop').textContent = tr('stop');
-  for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
-  if (current) {
+  if (editor) {
+    $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
+    $('assessmentGpsLabel').textContent = tr('locationShareTitle');
+    $('assessmentBack').textContent = tr('back');
+    $('assessmentShare').textContent = tr('share');
+    $('assessmentStop').textContent = tr('stop');
+    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
+    if (!current) {
+      $('caseReturn').textContent=tr('back');
+      $('caseRetry').textContent=tr('retry');
+      $('caseMessage').textContent=tr(notice || 'opening');
+      return;
+    }
     $('assessmentSync').textContent = syncState ? tr(syncState) : '';
     if (syncState === 'overlap' && overlapReview) showOverlaps($('assessmentSync'));
     if (pending && !saving && syncState === 'unsaved') $('assessmentSync').append(' ',button('retry',flush));
@@ -339,7 +346,24 @@ function render() {
   }
 }
 
-async function navigate(next) {
+function listScreen() {
+  const query=new URLSearchParams(location.search);
+  const value=query.has('observer')?'observer':query.get('view');
+  return ['active','history','observer'].includes(value)?value:'home';
+}
+function caseURL(id) {
+  const url=new URL('./case.html',location.href);
+  url.searchParams.set('id',id);
+  if(screen==='history')url.searchParams.set('from','history');
+  return url.href;
+}
+async function navigate(next,writeURL=true) {
+  if(writeURL && next!==listScreen()){
+    const url=new URL(location.href);
+    url.searchParams.delete('observer');
+    if(next==='home')url.searchParams.delete('view');else url.searchParams.set('view',next);
+    history.pushState(null,'',url);
+  }
   clearInterval(poll);
   poll = null;
   const generation = ++syncGeneration;
@@ -413,7 +437,8 @@ function renderRows() {
     const heading = node('div','','assessment-row-heading');
     heading.append(node('bdi',row.title,'assessment-row-title'));
     const actions = node('div','','assessment-row-actions');
-    const open=button('open',()=>openAssessment(row.id,open),'assessment-action assessment-open-action');
+    const open=node('a',tr('open'),'assessment-action assessment-open-action');
+    open.href=caseURL(row.id);
     actions.append(open);
     actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
@@ -436,7 +461,7 @@ async function create(title,snapshot,control) {
   control.disabled = false;
   if (generation !== syncGeneration) return;
   if (error || !data) {report(error || 'Create failed');return}
-  await openAssessment(data.id);
+  location.assign(caseURL(data.id));
 }
 
 async function mutate(row,values) {
@@ -447,42 +472,45 @@ async function mutate(row,values) {
   await navigate(screen);
 }
 
-async function openAssessment(id,control) {
-  if(control?.disabled)return;
-  if(control){control.disabled=true;control.setAttribute('aria-busy','true')}
-  try{
-  const generation = ++syncGeneration;
-  let result;
-  try {
-    [result] = await Promise.all([ownerRequest('open',{id}),loadEditor(),loadDictionary(language)]);
-    // A user can change the shell language while the editor is being fetched.
-    let readyLanguage;
-    do {
-      readyLanguage = language;
-      await loadDictionary(readyLanguage);
-    } while (readyLanguage !== language && generation === syncGeneration);
-  } catch (error) {
-    if (generation === syncGeneration) report(error);
-    return;
-  }
-  if (generation !== syncGeneration) return;
-  const {data,error} = result;
-  if (error || !data) {report(error || tr('conflict'));return}
-  current = {...data,snapshot:structuredClone(data.snapshot)};
-  overlapReview=null;
-  pending = null;
-  syncState = '';
-  $('assessmentName').textContent = data.title;
-  $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
-  setGpsStatus('');
-  $('assessmentShare').disabled = false;
-  $('assessmentStop').disabled = true;
-  $('assessmentGps').classList.toggle('hidden',data.status !== 'active');
-  editor.classList.remove('hidden');
-  window.BAMCO_I18N?.setLanguage(language);
-  app.open(data.snapshot,queueSave,data.status !== 'active');
+async function openAssessment(id) {
+  const retry=$('caseRetry');
+  const caseView=$('caseView');
+  const entry=$('caseEntry');
+  retry.hidden=true;
+  notice='';
   render();
-  }finally{if(control?.isConnected){control.disabled=false;control.removeAttribute('aria-busy')}}
+  try {
+    if(!id)throw new Error('Missing case ID');
+    const [result]=await Promise.all([ownerRequest('open',{id}),loadEditor(),loadDictionary(language)]);
+    if(result.error || result.data?.id!==id)throw result.error || new Error('Case unavailable');
+    const data=result.data;
+    if(!data.snapshot || typeof data.snapshot!=='object' || Array.isArray(data.snapshot))throw new Error('Invalid case snapshot');
+    let requested;
+    do {requested=language;await loadDictionary(requested)} while(requested!==language);
+    current={...data,snapshot:structuredClone(data.snapshot)};
+    syncState='';
+    $('assessmentName').textContent=data.title;
+    $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
+    $('assessmentShare').disabled=false;
+    $('assessmentStop').disabled=true;
+    $('assessmentGps').classList.toggle('hidden',data.status!=='active');
+    window.BAMCO_I18N?.setLanguage(language);
+    app.open(data.snapshot,queueSave,data.status!=='active');
+    render();
+    editor.classList.remove('hidden');
+    entry.hidden=true;
+    caseView.hidden=false;
+    window.scrollTo({top:0,behavior:'instant'});
+  } catch(error) {
+    console.error(error);
+    current=null;
+    editor.classList.add('hidden');
+    caseView.hidden=true;
+    entry.hidden=false;
+    notice='caseError';
+    retry.hidden=!id;
+    render();
+  }
 }
 
 function queueSave(snapshot) {
@@ -570,7 +598,7 @@ async function flush(decision) {
   try{await saving}finally{saving=null;render()}
 }
 
-$('assessmentBack').onclick = async () => {
+if(editor) $('assessmentBack').onclick = async () => {
   const row = current;
   await flush();
   if (!row || current !== row) return;
@@ -579,10 +607,10 @@ $('assessmentBack').onclick = async () => {
   if (current !== row) return;
   const next = current.status === 'active' ? 'active' : 'history';
   pending = null;
-  current = null;
-  editor.classList.add('hidden');
-  app.home();
-  await navigate(next);
+  const listURL=new URL('./?view='+next,location.href);
+  const source=document.referrer?new URL(document.referrer):null;
+  if(!history.state?.from&&source?.origin===listURL.origin&&source.pathname===listURL.pathname&&source.searchParams.get('view')===next&&history.length>1)history.back();
+  else location.replace(listURL.href);
 };
 
 function setGpsStatus(key) {
@@ -608,7 +636,7 @@ function firstPosition(options) {
   });
 }
 
-$('assessmentGps').onsubmit = async event => {
+if(editor) $('assessmentGps').onsubmit = async event => {
   event.preventDefault();
   if (!current || watch !== null || locationSession) return;
   if (!navigator.geolocation) {setGpsStatus('gpsError');return}
@@ -684,7 +712,7 @@ async function stopGps() {
   setGpsStatus(ok ? '' : 'error');
   return ok;
 }
-$('assessmentStop').onclick = stopGps;
+if(editor) $('assessmentStop').onclick = stopGps;
 
 function renderMap() {
   const panel = node('div');
@@ -764,6 +792,17 @@ window.BAMCO_CASES={
 };
 window.BAMCO_WORKSPACE_READY=true;
 if(language==='zh') loadStyles('zh').catch(()=>{});
-navigate(window.BAMCO_BOOT_SCREEN || (location.search === '?observer' ? 'observer' : 'home'));
+if (hub) {
+  window.addEventListener('popstate',()=>navigate(listScreen(),false));
+  window.addEventListener('pageshow',e=>{if(e.persisted)navigate(listScreen(),false)});
+  navigate(window.BAMCO_BOOT_SCREEN || listScreen());
+} else if (editor) {
+  const query=new URLSearchParams(location.search);
+  const id=query.get('id');
+  $('brandIcon').href=document.querySelector('.brand-logo').src;
+  $('caseReturn').href='./?view='+(query.get('from')==='history'?'history':'active');
+  $('caseRetry').onclick=()=>openAssessment(id);
+  openAssessment(id);
+}
 })();
 

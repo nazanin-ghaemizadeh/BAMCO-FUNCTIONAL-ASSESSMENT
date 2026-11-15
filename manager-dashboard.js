@@ -23,7 +23,7 @@
    document.body.classList.add('manager-dashboard-open');
    host=document.createElement('section');host.id='comprehensiveDashboard';
    frame=document.createElement('iframe');frame.title='داشبورد مدیریتی ارزیابی جامع خودرو';
-   frame.src='./manager-reference/manager.html?v=integrated-2';
+   frame.src='./manager-reference/manager.html?v=hierarchy-1';
    frame.style.cssText='display:block;width:100%;height:600px;border:0;background:transparent';
    host.append(frame);document.getElementById('workPanel').insertAdjacentElement('afterend',host);
    document.getElementById('assessmentEditorBar').scrollIntoView({block:'start',behavior:'smooth'});

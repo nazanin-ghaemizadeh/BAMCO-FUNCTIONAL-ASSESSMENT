@@ -196,7 +196,7 @@ function card(key, icon, action) {
 }
 
 function cards(...items) {
-  const grid = node('div', '', 'gate-grid'+(items.length>=3?' three':''));
+  const grid = node('div', '', 'gate-grid'+(items.length===4?' four':items.length===3?' three':''));
   grid.append(...items);
   hub.append(grid);
 }
@@ -262,13 +262,13 @@ function render() {
     divider.after(toolbar);
   }
   if (screen === 'home') {
-    const weighting=card('weighting','results',()=>{});
+    const weighting=card('weighting','weighting',()=>{});
     weighting.disabled=true;
     weighting.dataset.weightingPlaceholder='';
     cards(
-      weighting,
       card('active','setup',()=>navigate('active')),
       card('history','results',()=>navigate('history')),
+      weighting,
       card('observer','observer',()=>navigate('observer'))
     );
   }

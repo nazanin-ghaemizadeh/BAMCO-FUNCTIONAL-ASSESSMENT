@@ -360,6 +360,8 @@ function renderRoad(c, scheduled) {
   if (!panel) return;
   panel.hidden = c?.section !== 'scores';
   if (panel.hidden) return;
+  const car = $('road-r8-photo');
+  if (!car.hasAttribute('href')) car.setAttribute('href',car.dataset.href);
   const progress = scheduled || app.dayProgress();
   const extra = customTests(app.mission(c.key));
   const total = progress.total + extra.length;

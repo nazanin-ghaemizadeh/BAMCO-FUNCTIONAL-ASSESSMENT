@@ -2,16 +2,25 @@
 'use strict';
 const catalogs=window.BAMCO_TRANSLATIONS||{en:{},zh:{}};
 const nodeSources=new WeakMap(),attributeSources=new WeakMap(),reverse=new Map();
-for(const lang of ['en','zh'])for(const [source,target] of Object.entries(catalogs[lang]))if(target)reverse.set(target.trim(),source);
+const indexes=new Map();
 let language='fa';try{const saved=localStorage.getItem('bamco-assessment-language');if(['en','zh'].includes(saved))language=saved}catch{}
 const digits=s=>String(s).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 const canonical=s=>reverse.get(s.trim())||s;
 const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const keys=Object.keys(catalogs.en).filter(k=>k.length>1&&/[\u0621-\u06ff]/.test(k)).sort((a,b)=>b.length-a.length);
-const fragments=new RegExp(keys.map(k=>(/^[\u0621-\u06ff]+$/.test(k)?'(?<![\\u0621-\\u06ff])'+escape(k)+'(?![\\u0621-\\u06ff])':escape(k))).join('|')||'(?!)','g');
+function indexFor(lang){
+ const table=catalogs[lang];
+ const existing=indexes.get(lang);
+ if(existing?.table===table)return existing;
+ for(const [source,target] of Object.entries(table))if(target)reverse.set(target.trim(),source);
+ const keys=Object.keys(table).filter(k=>k.length>1&&/[\u0621-\u06ff]/.test(k)).sort((a,b)=>b.length-a.length);
+ const fragments=new RegExp(keys.map(k=>(/^[\u0621-\u06ff]+$/.test(k)?'(?<![\\u0621-\\u06ff])'+escape(k)+'(?![\\u0621-\\u06ff])':escape(k))).join('|')||'(?!)','g');
+ const index={table,fragments};
+ indexes.set(lang,index);
+ return index;
+}
 function text(value,lang=language){
  const source=String(value??'');if(lang==='fa')return source;
- const table=catalogs[lang],trim=source.trim();
+ const {table,fragments}=indexFor(lang),trim=source.trim();
  if(table[trim])return digits(source.replace(trim,table[trim]));
  return digits(source.replace(/روز\s+([0-9۰-۹]+)/g,(_,n)=>lang==='zh'?'第'+digits(n)+'天':'Day '+digits(n)).replace(fragments,match=>table[match]||match)).replace(/،/g,lang==='zh'?'，':',').replace(/٪/g,'%').replace(/←/g,'→').replace(/。\./g,'。');
 }
@@ -33,6 +42,7 @@ function localizeNumericInputs(){
 let observer;
 function apply(rootNode=document.body){
  if(!rootNode?.isConnected)return;
+ if(language!=='fa')indexFor(language);
  const select=selector=>[...(rootNode.matches?.(selector)?[rootNode]:[]),...rootNode.querySelectorAll(selector)];
  observer?.disconnect();
  const root=document.documentElement;

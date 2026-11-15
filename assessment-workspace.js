@@ -4,7 +4,8 @@
 const $ = id => document.getElementById(id);
 const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
-const app = window.BAMCO_ASSESSMENT;
+const welcome = hub.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
+let app = window.BAMCO_ASSESSMENT;
 const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
 const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
 async function requestRpc(name,args={}){
@@ -21,6 +22,57 @@ function loadExternal(url){
  if(externalScripts.has(url))return externalScripts.get(url);
  const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
  externalScripts.set(url,pending);return pending;
+}
+const styleLoads = new Map();
+function loadStyles(group) {
+  return Promise.all([...document.querySelectorAll('link[data-style="'+group+'"]')].map(link=>{
+    if (styleLoads.has(link)) return styleLoads.get(link);
+    const pending = new Promise((resolve,reject)=>{
+      link.onload = resolve;
+      link.onerror = () => reject(new Error('Stylesheet unavailable'));
+      link.rel = 'stylesheet';
+      link.href = link.dataset.href;
+    }).catch(error=>{
+      link.removeAttribute('href');
+      link.removeAttribute('rel');
+      styleLoads.delete(link);
+      throw error;
+    });
+    styleLoads.set(link,pending);
+    return pending;
+  }));
+}
+
+let editorLoad;
+function loadEditor() {
+  if (app) return Promise.resolve(app);
+  if (!editorLoad) {
+    window.BAMCO_TRANSLATIONS ??= {en:{},zh:{}};
+    const scripts = [...$('caseAssets').content.querySelectorAll('script[src]')];
+    // Fetch in parallel while preserving initialization order and retrying only failed files.
+    const hints = scripts.map(source=>{
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'script';
+      link.href = source.getAttribute('src');
+      document.head.append(link);
+      return link;
+    });
+    const initialize = async () => {
+      for (const source of scripts) await loadExternal(source.getAttribute('src'));
+      if (!window.BAMCO_ASSESSMENT) throw new Error('Editor unavailable');
+    };
+    editorLoad = Promise.all([initialize(),loadStyles('case'),loadStyles('map')])
+      .then(()=>app=window.BAMCO_ASSESSMENT)
+      .catch(error=>{editorLoad=null;throw error})
+      .finally(()=>hints.forEach(link=>link.remove()));
+  }
+  return editorLoad;
+}
+
+function loadDictionary(lang) {
+  const source = $('caseDictionaries').content.querySelector('[data-locale="'+lang+'"]');
+  return source ? loadExternal(source.getAttribute('src')) : Promise.resolve();
 }
 const labels = {
   brandName:['خودروسازان بم','Bam Automobile Company','巴姆汽车公司'],
@@ -105,6 +157,7 @@ const interfaceText = [
 ];
 
 function translateInterface() {
+  if (!current) return;
   const index = ['fa','en','zh'].indexOf(language) + 1;
   for (const [selector,...values] of interfaceText) {
     for (const element of document.querySelectorAll(selector)) {
@@ -199,21 +252,25 @@ function field(type, key, value = '') {
   return input;
 }
 
-function card(key, icon, action) {
-  const control = button(key, action, 'gate-card');
-  control.dataset.gateIcon = icon;
-  control.setAttribute('aria-label',tr(key));
-  const illustration = node('span','','gate-illustration');
-  illustration.setAttribute('aria-hidden','true');
-  control.replaceChildren(illustration,node('strong',tr(key)),node('span',tr(key+'Cta'),'gate-cta'));
-  return control;
+function renderWelcome() {
+  if (!hub.querySelector('[data-boot-screen]')) hub.replaceChildren(...welcome.map(el=>el.cloneNode(true)));
+  if (hub.dataset.language === language && hub.dataset.welcome === 'true') return;
+  const title = hub.querySelector('h1');
+  title.replaceChildren(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
+  for (const card of hub.querySelectorAll('.gate-card')) {
+    const key = card.dataset.bootScreen || 'weighting';
+    card.setAttribute('aria-label',tr(key));
+    card.querySelector('strong').textContent = tr(key);
+    card.querySelector('.gate-cta').textContent = tr(key+'Cta');
+    card.removeAttribute('aria-busy');
+  }
+  hub.dataset.language = language;
+  hub.dataset.welcome = 'true';
 }
-
-function cards(...items) {
-  const grid = node('div', '', 'gate-grid'+(items.length===4?' four':items.length===3?' three':''));
-  grid.append(...items);
-  hub.append(grid);
-}
+hub.addEventListener('click', event=>{
+  const target = event.target.closest('[data-boot-screen]');
+  if (target) navigate(target.dataset.bootScreen);
+});
 
 function report(error) {
   console.error(error);
@@ -234,8 +291,8 @@ function formatDate(value) {
 function render() {
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
-  window.BAMCO_I18N?.setLanguage(language);
-  translateInterface();
+  if (window.BAMCO_I18N && window.BAMCO_I18N.language!==language) window.BAMCO_I18N.setLanguage(language);
+  if (current) translateInterface();
   $('assessmentLanguages').setAttribute('aria-label',tr('language'));
   for (const control of languageButtons) control.setAttribute('aria-pressed',String(control.dataset.language === language));
   $('brandName').textContent = tr('brandName');
@@ -257,8 +314,9 @@ function render() {
 
   if (map) {map.remove();map = null}
   hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
-  const title = node('h1',screen === 'home' ? '' : tr(screen),'gate-title welcome-title');
-  if (screen === 'home') title.append(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
+  if (screen === 'home') { renderWelcome(); return }
+  delete hub.dataset.welcome;
+  const title = node('h1',tr(screen),'gate-title welcome-title');
   const divider = node('div','','welcome-divider');
   divider.setAttribute('aria-hidden','true');
   divider.append(node('i'),node('i'),node('i'));
@@ -274,17 +332,6 @@ function render() {
     backButton.setAttribute('aria-label',tr('back'));
     toolbar.append(backButton);
     divider.after(toolbar);
-  }
-  if (screen === 'home') {
-    const weighting=card('weighting','weighting',()=>{});
-    weighting.disabled=true;
-    weighting.dataset.weightingPlaceholder='';
-    cards(
-      card('active','setup',()=>navigate('active')),
-      card('history','results',()=>navigate('history')),
-      weighting,
-      card('observer','observer',()=>navigate('observer'))
-    );
   }
   if (screen === 'active' || screen === 'history') renderRows();
   if (screen === 'observer') {
@@ -303,7 +350,7 @@ async function navigate(next) {
   if (['active','history'].includes(next)&&!listCache.has(status)) notice = 'load';
   render();
   if (next === 'observer') {
-    try{await (window.L?Promise.resolve():loadExternal('./vendor/leaflet-1.9.4.js'))}catch(error){if(generation===syncGeneration)report(error);return}
+    try{await Promise.all([loadStyles('map'),window.L?Promise.resolve():loadExternal('./vendor/leaflet-1.9.4.js')])}catch(error){if(generation===syncGeneration)report(error);return}
     if(generation!==syncGeneration)return;
     render();
     await refreshMap();
@@ -405,8 +452,21 @@ async function openAssessment(id,control) {
   if(control){control.disabled=true;control.setAttribute('aria-busy','true')}
   try{
   const generation = ++syncGeneration;
-  const {data,error} = await ownerRequest('open',{id});
+  let result;
+  try {
+    [result] = await Promise.all([ownerRequest('open',{id}),loadEditor(),loadDictionary(language)]);
+    // A user can change the shell language while the editor is being fetched.
+    let readyLanguage;
+    do {
+      readyLanguage = language;
+      await loadDictionary(readyLanguage);
+    } while (readyLanguage !== language && generation === syncGeneration);
+  } catch (error) {
+    if (generation === syncGeneration) report(error);
+    return;
+  }
   if (generation !== syncGeneration) return;
+  const {data,error} = result;
   if (error || !data) {report(error || tr('conflict'));return}
   current = {...data,snapshot:structuredClone(data.snapshot)};
   overlapReview=null;
@@ -419,6 +479,7 @@ async function openAssessment(id,control) {
   $('assessmentStop').disabled = true;
   $('assessmentGps').classList.toggle('hidden',data.status !== 'active');
   editor.classList.remove('hidden');
+  window.BAMCO_I18N?.setLanguage(language);
   app.open(data.snapshot,queueSave,data.status !== 'active');
   render();
   }finally{if(control?.isConnected){control.disabled=false;control.removeAttribute('aria-busy')}}
@@ -671,8 +732,17 @@ async function refreshMap() {
   }
 }
 
-for (const control of languageButtons) control.onclick = () => {
-  language = control.dataset.language;
+let languageRequest=0;
+for (const control of languageButtons) control.onclick = async () => {
+  const next = control.dataset.language;
+  const request = ++languageRequest;
+  if (next==='zh') loadStyles('zh').catch(()=>{});
+  if (current) {
+    try { await loadDictionary(next) }
+    catch { if(request===languageRequest) alert(tr('error')); return }
+  }
+  if (request!==languageRequest) return;
+  language = next;
   try {localStorage.setItem('bamco-assessment-language',language)} catch {}
   render();
   if (screen === 'observer') refreshMap();
@@ -693,6 +763,7 @@ window.BAMCO_CASES={
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
 };
 window.BAMCO_WORKSPACE_READY=true;
+if(language==='zh') loadStyles('zh').catch(()=>{});
 navigate(window.BAMCO_BOOT_SCREEN || (location.search === '?observer' ? 'observer' : 'home'));
 })();
 

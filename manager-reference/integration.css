@@ -1,0 +1,32 @@
+@font-face {
+  font-family:'Assessment Latin'; font-weight:400; font-style:normal;
+  src:local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times'), local('Liberation Serif');
+  unicode-range:U+0020-007E,U+00A0-024F,U+1E00-1EFF,U+2010-201F;
+}
+@font-face {
+  font-family:'Assessment Latin'; font-weight:700; font-style:normal;
+  src:local('Times New Roman Bold'), local('TimesNewRomanPS-BoldMT'), local('Times Bold'), local('Liberation Serif Bold');
+  unicode-range:U+0020-007E,U+00A0-024F,U+1E00-1EFF,U+2010-201F;
+}
+@font-face {
+  font-family:'Assessment Latin'; font-weight:400; font-style:italic;
+  src:local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'), local('Times Italic'), local('Liberation Serif Italic');
+  unicode-range:U+0020-007E,U+00A0-024F,U+1E00-1EFF,U+2010-201F;
+}
+@font-face {
+  font-family:'Assessment Latin'; font-weight:700; font-style:italic;
+  src:local('Times New Roman Bold Italic'), local('TimesNewRomanPS-BoldItalicMT'), local('Times Bold Italic'), local('Liberation Serif Bold Italic');
+  unicode-range:U+0020-007E,U+00A0-024F,U+1E00-1EFF,U+2010-201F;
+}
+:root{--primary:#216c56;--blue:#216c56;--navy:#254c3e;--ink:#254c3e;--accent:#216c56}
+body{background:#f5faf7;color:#254c3e;font-family:'Assessment Latin','B Nazanin','BNazanin',Tahoma,serif}
+button,input,select,textarea{font-family:inherit}
+.topbar{background:#216c56}
+.card,.managerHero{border-color:#d6e6dd}
+.actionCard button,.managerUploadButton{background:#216c56;border-color:#c7ddd3}
+.actionCard button.secondary{background:#f4faf7;color:#254c3e}
+#managerVehiclePhotos,#evaluatorVehiclePhotos,#switchRoleButton,#unlockAssessmentButton{display:none!important}
+.actionCard [role=status]{color:#216c56}
+.english,[lang=en]{font-family:'Times New Roman',serif}
+
+#entryScreen{display:none!important}

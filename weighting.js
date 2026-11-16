@@ -55,6 +55,17 @@ const pct = n => new Intl.NumberFormat(locales[li],{style:'percent',maximumFract
 const text = (fa,en,zh) => [fa,en,zh][li];
 const groupTitle = i => i===0?tr('main'):window.BAMCO_WEIGHTING_CATALOG[i-1].title[li];
 const items = i => i===0?window.BAMCO_WEIGHTING_CATALOG.map(c=>c.title[li]):window.BAMCO_WEIGHTING_CATALOG[i-1].items.map(c=>c[li]);
+const groupIcons=['layers','shield','lock','seat','wind','wheel','bolt','leaf','sound','chip','sun','balance','tool','cycle','gem','wallet'];
+const tones=['mint','violet','apricot','blue','rose'];
+function icon(name,viewBox='0 0 24 24') {
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox',viewBox);svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');
+  const use=document.createElementNS(ns,'use');use.setAttribute('href','./assets/weighting-sections.svg?v=2#'+name);
+  svg.append(use);return svg;
+}
+function stamp(name,tone='mint'){
+  const badge=el('span',null,'bw-stamp');badge.dataset.tone=tone;badge.append(icon(name));return badge;
+}
 function el(tag,content,cls) {
   const e=document.createElement(tag);
   if(content!=null)e.textContent=content;
@@ -95,12 +106,19 @@ function errorBox(parent,error,fn) {
   parent.append(box);
 }
 function header(title,back,controls=[]) {
-  host.replaceChildren(el('h1',title,'gate-title welcome-title'));
+  const head=el('div',null,'bw-page-head'),titleBlock=el('div',null,'bw-page-title');
+  titleBlock.append(el('h1',title,'gate-title welcome-title'));
   const divider=el('div',null,'welcome-divider');divider.setAttribute('aria-hidden','true');divider.append(el('i'),el('i'),el('i'));
-  const bar=el('div',null,'assessment-page-toolbar');bar.append(action(tr('back'),back,'assessment-action assessment-back-action'),...controls);
-  host.append(divider,bar);
+  titleBlock.append(divider);
+  const backButton=action(tr('back'),back,'assessment-action assessment-back-action bw-back');backButton.prepend(icon('back'));
+  const actions=el('div',null,'bw-head-actions');actions.append(...controls);
+  head.append(backButton,titleBlock,actions);host.replaceChildren(head);
 }
 function reportStatus(parent,msg,style='bw-status') {const p=el('p',msg,style);p.setAttribute('role','status');parent.append(p);return p}
+function emptyState(section,message){
+  const box=el('div',null,'bw-empty'),art=icon(section,'0 0 160 128');
+  box.append(art);reportStatus(box,tr(message),'bw-empty-copy');host.append(box);
+}
 function copyButton(label,path) {
   const wrap=el('div',null,'bw-copy');const b=action(tr(label),async()=>{
     const url=link(path);wrap.querySelectorAll('input,small').forEach(n=>n.remove());
@@ -111,7 +129,7 @@ function copyButton(label,path) {
 function guide(expanded=false) {
   const copy=window.BAMCO_WEIGHTING_COPY;
   const details=el('details',null,'surface bw-card bw-guide');details.open=expanded;
-  details.append(el('summary',tr(0)));
+  const heading=el('summary',tr(0));heading.prepend(stamp('book','apricot'));details.append(heading);
   const body=el('div',null,'bw-prose');
   for(const [key] of Object.entries(copy).filter(([k])=>/^\d+$/.test(k)&&+k>0&&+k<65)){
     const n=+key, tag=[17,31,45].includes(n)?'h2':[19,24,27,36].includes(n)?'h3':'p';
@@ -129,17 +147,12 @@ function table(head,rows) {
 function overview() {
   header(tr('hub'),service.home);
   const grid=el('div',null,'gate-grid bw-tiles');
-  const svgNamespace='http://www.w3.org/2000/svg';
   for(const page of ['forms','results']){
     const card=action('',()=>go(page),'gate-card bw-tile');
+    card.dataset.tone=page==='forms'?'mint':'violet';
     const illustration=el('span',null,'gate-illustration');
     illustration.setAttribute('aria-hidden','true');
-    const svg=document.createElementNS(svgNamespace,'svg');
-    svg.setAttribute('viewBox','0 0 160 128');
-    const use=document.createElementNS(svgNamespace,'use');
-    use.setAttribute('href','./assets/weighting-sections.svg#'+page);
-    svg.append(use);
-    illustration.append(svg);
+    illustration.append(icon(page,'0 0 160 128'));
     card.setAttribute('aria-label',tr(page));
     card.append(illustration,el('strong',tr(page)),el('span',tr(page+'Action'),'gate-cta'));
     grid.append(card);
@@ -148,7 +161,7 @@ function overview() {
 }
 function management(p) {
   if(!p?.manager||!p.ready)return;
-  const card=el('section',null,'surface bw-card');card.append(el('h2',tr('links')),el('p',tr('inviteHelp')));
+  const card=el('section',null,'surface bw-card bw-access');const title=el('h2',tr('links'));title.prepend(stamp('link','blue'));card.append(title,el('p',tr('inviteHelp')));
   const buttons=el('div',null,'bw-actions');buttons.append(
     copyButton('copyInvite','invite/'+p.panel+'/'+p.invite),
     copyButton('copyManage','manage/'+p.panel+'/'+p.invite+'/'+p.manager)
@@ -157,13 +170,13 @@ function management(p) {
 async function listForms(v) {
   header(tr('forms'),()=>go(''),[action(tr('create'),()=>go('new'),'assessment-action assessment-create-action')]);
   management(panel());
-  const keys=Object.fromEntries(known('edit'));if(!Object.keys(keys).length){reportStatus(host,tr('empty'),'assessment-empty-state');return}
+  const keys=Object.fromEntries(known('edit'));if(!Object.keys(keys).length){emptyState('forms','empty');return}
   const wait=reportStatus(host,tr('load'));
   const rows=await rpc('list',{keys});if(v!==version||!host.isConnected)return;wait.remove();
-  if(!rows.length){reportStatus(host,tr('empty'),'assessment-empty-state');return}
+  if(!rows.length){emptyState('forms','empty');return}
   const grid=el('div',null,'assessment-card-grid bw-grid');
   for(const row of rows){
-    const b=action('',()=>go('e/'+row.id),'assessment-row bw-row');b.append(el('strong',row.name),el('span',num(row.completed)+' / '+num(16)+' · '+tr('groupCount'),'assessment-count'));grid.append(b);
+    const b=action('',()=>go('e/'+row.id),'assessment-row bw-row');b.append(stamp('person'),el('strong',row.name),el('span',num(row.completed)+' / '+num(16)+' · '+tr('groupCount'),'assessment-count'));grid.append(b);
   }host.append(grid);
 }
 function emptyProfile(){return {name:'',org:'',position:'',experience:'',specialty:[],other:'',familiarity:''}}
@@ -216,18 +229,18 @@ function auth(id){return {id,key:stored('edit/'+id)}}
 function mark(g,rec){return rec.weights[g]?'done':rec.forms[g]?'draft':'fresh'}
 function dossier(rec) {
   const id=rec.id;header(rec.profile.name,()=>go('forms'),[action(tr('profile'),()=>go('e/'+id+'/profile'))]);
-  const card=el('section',null,'surface bw-card');
-  card.append(el('strong',num(Object.keys(rec.weights).length)+' / '+num(16)+' · '+tr('groupCount')),
-    el('p',tr('editHelp')),copyButton('copyEdit','open/'+id+'/'+auth(id).key));
-  host.append(card,guide());
-  const root='e/'+id;
-  const grid=el('div',null,'assessment-card-grid bw-grid');
+  const card=el('section',null,'bw-progress-card'),done=Object.keys(rec.weights).length;
+  const ring=el('div',pct(done/16),'bw-progress-ring');ring.style.setProperty('--fill',done/16*100+'%');
+  const copy=el('div');copy.append(el('strong',num(done)+' / '+num(16)+' · '+tr('groupCount')),el('p',tr('editHelp')));
+  card.append(ring,copy,copyButton('copyEdit','open/'+id+'/'+auth(id).key));
+  host.append(card);
+  const root='e/'+id,grid=el('div',null,'assessment-card-grid bw-grid bw-chapters');
   const main=action('',()=>go(root+'/g/0'),'assessment-row bw-row');
-  main.append(el('strong',tr('main')),formStatus(0,rec));
+  main.dataset.tone='mint';main.append(stamp('layers'),el('strong',tr('main')),formStatus(0,rec));
   const sub=action('',()=>go(root+'/sub'),'assessment-row bw-row');
   const count=window.BAMCO_WEIGHTING_CATALOG.filter((_,i)=>rec.weights[i+1]).length;
-  sub.append(el('strong',tr('subgroup')),el('span',num(count)+' / '+num(window.BAMCO_WEIGHTING_CATALOG.length)+' · '+tr('groupCount'),'assessment-count'));
-  grid.append(main,sub);host.append(grid);
+  sub.dataset.tone='violet';sub.append(stamp('hierarchy','violet'),el('strong',tr('subgroup')),el('span',num(count)+' / '+num(window.BAMCO_WEIGHTING_CATALOG.length)+' · '+tr('groupCount'),'assessment-count'));
+  grid.append(main,sub);host.append(grid,guide());
 }
 function formStatus(g,rec){
   const status=mark(g,rec);
@@ -236,10 +249,10 @@ function formStatus(g,rec){
 function subgroups(rec){
   const root='e/'+rec.id;
   header(tr('subgroup'),()=>go(root));
-  const grid=el('div',null,'assessment-card-grid bw-grid');
+  const grid=el('div',null,'assessment-card-grid bw-grid bw-group-grid');
   for(let g=1;g<=window.BAMCO_WEIGHTING_CATALOG.length;g++){
     const card=action('',()=>go(root+'/g/'+g),'assessment-row bw-row');
-    card.append(el('span',num(g),'bw-index'),el('strong',groupTitle(g)),formStatus(g,rec));
+    card.append(stamp(groupIcons[g],tones[(g-1)%tones.length]),el('strong',groupTitle(g)),formStatus(g,rec));
     grid.append(card);
   }
   host.append(grid);
@@ -261,13 +274,14 @@ function groupForm(rec,g) {
   const status=el('div');host.append(status,guide());
   if(rec.analyses?.[g]){
     const saved=el('details',null,'surface bw-card bw-guide');
-    saved.append(el('summary',tr('savedAnalysis')),individualGroup(g,rec.weights[g],rec.analyses[g]));
+    const heading=el('summary',tr('savedAnalysis'));heading.prepend(stamp('chart','violet'));
+    saved.append(heading,individualGroup(g,rec.weights[g],rec.analyses[g]));
     host.append(saved);
   }
   const form=el('div');host.append(form);
   const head=el('section',null,'surface bw-card');head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),
     table([tr('number'),tr('criterion')],names.map((name,i)=>[num(i+1),name])));form.append(head);
-  const stage=el('section',null,'surface bw-card');stage.append(el('h2',tr(87)));form.append(stage);
+  const stage=el('section',null,'surface bw-card');const stageTitle=el('h2',tr(87));stageTitle.prepend(stamp('balance'));stage.append(stageTitle);form.append(stage);
   const choices=el('div',null,'bw-choices');stage.append(choices);
   const comparisons=el('div');form.append(comparisons);
   const selectors=[];
@@ -276,11 +290,14 @@ function groupForm(rec,g) {
     if(data.best===null||data.worst===null){reportStatus(comparisons,tr('blocked'));return}
     const mirrors=[];
     for(const [key,title,desc,help] of [['bo',107,108,109],['ow',117,118,119]]){
-      const card=el('section',null,'surface bw-card');card.append(el('h2',tr(title)),el('p',tr(desc)),el('p',tr(help),'bw-hint'));
+      const card=el('section',null,'surface bw-card bw-stage');card.dataset.tone=key==='bo'?'mint':'violet';
+      const stageTitle=el('h2',tr(title));stageTitle.prepend(stamp('sliders',card.dataset.tone));
+      card.append(stageTitle,el('p',tr(desc)),el('p',tr(help),'bw-hint'));
+      const questions=el('div',null,'bw-question-grid');
       names.forEach((name,i)=>{
         const from=key==='bo'?names[data.best]:name,to=key==='bo'?name:names[data.worst];
         const field=el('fieldset',null,'bw-comparison');
-        const legend=el('legend'),reference=el('bdi',key.toUpperCase()+num(i+1)+')');
+        const legend=el('legend'),reference=el('bdi',key.toUpperCase()+num(i+1));
         reference.dir='ltr';
         const question=key==='bo'
           ? 'شاخص بهترین («'+from+'») نسبت به شاخص «'+to+'» چقدر مهم‌تر است؟'
@@ -295,8 +312,8 @@ function groupForm(rec,g) {
           r.onchange=()=>{data[key][i]=j;if(common){data.bo[data.worst]=j;data.ow[data.best]=j;for(const m of mirrors)m.checked=+m.value===j}};
           if(common)mirrors.push(r);
           l.append(r,el('span',num(j)));row.append(l);
-        }field.append(row);card.append(field);
-      });comparisons.append(card);
+        }field.append(row);questions.append(field);
+      });card.append(questions);comparisons.append(card);
     }
   }
   function syncAnchors(){
@@ -323,29 +340,59 @@ function groupForm(rec,g) {
 const decimal=(number,digits)=>new Intl.NumberFormat(locales[li],{
   minimumFractionDigits:digits,maximumFractionDigits:digits,useGrouping:false
 }).format(number);
-function consistencyLabel(error,ratio){
-  return tr(error<=1e-8?'perfect':ratio<=0.30?'acceptable':'revisit');
+function consistencyCards(analysis){
+  const cards=el('div',null,'bw-metrics');
+  for(const [model,symbol,deviation,ratio] of [
+    ['linearModel','ε',analysis.epsilon,analysis.linearCR],['nonlinearModel','ξ',analysis.xi,analysis.nonlinearCR]
+  ]){
+    const state=deviation<=1e-8?'perfect':ratio<=0.30?'acceptable':'revisit';
+    const card=el('section',null,'bw-metric');card.dataset.state=state;
+    const title=el('h3',tr(model)),badge=el('span',tr(state),'bw-verdict');
+    badge.prepend(icon(state==='revisit'?'alert':'check'));
+    const head=el('div',null,'bw-metric-head');head.append(title,badge);
+    const values=el('dl');
+    for(const [label,value] of [['CR',decimal(ratio,4)],['CI',decimal(analysis.ci,4)],[tr('deviation')+' ('+symbol+')',decimal(deviation,6)]]){
+      const pair=el('div');pair.append(el('dt',label),el('dd',value));values.append(pair);
+    }
+    card.append(head,values);cards.append(card);
+  }
+  return cards;
+}
+function reportHighlights(weights){
+  const sorted=weights.map((weight,i)=>({weight,i})).sort((a,b)=>b.weight-a.weight);
+  const high=sorted[0].weight,leaders=sorted.filter(v=>Math.abs(v.weight-high)<1e-10);
+  const feature=el('div',null,'bw-feature');
+  const hero=el('section',null,'bw-leader'),copy=el('div',null,'bw-leader-copy');
+  const caption=el('span',text('بیشترین وزن در میان شاخص‌های اصلی','Highest main criterion weight','主要指标最高权重'));
+  const name=leaders.length===1?groupTitle(leaders[0].i+1):text(num(leaders.length)+' شاخص هم‌وزن',num(leaders.length)+' tied criteria',num(leaders.length)+' 个指标并列');
+  copy.append(caption,el('h2',name),el('strong',pct(high),'bw-leader-value'));
+  const art=icon('award','0 0 208 152');art.classList.add('bw-award');
+  hero.append(copy,art);
+  const chart=el('section',null,'bw-chart'),title=el('h2',text('پنج شاخص با بیشترین وزن','Five highest-weight criteria','权重最高的五项指标'));
+  title.prepend(stamp('chart','violet'));chart.append(title);
+  const list=el('ol');
+  for(const [rank,{i,weight}] of sorted.slice(0,5).entries()){
+    const row=el('li');row.dataset.tone=tones[rank];
+    const name=el('span',groupTitle(i+1)),value=el('bdi',pct(weight));
+    const track=el('span',null,'bw-bar');track.setAttribute('aria-hidden','true');
+    const fill=el('i');fill.style.width=(high?100*weight/high:0)+'%';track.append(fill);
+    row.append(name,value,track);list.append(row);
+  }
+  chart.append(list);feature.append(hero,chart);return feature;
 }
 function individualGroup(g,weights,analysis,parentWeight){
   const names=items(g),content=el('div');
   const ranked=names.map((name,i)=>({name,i})).sort((a,b)=>weights[b.i]-weights[a.i]);
   const headings=[tr('rank'),tr(g===0?'main':'subgroup'),tr('point')];
   if(parentWeight!=null)headings.push(tr('overall'));
-  content.append(table(headings,ranked.map(({name,i},rank)=>{
+  if(analysis)content.append(consistencyCards(analysis));
+  const rankedTable=table(headings,ranked.map(({name,i},rank)=>{
     const row=[num(rank+1),name,decimal(weights[i],6)];
     if(parentWeight!=null)row.push(pct(parentWeight*weights[i]));
     return row;
-  })));
+  }));rankedTable.classList.add('bw-ranked');content.append(rankedTable);
   if(!analysis)return content;
-  const {epsilon,xi,ci,linearCR,nonlinearCR,intervals}=analysis;
-  const metrics=[
-    [tr('linearModel')+' (ε)',epsilon,linearCR],
-    [tr('nonlinearModel')+' (ξ)',xi,nonlinearCR]
-  ];
-  content.append(table([tr('model'),tr('deviation'),'CI','CR',tr('verdict')],metrics.map(([label,deviation,ratio])=>[
-    label,decimal(deviation,6),decimal(ci,4),decimal(ratio,4),consistencyLabel(deviation,ratio)
-  ])));
-  const bounds=intervals.map(([lower,upper],i)=>({
+  const bounds=analysis.intervals.map(([lower,upper],i)=>({
     name:names[i],lower,upper,center:(lower+upper)/2,halfWidth:(upper-lower)/2
   })).sort((a,b)=>b.center-a.center);
   const section=el('details',null,'bw-result bw-intervals');
@@ -356,18 +403,23 @@ function individualGroup(g,weights,analysis,parentWeight){
   return content;
 }
 function showWeights(rows,combined) {
-  const box=el('section',null,'surface bw-card');
-  box.append(el('p',tr(combined?'aggregateNote':'individualNote')));
+  const box=el('section',null,'bw-card bw-report');
   const weights=Array.from({length:16},(_,g)=>items(g).map((_,j)=>rows.reduce((s,r)=>s+Number(r.weights[g][j]),0)/rows.length));
+  const main=el('section',null,'bw-report-section'),groups=el('section',null,'bw-report-section');
+  const mainTitle=el('h2',tr('main')),groupsTitle=el('h2',tr('subgroup'));
+  mainTitle.prepend(stamp('layers'));groupsTitle.prepend(stamp('hierarchy','violet'));
+  main.append(mainTitle,el('p',tr(combined?'aggregateNote':'individualNote'),'bw-report-note'));groups.append(groupsTitle);
+  box.append(reportHighlights(weights[0]),main,groups);
   for(let g=0;g<weights.length;g++){
     const parent=g===0?null:weights[0][g-1];
     let body;
     if(!combined)body=individualGroup(g,weights[g],rows[0].analyses?.[g],parent);
     else if(g===0)body=table([tr('main'),tr('weight')],items(0).map((name,i)=>[name,pct(weights[0][i])]));
     else body=table([tr('subgroup'),tr('local'),tr('overall')],items(g).map((name,i)=>[name,pct(weights[g][i]),pct(parent*weights[g][i])]));
-    if(g===0)box.append(body);
+    if(g===0)main.append(body);
     else{
-      const section=el('details',null,'bw-result');section.append(el('summary',groupTitle(g)),body);box.append(section);
+      const section=el('details',null,'bw-result'),summary=el('summary',groupTitle(g));
+      summary.prepend(stamp(groupIcons[g],tones[(g-1)%tones.length]));section.append(summary,body);groups.append(section);
     }
   }
   return box;
@@ -381,10 +433,11 @@ async function results(v){
   if(known('edit').length)scopes.push({value:'mine',label:text('پرسش‌نامه‌های من','My questionnaires','我的问卷')});
   if(!scopes.some(s=>s.value===selectedScope))selectedScope=current?.manager&&current.ready?current.panel:scopes[0]?.value;
   const p=panels.find(p=>p.panel===selectedScope);
+  const filters=el('div',null,'bw-filters');host.append(filters);
   if(scopes.length>1){
     const label=el('label',tr('department'),'surface bw-filter'),sel=el('select');
     for(const s of scopes){const o=el('option',s.label);o.value=s.value;sel.append(o)}
-    sel.value=selectedScope;sel.onchange=()=>{selectedScope=sel.value;selectedResult=null;draw()};label.append(sel);host.append(label);
+    sel.value=selectedScope;sel.onchange=()=>{selectedScope=sel.value;selectedResult=null;draw()};label.append(sel);filters.append(label);
   }
   const wait=reportStatus(host,tr('load'));
   if(p?.manager&&p.ready)rows=await rpc('results',{panel:p.panel,manager:p.manager});
@@ -395,13 +448,13 @@ async function results(v){
     rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights,analyses:r.analyses}));
   }
   if(v!==version||!host.isConnected)return;wait.remove();
-  if(!rows.length){reportStatus(host,tr('noResults'),'assessment-empty-state');return}
+  if(!rows.length){emptyState('results','noResults');return}
   const label=el('label',tr('analysis'),'surface bw-filter'),select=el('select');
   function option(value,name){const o=el('option',name);o.value=value;select.append(o)}
   if(p?.manager&&p.ready)option('all',tr('all')+' ('+num(rows.length)+')');
   for(const r of rows)option(String(r.respondent),r.name+' · '+tr('respondent')+' '+num(r.respondent));
   if([...select.options].some(o=>o.value===selectedResult))select.value=selectedResult;
-  label.append(select);const content=el('div');host.append(label,content);
+  label.append(select);filters.append(label);const content=el('div');host.append(content);
   select.onchange=()=>{selectedResult=select.value;const all=selectedResult==='all';
     content.replaceChildren(showWeights(all?rows:rows.filter(r=>String(r.respondent)===selectedResult),all))};
   select.onchange();

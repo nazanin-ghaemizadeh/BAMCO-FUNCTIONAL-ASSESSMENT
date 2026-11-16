@@ -120,8 +120,14 @@ const countLeft=counts.slice(),kmLeft=alloc.slice(),out=[];let sum=0;
 for(let d=1;d<=n;d++){const i=picked[d-1];const km=countLeft[i]>1?Math.max(0,Math.floor(kmLeft[i]/countLeft[i])):kmLeft[i];countLeft[i]--;kmLeft[i]-=km;sum+=km;const r=routes[i];out.push({day:d,type:r.name,route:r.suggest||r.name,km,cum:sum,odo:num(conf().startOdo)+sum,cap:r.cap,over:km>r.cap});}
 return out
 }
-const BAMCO_DRIVE_SCHEDULE_26=[["تهران ـ شهری",150,"urban","تهران","تهران"],["تهران ـ شهری",150,"urban","تهران","تهران"],["تهران ـ شهری",150,"urban","تهران","تهران"],["تهران ـ بزرگراه",250,"rural","تهران","تهران"],["تهران ـ کوهستان",100,"mountain","تهران","تهران"],["تهران → دیزین",123,"mountain","تهران","دیزین"],["دیزین → ساری",220,"mountain","دیزین","ساری"],["ساری ـ شهری",150,"urban","ساری","ساری"],["ساری ـ شهری",150,"urban","ساری","ساری"],["ساری → تهران از فیروزکوه",228,"mountain","ساری","تهران"],["تهران → کرمان",984,"rural","تهران","کرمان"],["کرمان → شهداد",97,"hot","کرمان","شهداد"],["کرمان → شهداد",97,"hot","کرمان","شهداد"],["کرمان → شهداد",97,"hot","کرمان","شهداد"],["کرمان → بم",189,"hot","کرمان","بم"],["بم → زاهدان",515,"hot","بم","زاهدان"],["بم → زاهدان",515,"hot","بم","زاهدان"],["بم → زاهدان",515,"hot","بم","زاهدان"],["بم → جیرفت",270,"hot","بم","جیرفت"],["بم → جیرفت",270,"hot","بم","جیرفت"],["بم → یزد",285,"hot","بم","یزد"],["یزد → تهران",675,"rural","یزد","تهران"],["تهران ـ شهری",150,"urban","تهران","تهران"],["تهران ـ بزرگراه",250,"rural","تهران","تهران"],["تهران ـ کوهستان",100,"mountain","تهران","تهران"],["تهران → قم",250,"rural","تهران","قم"]];
-function driveProgram(){let cum=0;return BAMCO_DRIVE_SCHEDULE_26.map(([route,km,routeId,origin,destination],index)=>{const day=index+1;const stage=day<=5?1:day<=10?2:day<=22?3:4;const stageDay=day-(stage===1?0:stage===2?5:stage===3?10:22);return {day,stage,stageDay,name:route,route,type:({urban:'شهری',rural:'برون‌شهری',mountain:'کوهستانی',hot:'گرمسیری'})[routeId],routeId,origin,destination,km,cum:cum+=km};})}
+function driveProgram(){
+ let cum=0;
+ return DB.driveDays.map(row=>{
+  const [origin,to]=row.route.split(/ ـ | → /);
+  const destination=row.route.includes(' → ')?to.split(' از ')[0]:origin;
+  return {...row,origin,destination,cum:cum+=row.km};
+ });
+}
 function dayCheckpoints(day,plan,actualOnly=false){
  if(state.checkpointAssignments?.[day])return state.checkpointAssignments[day];
  const mileage={...state.mileage.durability};
@@ -223,7 +229,10 @@ function renderSetup(){
  byId('vehicleForm').dataset.rendering='true';document.querySelectorAll('#vehicleForm select').forEach(el=>el.dispatchEvent(new Event('change')));delete byId('vehicleForm').dataset.rendering;
 }
 
-function mapHtml(p){return (state.tab==='durability'?routeEditor(p)+progressBars(p):'')+window.BAMCO_ROUTE_MAP.html(p)}
+function mapHtml(p){
+ if(state.tab==='drive')return window.BAMCO_ROUTE_MAP.driveHtml(p);
+ return routeEditor(p)+progressBars(p)+window.BAMCO_ROUTE_MAP.html(p);
+}
 function lastRecordedDurabilityDay(plan){
  const days=new Set(Object.keys(state.mileage.durability||{}).map(Number));
  for(const key of Object.keys(state.records)){
@@ -283,7 +292,16 @@ function renderDayNavigation(){
  if(!c){host.replaceChildren();return}
  if(dayScreen==='days'){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan();
-  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span><span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer"><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small>'+(p.needsRoute?'<small>نیازمند انتخاب مسیر</small>':'')+'</span></button>'}).join('')+'</div>';
+  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{
+   const theme=dayRouteAppearance(p),drive=state.tab==='drive';
+   const title=drive?p.route:theme.label;
+   const category=drive?'<span class="drive-card-category">'+esc(p.type)+'</span>':'';
+   return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'">'+
+    '<span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span>'+
+    '<span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer">'+category+
+    '<span class="day-route-label">'+esc(title)+'</span><small>'+number(p.km)+' کیلومتر</small>'+
+    (p.needsRoute?'<small>نیازمند انتخاب مسیر</small>':'')+'</span></button>';
+  }).join('')+'</div>';
  }else if(dayScreen==='menu'){
   host.innerHTML='<div class="assessment-day-sections">'+[
    ['form','فرم روزانه','ثبت اطلاعات پیمایش و شرایط روز','▤'],

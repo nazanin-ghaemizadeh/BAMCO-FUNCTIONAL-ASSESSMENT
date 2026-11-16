@@ -16,3 +16,23 @@ html[dir="ltr"] .route-editor select,html[dir="ltr"] .static-test-builder input{
 .route-day-target>span{display:block;color:#54786f}
 .route-day-target strong{display:block;font-size:1.8em;margin-top:6px}
 .route-day-target small{font-size:.55em;font-weight:400}
+
+.drive-card-category {color:var(--route-color);font-weight:bold;line-height:1.15}
+.assessment-day-tile:has(.drive-card-category) .day-card-footer {gap:3px}
+.drive-route-view .drive-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.drive-route-view .route-day-target {margin:0;padding:10px 6px}
+.drive-route-view .route-day-target strong {font-size:1.45em}
+.drive-route-view .route-info {min-width:0}
+.drive-route-view .drive-stage,.drive-route-view .drive-difference,.drive-route-view .drive-variant {text-align:center}
+.drive-variant button {border:1px solid #bcded0;color:#28584b;background:white;padding:5px 12px;border-radius:12px;font:inherit;margin:3px}
+.drive-variant button[aria-pressed="true"] {background:#235e4d;color:white}
+.drive-route-view .drive-stops {list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}
+.drive-stops li {display:flex;align-items:baseline;gap:7px;border-bottom:1px solid #e3ece7;padding:4px 0;line-height:1.5}
+.drive-stops li::marker {content:''}
+.drive-stops li span:first-child {color:#627a70;font-variant-numeric:tabular-nums}
+.drive-stops small {white-space:nowrap;margin-inline-start:auto}
+.drive-stops a {color:#235e4d}
+.drive-route-view .road-map {height:clamp(360px,65vh,640px);min-height:360px}
+@media(min-width:1000px){.map-grid.drive-route-view {grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr)}}
+.drive-metrics .route-day-target {display:grid;grid-template-rows:1fr auto;align-items:center}
+html[dir] body .drive-metrics .route-day-target :is(span,strong) {text-align:center!important}

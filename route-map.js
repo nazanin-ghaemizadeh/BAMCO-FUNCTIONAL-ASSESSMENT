@@ -101,5 +101,125 @@ async function mount(p){
   }
  }
 }
-window.BAMCO_ROUTE_MAP={html,points,coords,mount,trim,last:null};
+// Driveability uses the approved, fixed workbook schedule. Its road geometries
+// are served with the site so opening a day does not depend on a public router.
+let driveRoads;
+function loadDriveRoads(){
+ if(!driveRoads){
+  driveRoads=fetch('./assets/drive-routes.json?v=1').then(response=>{
+   if(!response.ok)throw new Error('Route data unavailable');
+   return response.json();
+  }).catch(error=>{driveRoads=null;throw error});
+ }
+ return driveRoads;
+}
+
+// Valhalla encodes latitude then longitude as signed deltas at 1e-6 degrees.
+function decodeShape(shape){
+ const line=[],position=[0,0];
+ for(let index=0;index<shape.length;){
+  for(let axis=0;axis<2;axis++){
+   let value=0,shift=0,chunk;
+   do{
+    chunk=shape.charCodeAt(index++)-63;
+    value|=(chunk&31)<<shift;
+    shift+=5;
+   }while(chunk>=32);
+   position[axis]+=(value&1)?~(value>>>1):value>>>1;
+  }
+  line.push([position[0]/1e6,position[1]/1e6]);
+ }
+ return line;
+}
+function driveHtml(p){
+ const metric=(label,value)=>'<div class="route-day-target"><span>'+label+'</span><strong>'+value+' <small>کیلومتر</small></strong></div>';
+ queueMicrotask(()=>mountDrive(p));
+ return '<div class="map-grid drive-route-view" data-drive-day="'+p.day+'"><div class="map-frame road-map" aria-label="نقشه مسیر جاده‌ای"></div>'+
+  '<div class="route-info"><h3>'+esc(p.route)+'</h3><p class="drive-stage">مرحله '+number(p.stage)+' · روز '+number(p.stageDay)+' · '+esc(p.type)+'</p>'+
+  '<div class="drive-variant"></div><div class="drive-metrics">'+metric('پیمایش برنامه',number(p.km))+
+  metric('طول مسیر روی نقشه','<b data-road-km>…</b>')+'</div>'+
+  '<p class="drive-difference" role="status">در حال دریافت مسیر جاده‌ای…</p>'+
+  '<p>پیمایش تجمعی برنامه: '+number(p.cum)+' کیلومتر</p><h3>توالی مسیر روز</h3>'+
+  '<ol class="drive-stops"></ol></div></div>';
+}
+async function mountDrive(p){
+ const view=document.querySelector('.drive-route-view[data-drive-day="'+p.day+'"]');
+ if(!view)return;
+ const token=++request,active=()=>view.isConnected&&token===request;
+ const host=view.querySelector('.road-map'),status=view.querySelector('[role="status"]');
+ const controls=view.querySelector('.drive-variant');
+ const retry=()=>{
+  const button=document.createElement('button');
+  button.type='button';button.textContent='تلاش دوباره';
+  button.onclick=()=>mountDrive(p);
+  status.append(' ',button);
+ };
+ try{
+  const data=await loadDriveRoads();
+  if(!active())return;
+  const routes=data.routes[p.route];
+  if(!routes?.length)throw new Error('Missing itinerary');
+  controls.replaceChildren();
+  for(const [index,route] of routes.entries()){
+   if(routes.length===1)break;
+   const button=document.createElement('button');
+   button.type='button';button.textContent=route.label;
+   controls.append(button);button.onclick=()=>draw(index);
+  }
+  async function draw(index){
+   if(!active())return;
+   const route=routes[index];
+   for(const [n,button] of [...controls.children].entries())button.setAttribute('aria-pressed',String(n===index));
+   view.dataset.variant=index;
+   const lines=route.legs.map(leg=>decodeShape(leg.shape));
+   const km=route.legs.reduce((sum,leg)=>sum+leg.meters,0)/1000;
+   view.querySelector('[data-road-km]').textContent=number(km);
+   const delta=Math.round((km-p.km)*10)/10;
+   status.textContent=delta===0?'مطابق پیمایش برنامه':
+    number(Math.abs(delta))+' کیلومتر '+(delta>0?'بیشتر از برنامه':'کمتر از برنامه');
+   const stops=[{name:route.start,at:lines[0][0],km:0}];
+   const list=view.querySelector('ol');list.replaceChildren();
+   for(const [i,leg] of route.legs.entries()){
+    stops.push({name:leg.to,at:lines[i].at(-1),km:leg.meters/1000});
+   }
+   for(const [i,stop] of stops.entries()){
+    const li=document.createElement('li'),ordinal=document.createElement('span'),name=document.createElement('span');
+    ordinal.textContent=number(i+1)+'.';name.textContent=stop.name;
+    li.append(ordinal,name);
+    if(i){
+     const link=document.createElement('a'),distance=document.createElement('small');
+     const url=new URL('https://www.google.com/maps/dir/');
+     url.search=new URLSearchParams({api:'1',travelmode:'driving',origin:lines[i-1][0].join(','),destination:stop.at.join(',')});
+     link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';
+     link.title='مسیریابی این بخش در گوگل مپ';link.textContent=number(stop.km)+' کیلومتر';
+     distance.append(link);li.append(distance);
+    }
+    list.append(li);
+   }
+   window.BAMCO_ROUTE_MAP.last={plannedKm:p.km,roadKm:km,displayedKm:km,points:stops,endCoordinate:stops.at(-1).at.slice().reverse()};
+   try{
+    await leaflet();
+    if(!active()||Number(view.dataset.variant)!==index)return;
+    if(map)map.remove();
+    map=L.map(host);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · Valhalla'}).addTo(map);
+    for(const line of lines)L.polyline(line,{color:'#176c61',weight:5,opacity:.9}).addTo(map);
+    stops.forEach((stop,i)=>{
+     const endpoint=i===0||i===stops.length-1;
+     const marker=L.circleMarker(stop.at,{radius:endpoint?7:4,weight:2,color:'#fff',fillColor:i===0?'#17523c':endpoint?'#813d64':'#286a83',fillOpacity:1}).addTo(map);
+     marker.bindPopup(esc(number(i+1)+'. '+(window.BAMCO_I18N?.text(stop.name)??stop.name)));
+    });
+    map.fitBounds(L.latLngBounds(lines.flat()),{padding:[20,20],maxZoom:15});
+   }catch{
+    if(active()){status.append(' · ','نقشه بارگیری نشد.');retry()}
+   }
+  }
+  await draw(0);
+ }catch{
+  if(!active())return;
+  window.BAMCO_ROUTE_MAP.last=null;status.textContent='دریافت مسیر ممکن نشد.';retry();
+ }
+}
+
+window.BAMCO_ROUTE_MAP={html,driveHtml,points,coords,mount,trim,last:null};
 })();

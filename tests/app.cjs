@@ -64,7 +64,14 @@ assert.deepEqual(server.records,started.records);assert.deepEqual(server.mileage
 assert.deepEqual(server.checkpointAssignments[1].map(c=>c.quarter),[1]);
 api.open(structuredClone(server),()=>{},false);click('[data-open="durability"]');click('[data-day="1"]');click('[data-daysection="scores"]');
 assert(api.currentTests().some(t=>t.id==='CR-0241@urban-1'));assert(!api.currentTests().some(t=>t.id==='CR-0241@urban-4'));
-api.open(structuredClone(server),()=>{},false);click('[data-open="drive"]');click('[data-day="1"]');click('[data-daysection="scores"]');
+api.open(structuredClone(server),()=>{},false);click('[data-open="drive"]');
+for(const day of api.drivePlan()){
+ const tile=d.querySelector('[data-day="'+day.day+'"]');
+ assert.equal(tile.querySelector('.drive-card-category').textContent,day.type);
+ assert.equal(tile.querySelector('.day-route-label').textContent,day.route);
+ if(day.stage===3)assert.equal(day.type,'گرمسیری');
+}
+click('[data-day="1"]');click('[data-daysection="scores"]');
 assert(!api.currentTests().some(t=>t.id==='CR-0443'));assert(api.currentTests().some(t=>t.id==='CR-0447'));
 editSaved();set('gear','Manual');set('body','Station Wagon');set('durKm','۵۰۰۰');set('share-urban','15');set('share-rural','50');
 submit('vehicleForm');await tick();assert.equal(server.config.routeShares.urban,15);

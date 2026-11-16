@@ -10,6 +10,9 @@ const {JSDOM} = require('jsdom');
   const catalog = w.BAMCO_WEIGHTING_CATALOG;
   assert.equal(catalog.length,15);
   assert.equal(catalog.reduce((n,c)=>n+c.items.length,0),131);
+  for(const file of ['weighting.js','weighting-catalog.js','weighting-content.js']){
+    assert(!/[ۀةەھہۃۂﻩﻪﻫﻬ]|ه\u0654/.test(fs.readFileSync(file,'utf8')),file);
+  }
   const expectedSizes = catalog.map(c=>c.items.length);
   const sql = fs.readFileSync('database/assessment-weighting.sql','utf8');
   assert(sql.includes('array['+[15,...expectedSizes].join(',')+']'));
@@ -18,7 +21,7 @@ const {JSDOM} = require('jsdom');
   async function requestRpc(_, {operation,args}) {
     if (operation==='create') {
       panels.set(args.panel,args.manager);
-      sets.set(args.id,{id:args.id,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{}});
+      sets.set(args.id,{id:args.id,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{},analyses:{}});
     }
     if(operation==='list')return {data:[...sets.values()].filter(r=>args.keys[r.id]===r.key).map(r=>({...r,name:r.profile.name,completed:Object.keys(r.weights).length}))};
     if(operation==='results'){
@@ -31,7 +34,10 @@ const {JSDOM} = require('jsdom');
       assert.equal(JSON.stringify(args.previous),JSON.stringify(rec.forms[args.group]||null));
       rec.forms[args.group]=structuredClone(args.form);
       const f=args.form;
-      if(f.bo.every(x=>x!==null)&&f.ow.every(x=>x!==null))rec.weights[args.group]=f.bo.map(()=>1/f.bo.length);
+      if(f.bo.every(x=>x!==null)&&f.ow.every(x=>x!==null)){
+        rec.weights[args.group]=f.bo.map(()=>1/f.bo.length);
+        rec.analyses[args.group]={epsilon:0,xi:0,ci:0.44,linearCR:0,nonlinearCR:0,intervals:f.bo.map(()=>[1/f.bo.length,1/f.bo.length])};
+      }
     }
     return {data:structuredClone(rec)};
   }
@@ -43,12 +49,17 @@ const {JSDOM} = require('jsdom');
   assert(d.querySelector('.bw-guide[open]'));
   const name=d.querySelector('.bw-fields input');name.value='QA';name.dispatchEvent(new w.Event('input'));
   d.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await wait();
-  assert.equal(d.querySelectorAll('.bw-row').length,16);
+  assert.deepEqual([...d.querySelectorAll('.bw-row strong')].map(x=>x.textContent),['شاخص‌های اصلی','زیرشاخص‌ها']);
   const id=[...sets.keys()][0];
   function nav(route) {w.history.pushState(null,'','#'+route);mount()}
   for(let g=0;g<16;g++){
     const n=g===0?15:expectedSizes[g-1];
-    d.querySelectorAll('.bw-row')[g].click();await wait();
+    if(g===1){
+      d.querySelectorAll('.bw-row')[1].click();await wait();
+      assert.equal(d.querySelectorAll('.bw-row').length,15);
+      assert.equal(w.location.hash,'#e/'+id+'/sub');
+    }
+    d.querySelectorAll('.bw-row')[g===0?0:g-1].click();await wait();
     assert.equal(d.querySelectorAll('input[name=best]').length,n);
     assert(!/\b(?:C|SC)\d/.test(d.querySelector('main').textContent));
     if(g===1){
@@ -68,12 +79,22 @@ const {JSDOM} = require('jsdom');
     }
     for(let j=1;j<n-1;j++){select('bo-'+j,1);select('ow-'+j,2)}
     byText('button','ذخیره').click();await wait();
+    assert.equal(w.location.hash,'#e/'+id+(g===0?'':'/sub'));
   }
+  byText('button','بازگشت').click();await wait();
+  assert.equal(d.querySelectorAll('.bw-row').length,2);
+  nav('e/'+id+'/g/5');await wait();
+  assert(d.querySelector('.bw-intervals'));
+  byText('button','بازگشت').click();await wait();
+  assert.equal(d.querySelectorAll('.bw-row').length,15);
   assert.equal(Object.keys(sets.get(id).weights).length,16);
   nav('results');await wait();
   assert.equal(d.querySelectorAll('.bw-result').length,15);
   assert.equal(d.querySelectorAll('.bw-result tbody tr').length,131);
   const select=d.querySelector('.bw-filter:last-of-type select');select.value='1';select.dispatchEvent(new w.Event('change'));
   assert(d.querySelector('.bw-card').textContent.includes('مدل خطی'));
+  assert.equal(d.querySelectorAll('.bw-intervals').length,16);
+  assert.equal(d.querySelectorAll('.bw-intervals tbody tr').length,146);
+  assert(d.querySelector('main').textContent.includes('مدل غیرخطی'));
   w.close();console.log('PASS weighting: 16 forms, 131 names, independent drafts, mirrored comparisons, explicit saves, individual and group results.');
 })().catch(e=>{console.error(e);process.exitCode=1});

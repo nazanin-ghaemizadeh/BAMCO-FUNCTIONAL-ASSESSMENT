@@ -228,7 +228,7 @@ const labels = {
   evaluatorCta:['ثبت و مدیریت ارزیابی','Record and manage assessments','记录和管理评估'],
   observerCta:['مشاهده موقعیت خودرو','View vehicle location','查看车辆位置'],
   weighting:['وزن‌دهی','Weighting','权重设置'],
-  weightingCta:['وزن شاخص‌ها و زیرشاخص‌ها · به‌زودی','Criterion and subcriterion weights · Coming soon','指标与子指标权重 · 即将推出'],
+  weightingCta:['وزن شاخص‌ها و زیرشاخص‌ها','Criterion and subcriterion weights','指标与子指标权重'],
   active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
@@ -461,6 +461,23 @@ function render() {
   if (map) {map.remove();map = null}
   hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
   if (screen === 'home') { renderWelcome(); return }
+  if (screen === 'weighting') {
+    delete hub.dataset.welcome;
+    const host = node('section','','weighting-workspace');
+    hub.replaceChildren(host);
+    const open = () => {
+      if (host.isConnected) window.BAMCO_WEIGHTING.mount(host,{language,requestRpc,home:()=>navigate('home')});
+    };
+    if (window.BAMCO_WEIGHTING) open();
+    else {
+      host.textContent=tr('load');
+      Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js'),
+        loadExternal('./weighting.js'),loadStyles('weighting')]).then(open).catch(()=>{
+          if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render));
+        });
+    }
+    return;
+  }
   delete hub.dataset.welcome;
   const title = node('h1',tr(screen),'gate-title welcome-title');
   const divider = node('div','','welcome-divider');
@@ -488,7 +505,7 @@ function render() {
 function listScreen() {
   const query=new URLSearchParams(location.search);
   const value=query.has('observer')?'observer':query.get('view');
-  return ['active','history','observer'].includes(value)?value:'home';
+  return ['active','history','observer','weighting'].includes(value)?value:'home';
 }
 function caseURL(id) {
   const url=new URL('./case.html',location.href);
@@ -500,6 +517,7 @@ async function navigate(next,writeURL=true) {
   if(writeURL && next!==listScreen()){
     const url=new URL(location.href);
     url.searchParams.delete('observer');
+    url.hash='';
     if(next==='home')url.searchParams.delete('view');else url.searchParams.set('view',next);
     history.pushState(null,'',url);
   }

@@ -1,4 +1,12 @@
 -- Keep the historic group 0 responses intact. Current questionnaires use groups 1–15.
+alter table private.bamco_weighting_sets
+  add column if not exists is_example boolean not null default false;
+
+-- Mark the original worked example by its synthetic name and exact saved answers.
+update private.bamco_weighting_sets set is_example=true
+where not is_example and profile->>'name'='ارزیاب آزمایشی'
+  and md5(forms::text)='452e2839e309487525b823231fd072dc';
+
 create or replace function private.bamco_weighting_subcriteria(operation text, args jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
@@ -23,7 +31,7 @@ begin
       raise exception 'Access denied' using errcode='42501';
     end if;
     select coalesce(jsonb_agg(jsonb_build_object('respondent',s.respondent,'name',s.profile->>'name',
-      'weights',s.weights-'0','analyses',s.analyses-'0') order by s.respondent),'[]') into result
+      'weights',s.weights-'0','analyses',s.analyses-'0','is_example',s.is_example) order by s.respondent),'[]') into result
     from private.bamco_weighting_sets s where s.panel_id=panel_id_arg
       and (select count(*) from jsonb_object_keys(s.weights-'0'))=15;
     return result;

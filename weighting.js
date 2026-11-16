@@ -458,12 +458,13 @@ async function results(v){
   if(!rows.length){emptyState('results','noResults');return}
   const label=el('label',tr('analysis'),'surface bw-filter'),select=el('select');
   function option(value,name){const o=el('option',name);o.value=value;select.append(o)}
-  if(p?.manager&&p.ready)option('all',tr('all')+' ('+num(rows.length)+')');
+  const studyRows=rows.filter(r=>!r.is_example);
+  if(p?.manager&&p.ready&&studyRows.length)option('all',tr('all')+' ('+num(studyRows.length)+')');
   for(const r of rows)option(String(r.respondent),r.name+' · '+tr('respondent')+' '+num(r.respondent));
   if([...select.options].some(o=>o.value===selectedResult))select.value=selectedResult;
   label.append(select);filters.append(label);const content=el('div');host.append(content);
   select.onchange=()=>{selectedResult=select.value;const all=selectedResult==='all';
-    content.replaceChildren(showWeights(all?rows:rows.filter(r=>String(r.respondent)===selectedResult),all))};
+    content.replaceChildren(showWeights(all?studyRows:rows.filter(r=>String(r.respondent)===selectedResult),all))};
   select.onchange();
 }
 function consume(route) {

@@ -21,6 +21,7 @@ begin
   end loop;
   rows:=public.bamco_weighting('results_subcriteria',scope);
   assert jsonb_array_length(rows)=1 and not ((rows->0->'weights')?'0');
+  assert (rows->0->'is_example')='false'::jsonb;
   assert (public.bamco_weighting('list_subcriteria',listing)->0->>'completed')::int=15;
   begin
     perform public.bamco_weighting('save_subcriteria',auth||jsonb_build_object('group',0,'form',f));

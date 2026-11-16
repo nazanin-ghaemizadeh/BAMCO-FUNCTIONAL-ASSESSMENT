@@ -1,9 +1,9 @@
-// Original Persian wording from Questionnaire.docx, with interface translations.
+// Adapted from Questionnaire.docx for the 15 subcriterion groups.
 window.BAMCO_WEIGHTING_COPY = {
  "0": [
-  "پرسش‌نامه تعیین وزن شاخص‌های ارزیابی عملکرد فنی خودرو با استفاده از روش بهترین–بدترین",
-  "Questionnaire for weighting technical vehicle performance criteria using the Best–Worst Method",
-  "采用最佳–最差法确定车辆技术性能评价指标权重的问卷"
+  "پرسش‌نامه‌ی تعیین وزن زیرشاخص‌های ارزیابی عملکرد فنی خودرو با روش بهترین–بدترین",
+  "Questionnaire for weighting vehicle performance subcriteria using the Best–Worst Method",
+  "采用最佳–最差法确定车辆技术性能评价子指标权重的问卷"
  ],
  "2": [
   "خبره محترم،",
@@ -16,9 +16,9 @@ window.BAMCO_WEIGHTING_COPY = {
   "您好！"
  ],
  "5": [
-  "این پرسش‌نامه با هدف تعیین میزان اهمیت نسبی شاخص‌ها و زیرشاخص‌های ارزیابی عملکرد فنی خودرو و استخراج وزن هر یک از معیارهای مؤثر بر عملکرد خودرو، بر اساس دیدگاه و قضاوت تخصصی خبرگان طراحی شده است. نتایج حاصل از این پرسش‌نامه در مدل ارزیابی و تحلیل عملکرد خودرو مورد استفاده قرار خواهد گرفت.",
-  "This questionnaire collects expert judgments on the relative importance of vehicle technical performance criteria and subcriteria. The resulting weights will be used in the vehicle performance assessment and analysis model.",
-  "本问卷旨在根据专家判断确定车辆技术性能评价指标和子指标的相对重要性及其权重。结果将用于车辆性能评价与分析模型。"
+  "این پرسش‌نامه با هدف تعیین اهمیت نسبی زیرشاخص‌های هر یک از ۱۵ گروه ارزیابی عملکرد فنی خودرو بر اساس قضاوت تخصصی خبرگان طراحی شده است. نتایج در مدل ارزیابی و تحلیل عملکرد خودرو استفاده می‌شود.",
+  "This questionnaire uses expert judgment to weight the subcriteria within each of the 15 vehicle performance groups. These weights are used in the vehicle performance assessment model.",
+  "本问卷通过专家判断确定车辆技术性能评价15个组内各子指标的相对权重，用于车辆性能评价与分析。"
  ],
  "6": [
   "با توجه به تعدد و تنوع شاخص‌های مؤثر بر عملکرد فنی خودرو، در این مطالعه از روش تصمیم‌گیری چندمعیاره بهترین–بدترین استفاده شده است. در این روش، برخلاف روش‌های مقایسه زوجی کامل، تنها مقایسات مربوط به مهم‌ترین و کم‌اهمیت‌ترین شاخص‌ها انجام می‌شود که موجب کاهش تعداد مقایسات و افزایش تمرکز خبره در ارزیابی می‌گردد.",

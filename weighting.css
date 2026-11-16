@@ -1,0 +1,48 @@
+#assessmentHub .weighting-workspace {max-width:68rem;margin:0 auto;color:var(--text)}
+#assessmentHub .weighting-workspace .welcome-title {display:block;margin:1.4rem 0 .6rem;text-align:center;font-size:clamp(1.65rem,3vw,2.7rem)}
+.weighting-workspace .welcome-divider {margin-bottom:1.3rem}
+.bw-bar,.bw-actions {display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.bw-bar {justify-content:space-between;margin:1rem 0}
+.bw-card,.bw-filter {background:#fff;border:1px solid #d7e6df;border-radius:18px;padding:clamp(1rem,2.6vw,2rem);margin:1rem 0;box-shadow:0 6px 22px #193d3108}
+.bw-card h2,.bw-card h3 {line-height:1.45;margin:.4rem 0 .9rem;color:#214e40}
+.bw-card p {margin:.5rem 0 .9rem;line-height:1.7}
+.bw-tiles,.bw-grid,.bw-fields,.bw-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.bw-tiles {max-width:47rem;margin:2rem auto}
+.bw-tile,.bw-row {border:1px solid #d6e5de;border-radius:16px;background:white;color:#234d41}
+.bw-tile {min-height:12rem;display:grid;place-content:center;justify-items:center;gap:.75rem;font-size:1.55rem}
+.bw-symbol {font-size:2.45rem;background:#eef6ef;border-radius:16px;padding:.6rem 1rem}
+.bw-tile:nth-child(2) .bw-symbol {background:#f2eff9}
+.bw-row {display:flex;gap:.65rem;align-items:center;text-align:start;padding:1rem;min-height:4.5rem}
+.bw-grid {margin:1rem 0}.bw-row strong {flex:1}.bw-index {color:#557268}.bw-state {font-size:.85em;color:#52685e}.bw-state.done {color:#176544}.bw-state.draft {color:#80551c}
+.bw-row:hover,.bw-tile:hover {border-color:#43896f;background:#f6fbf8}
+.bw-tile:focus-visible,.bw-row:focus-visible,.weighting-workspace summary:focus-visible {outline:3px solid #518e79;outline-offset:2px}
+.bw-guide summary,.bw-result summary {cursor:pointer;color:#254f42;font-weight:bold}
+.bw-prose {max-width:74ch;margin:1.2rem auto 0;line-height:1.75}
+.bw-guide[open] summary,.bw-result[open] summary {margin-bottom:1rem}
+.bw-status {padding:.85rem 1rem;border:1px solid #d8e7df;border-radius:12px;background:#f5faf7;margin:.75rem 0}
+.bw-guide h2:not(:first-child) {margin-top:1.5rem}
+.bw-fields label,.bw-filter {display:grid;gap:.3rem}
+.bw-fields {grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr))}
+.weighting-workspace fieldset {border:1px solid #d7e6df;border-radius:12px;padding:.8rem 1rem;min-width:0;margin:1rem 0}
+.weighting-workspace legend {color:#254f42;padding-inline:.25rem;font-weight:bold}
+.bw-options,.bw-ratings {display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.bw-options label,.bw-choices label {display:flex;align-items:baseline;gap:.4rem;cursor:pointer;padding:.25rem .4rem}
+.bw-choices label:has(:checked) {background:#eaf6ef;border-radius:6px}
+.weighting-workspace input:not([type=radio]):not([type=checkbox]),.weighting-workspace select {width:100%;max-width:33rem;min-height:2.55rem;border:1px solid #b9d0c2;border-radius:9px;padding:.35rem .65rem;color:inherit;background:#fff}
+.weighting-workspace input[type=radio],.weighting-workspace input[type=checkbox] {accent-color:#236a50;width:1rem;height:1rem;flex:none}
+.weighting-workspace [hidden] {display:none!important}
+.bw-ratings label {position:relative;cursor:pointer}
+.bw-ratings input {position:absolute;opacity:0}
+.bw-ratings span {display:grid;place-items:center;min-width:2.4rem;min-height:2.4rem;border-radius:9px;border:1px solid #bcd2c5;background:white;font-variant-numeric:tabular-nums}
+.bw-ratings input:checked+span {background:#286e54;color:white;border-color:#286e54}
+.bw-ratings input:focus-visible+span {outline:3px solid #618e7d;outline-offset:2px}
+.bw-ratings input:disabled:not(:checked)+span {opacity:.45}
+.bw-ratings:has(input:disabled) label {cursor:default}
+.bw-hint {color:#47665b}.bw-copy {display:grid;gap:.4rem}.bw-copy small {color:#205d43}
+.bw-table {max-width:100%;overflow-x:auto}
+.bw-table table {border-collapse:collapse;width:100%;font:inherit}
+.bw-table th,.bw-table td {padding:.55rem .8rem;border-bottom:1px solid #e0eae3;text-align:start}
+.bw-table th {background:#eff6f2;color:#254f42}.bw-result {margin:1rem 0;border-top:1px solid #d8e7df;padding-top:1rem}
+#assessmentHub .bw-primary {background:#246e51;color:white;border-color:#246e51}
+@media(max-width:650px){.bw-choices,.bw-grid {grid-template-columns:1fr}.bw-tiles {gap:.55rem}.bw-tile {min-height:9rem;font-size:1.2rem}.bw-ratings {gap:.25rem}.bw-ratings span {min-width:2rem}.bw-card {border-radius:12px}.bw-row {gap:.4rem}}
+#assessmentHub .weighting-workspace .bw-card,#assessmentHub .weighting-workspace .bw-filter {text-align:start}

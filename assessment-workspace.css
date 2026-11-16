@@ -368,7 +368,7 @@ body[data-view="comprehensiveDashboard"] #assessmentPageActions>:not(#managerPag
 
 
 #assessmentHub .gate-grid.four{width:min(100%,60rem);grid-template-columns:repeat(2,minmax(0,1fr))}
-#assessmentHub .gate-card[data-weighting-placeholder]{cursor:default}
+
 
 #assessmentHub .assessment-open-action {display:grid;place-items:center;text-decoration:none}
 #caseView[hidden],#caseEntry[hidden],#comprehensiveDashboard[hidden]{display:none!important}

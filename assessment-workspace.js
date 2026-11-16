@@ -332,8 +332,8 @@ function render() {
     if (window.BAMCO_WEIGHTING) open();
     else {
       host.textContent=tr('load');
-      Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js'),
-        loadExternal('./weighting.js'),loadStyles('weighting')]).then(open).catch(()=>{
+      Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js?v=subcriteria-1'),
+        loadExternal('./weighting.js?v=subcriteria-1'),loadStyles('weighting')]).then(open).catch(()=>{
           if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render));
         });
     }

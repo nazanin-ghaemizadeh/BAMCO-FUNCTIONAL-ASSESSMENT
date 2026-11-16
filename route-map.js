@@ -20,6 +20,7 @@ function points(p){
  ];
  // A highway circuit via Qazvin and Karaj gives a real long-distance route
  // for the 250 km Tehran highway days.
+ if((day===5||day===25)&&city==='تهران')return [pt('تهران',[51.389,35.6892]),pt('دیزین',[51.423,36.05]),pt('تهران',[51.389,35.6892])];
  if((day===4||day===24)&&city==='تهران')return [
   pt('تهران',[51.389,35.6892]),pt('قزوین',[50.0041,36.2688]),
   pt('کرج',[50.9916,35.84]),pt('تهران',[51.389,35.6892])

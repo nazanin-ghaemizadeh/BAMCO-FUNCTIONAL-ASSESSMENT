@@ -7,27 +7,17 @@ const words = {
   saved:['ذخیره شد.','Saved.','已保存。'], retry:['تلاش مجدد','Retry','重试'],
   load:['در حال دریافت…','Loading…','正在加载…'], fail:['ارتباط با سامانه برقرار نشد. دوباره تلاش کنید.','Could not reach the service. Please try again.','无法连接服务，请重试。'],
   conflict:['این فرم در جای دیگری تغییر کرده است. برای دیدن آخرین نسخه، دوباره آن را باز کنید.','This form changed elsewhere. Reopen it to see the saved version.','此问卷已在其他位置更改，请重新打开以查看已保存版本。'],
-  denied:['این پیوند دسترسی معتبر نیست.','This access link is invalid.','此访问链接无效。'],
-  storage:['برای نگهداری پیوند خصوصی، ذخیره‌سازی مرورگر را فعال کنید.','Enable browser storage to retain the private link.','请启用浏览器存储以保留专用链接。'],
+  denied:['این پرسش‌نامه در دسترس نیست.','This questionnaire is unavailable.','此问卷不可用。'],
+  storage:['برای ثبت پرسش‌نامه، ذخیره‌سازی مرورگر را فعال کنید.','Enable browser storage to save questionnaires.','请启用浏览器存储以保存问卷。'],
   empty:['هنوز پرسش‌نامه‌ای در این مرورگر ایجاد یا باز نشده است.','No questionnaires have been created or opened in this browser.','此浏览器尚未创建或打开问卷。'],
-  noResults:['پس از تکمیل هر ۱۶ فرم، نتیجه‌ی ارزیاب اینجا نمایش داده می‌شود.','An evaluator’s results appear here after all 16 forms are complete.','评估员完成全部16份问卷后，此处将显示其结果。'],
-  main:['شاخص‌های اصلی','Main criteria','主要指标'], subgroup:['زیرشاخص‌ها','Subcriteria','子指标'],
+  noResults:['پس از تکمیل ۱۵ گروه زیرشاخص، نتیجه‌ی ارزیاب اینجا نمایش داده می‌شود.','Results appear after the evaluator completes all 15 subcriterion groups.','完成全部15个子指标组后，可在此查看结果。'],
+  subgroup:['زیرشاخص‌ها','Subcriteria','子指标'],
   group:['گروه شاخص','Criterion group','指标组'], criterion:['شاخص','Criterion','指标'],
   number:['ردیف','No.','序号'], value:['مقدار','Value','数值'], meaning:['مفهوم','Meaning','含义'],
   done:['تکمیل‌شده','Complete','已完成'], draft:['در حال تکمیل','In progress','填写中'], fresh:['شروع نشده','Not started','未开始'],
   respondent:['ارزیاب','Evaluator','评估员'], profile:['ویرایش مشخصات ارزیاب','Edit evaluator details','编辑评估员信息'],
-  copyEdit:['کپی پیوند خصوصی ادامه‌ی پاسخ‌دهی','Copy private edit link','复制个人续填链接'],
-  copyInvite:['کپی دعوت‌نامه برای ارزیاب جدید','Copy invitation for a new evaluator','复制新评估员邀请链接'],
-  copyManage:['کپی پیوند خصوصی مدیریت نتایج','Copy private results management link','复制结果管理专用链接'],
-  copied:['پیوند کپی شد.','Link copied.','链接已复制。'], choose:['انتخاب کنید','Select','请选择'],
   all:['تجمیع همه‌ی ارزیابان','All evaluators combined','汇总所有评估员'],
-  overall:['وزن نهایی در کل ارزیابی','Overall weight','总权重'], local:['وزن در گروه','Weight within group','组内权重'],
-  weight:['وزن شاخص اصلی','Main criterion weight','主要指标权重'], analysis:['نمایش نتیجه','Show results for','选择结果'],
-  aggregateNote:['هر ارزیابِ دارای ۱۶ فرم کامل سهم یکسانی دارد. وزن‌های اصلی و وزن‌های درون هر گروه جداگانه میانگین‌گیری می‌شوند. وزن نهایی هر زیرشاخص حاصل‌ضرب وزن گروه در وزن درون‌گروهی آن است.','Each evaluator with 16 completed forms has equal weight. Main and within-group weights are averaged separately. An overall subcriterion weight is the product of its main and within-group weights.','完成全部16份问卷的评估员等权参与汇总。分别计算主要指标和组内权重的平均值。子指标总权重等于所属主要指标权重乘以组内权重。'],
-  individualNote:['وزن‌ها با مدل خطی بهترین–بدترین محاسبه شده‌اند. وزن نهایی هر زیرشاخص حاصل‌ضرب وزن شاخص اصلی در وزن آن زیرشاخص در گروه است.','Weights use the linear Best–Worst Method. Overall subcriterion weight equals main criterion weight times within-group weight.','采用线性最佳–最差法计算权重。子指标总权重等于所属主要指标权重乘以组内权重。'],
-  links:['دسترسی ارزیابان','Evaluator access','评估员访问'],
-  inviteHelp:['برای جمع‌آوری پاسخ‌ها در همین گروه، دعوت‌نامه را برای ارزیابان بفرستید. هر نفر با آن یک مجموعه‌ی مستقل ایجاد می‌کند. پیوند خصوصی مدیریت، نتایج همه‌ی افراد این گروه را باز می‌کند.','Send the invitation to collect responses in this group. Each evaluator creates their own set. The private management link opens results for the whole group.','发送邀请以在本组收集答卷。每位评估员独立创建一套问卷。管理专用链接可查看本组所有结果。'],
-  editHelp:['برای ادامه در دستگاه دیگر، پیوند خصوصی همین ارزیاب را نگه دارید.','Keep this evaluator’s private link to continue on a different device.','请保留此评估员的专用链接，以便在其他设备上续填。'],
+  choose:['انتخاب کنید','Select','请选择'], analysis:['نمایش نتیجه','Show results for','选择结果'],
   blocked:['ابتدا مهم‌ترین و کم‌اهمیت‌ترین شاخص را انتخاب کنید.','First select the most and least important criteria.','请先选择最重要和最不重要的指标。'],
   detail:['مشاهده زیرشاخص‌ها','View subcriteria','查看子指标'], start:['شروع پاسخ‌دهی','Start answering','开始填写'],
   groupCount:['فرم تکمیل‌شده','forms completed','份问卷已完成'], department:['مجموعه‌ی ارزیابان','Evaluator group','评估组'],
@@ -36,25 +26,25 @@ const words = {
   model:['مدل','Model','模型'], deviation:['انحراف بهینه','Optimal deviation','最优偏差'], verdict:['وضعیت سازگاری','Consistency','一致性'],
   perfect:['کاملاً سازگار','Fully consistent','完全一致'], acceptable:['قابل قبول','Acceptable','可接受'], revisit:['نیازمند بازبینی','Review comparisons','建议复核'],
   intervalResults:['بازه‌های بهینه‌ی مدل غیرخطی','Optimal intervals of the nonlinear model','非线性模型的最优区间'],
-  intervalHelp:['رتبه‌بندی این جدول بر اساس مرکز بازه است. کران پایین و بالا از کمینه و بیشینه کردن وزن هر معیار در انحراف بهینه‌ی مدل غیرخطی به دست می‌آیند.','Intervals are ranked by their centers. The bounds minimize and maximize each criterion weight at the nonlinear model’s optimal deviation.','按区间中心排名。在非线性模型的最优偏差下最小化和最大化各指标权重，得到上下界。'],
   lower:['کران پایین','Lower bound','下界'], upper:['کران بالا','Upper bound','上界'], center:['مرکز بازه','Interval center','区间中心'],
   halfWidth:['نیم‌عرض بازه','Half-width','半宽'], rank:['رتبه','Rank','排名'], point:['وزن خطی','Linear weight','线性权重'],
   savedAnalysis:['نتیجه‌ی آخرین پاسخ‌های ذخیره‌شده','Results of the last saved answers','上次保存的答卷结果'],
-  formsAction:['ایجاد و ادامه‌ی پرسش‌نامه','Create or continue a questionnaire','创建或继续填写问卷'],
-  resultsAction:['مشاهده‌ی وزن شاخص‌ها','View criterion weights','查看指标权重']
+  formsAction:['مدیریت پرسش‌نامه‌ها','Manage questionnaires','管理问卷'],
+  resultsAction:['مشاهده‌ی وزن زیرشاخص‌ها','View subcriterion weights','查看子指标权重']
 };
 const storePrefix='bamco-bwm-v1:';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const token=/^[0-9a-f]{64}$/;
 const locales=['fa-IR','en-GB','zh-CN'];
-let host, service, language, li, activeRoute, version=0, editing, editingBase, pendingNew, selectedResult, selectedScope;
+let host, service, language, li, activeRoute, version=0, editing, editingBase, pendingNew, selectedResult, selectedScope, selectedGroup=1;
 const clone = x => JSON.parse(JSON.stringify(x));
 const tr = k => (words[k] || window.BAMCO_WEIGHTING_COPY[k])[li];
 const num = n => Number(n).toLocaleString(locales[li]);
 const pct = n => new Intl.NumberFormat(locales[li],{style:'percent',maximumFractionDigits:2}).format(n);
 const text = (fa,en,zh) => [fa,en,zh][li];
-const groupTitle = i => i===0?tr('main'):window.BAMCO_WEIGHTING_CATALOG[i-1].title[li];
-const items = i => i===0?window.BAMCO_WEIGHTING_CATALOG.map(c=>c.title[li]):window.BAMCO_WEIGHTING_CATALOG[i-1].items.map(c=>c[li]);
+const groupCount = () => window.BAMCO_WEIGHTING_CATALOG.length;
+const groupTitle = i => window.BAMCO_WEIGHTING_CATALOG[i-1].title[li];
+const items = i => window.BAMCO_WEIGHTING_CATALOG[i-1].items.map(c=>c[li]);
 const groupIcons=['layers','shield','lock','seat','wind','wheel','bolt','leaf','sound','chip','sun','balance','tool','cycle','gem','wallet'];
 const tones=['mint','violet','apricot','blue','rose'];
 function icon(name,viewBox='0 0 24 24') {
@@ -106,25 +96,16 @@ function errorBox(parent,error,fn) {
   parent.append(box);
 }
 function header(title,back,controls=[]) {
-  const head=el('div',null,'bw-page-head'),titleBlock=el('div',null,'bw-page-title');
-  titleBlock.append(el('h1',title,'gate-title welcome-title'));
+  const heading=el('h1',title,'gate-title welcome-title');
   const divider=el('div',null,'welcome-divider');divider.setAttribute('aria-hidden','true');divider.append(el('i'),el('i'),el('i'));
-  titleBlock.append(divider);
-  const backButton=action(tr('back'),back,'assessment-action assessment-back-action bw-back');backButton.prepend(icon('back'));
-  const actions=el('div',null,'bw-head-actions');actions.append(...controls);
-  head.append(backButton,titleBlock,actions);host.replaceChildren(head);
+  const toolbar=el('div',null,'assessment-page-toolbar');
+  toolbar.append(action(tr('back'),back,'assessment-action assessment-back-action'),...controls);
+  host.replaceChildren(heading,divider,toolbar);
 }
 function reportStatus(parent,msg,style='bw-status') {const p=el('p',msg,style);p.setAttribute('role','status');parent.append(p);return p}
 function emptyState(section,message){
   const box=el('div',null,'bw-empty'),art=icon(section,'0 0 160 128');
   box.append(art);reportStatus(box,tr(message),'bw-empty-copy');host.append(box);
-}
-function copyButton(label,path) {
-  const wrap=el('div',null,'bw-copy');const b=action(tr(label),async()=>{
-    const url=link(path);wrap.querySelectorAll('input,small').forEach(n=>n.remove());
-    try {await navigator.clipboard.writeText(url);wrap.append(el('small',tr('copied')))}
-    catch {const input=el('input');input.value=url;input.readOnly=true;input.dir='ltr';input.setAttribute('aria-label',tr(label));wrap.append(input);input.select()}
-  });wrap.append(b);return wrap;
 }
 function guide(expanded=false) {
   const copy=window.BAMCO_WEIGHTING_COPY;
@@ -149,7 +130,7 @@ function overview() {
   const grid=el('div',null,'gate-grid bw-tiles');
   for(const page of ['forms','results']){
     const card=action('',()=>go(page),'gate-card bw-tile');
-    card.dataset.tone=page==='forms'?'mint':'violet';
+
     const illustration=el('span',null,'gate-illustration');
     illustration.setAttribute('aria-hidden','true');
     illustration.append(icon(page,'0 0 160 128'));
@@ -159,25 +140,43 @@ function overview() {
   }
   host.append(grid);
 }
-function management(p) {
-  if(!p?.manager||!p.ready)return;
-  const card=el('section',null,'surface bw-card bw-access');const title=el('h2',tr('links'));title.prepend(stamp('link','blue'));card.append(title,el('p',tr('inviteHelp')));
-  const buttons=el('div',null,'bw-actions');buttons.append(
-    copyButton('copyInvite','invite/'+p.panel+'/'+p.invite),
-    copyButton('copyManage','manage/'+p.panel+'/'+p.invite+'/'+p.manager)
-  );card.append(buttons);host.append(card);
-}
 async function listForms(v) {
-  header(tr('forms'),()=>go(''),[action(tr('create'),()=>go('new'),'assessment-action assessment-create-action')]);
-  management(panel());
-  const keys=Object.fromEntries(known('edit'));if(!Object.keys(keys).length){emptyState('forms','empty');return}
+  header(tr('forms'),()=>go(''));
+  const create=el('section',null,'assessment-create-panel'),heading=el('div',null,'assessment-create-heading');
+  heading.append(el('span','+','assessment-create-icon'),el('h2',text('پرسش‌نامه‌ی جدید','New questionnaire','新问卷')));
+  create.append(heading,action(tr('create'),()=>go('new'),'assessment-action assessment-create-action'));host.append(create);
+  const keys=Object.fromEntries(known('edit'));
   const wait=reportStatus(host,tr('load'));
-  const rows=await rpc('list',{keys});if(v!==version||!host.isConnected)return;wait.remove();
+  const rows=Object.keys(keys).length?await rpc('list_subcriteria',{keys}):[];
+  if(v!==version||!host.isConnected)return;
+  wait.remove();
   if(!rows.length){emptyState('forms','empty');return}
-  const grid=el('div',null,'assessment-card-grid bw-grid');
+  const list=el('section',null,'assessment-list-section'),listHeading=el('div',null,'assessment-list-heading');
+  listHeading.append(el('h2',text('پرسش‌نامه‌ها','Questionnaires','问卷列表')),el('span',num(rows.length),'assessment-count'));
+  const grid=el('div',null,'assessment-card-grid'+(rows.length===1?' is-single':''));
   for(const row of rows){
-    const b=action('',()=>go('e/'+row.id),'assessment-row bw-row');b.append(stamp('person'),el('strong',row.name),el('span',num(row.completed)+' / '+num(16)+' · '+tr('groupCount'),'assessment-count'));grid.append(b);
-  }host.append(grid);
+    const item=el('article',null,'surface assessment-row'),title=el('div',null,'assessment-row-heading');
+    title.append(el('bdi',row.name,'assessment-row-title'));
+    const meta=el('div',null,'assessment-row-top');
+    meta.append(el('span',tr(row.completed===groupCount()?'done':'draft'),'assessment-status '+(row.completed===groupCount()?'is-completed':'is-active')),
+      el('span',num(row.completed)+' / '+num(groupCount())+' · '+tr('groupCount'),'assessment-count'));
+    const actions=el('div',null,'assessment-row-actions bw-row-actions');
+    const open=action(text('باز کردن','Open','打开'),()=>go('e/'+row.id),'assessment-action assessment-open-action');
+    const edit=action(tr('profile'),()=>go('e/'+row.id+'/profile'),'assessment-action assessment-secondary-action');
+    const remove=action(text('حذف','Delete','删除'),async()=>{
+      if(!window.confirm(text('پرسش‌نامه‌ی «'+row.name+'» و پاسخ‌های آن حذف شوند؟','Delete the questionnaire and answers for “'+row.name+'”?','删除“'+row.name+'”的问卷及答卷？')))return;
+      remove.disabled=true;
+      try{
+        await rpc('delete',{...auth(row.id),revision:row.revision});
+        localStorage.removeItem(storePrefix+'edit/'+row.id);
+        if(v===version&&host.isConnected)await draw();
+      }catch(e){
+        if(v===version&&host.isConnected){item.querySelector('[role=alert]')?.remove();errorBox(item,e,()=>draw())}
+      }finally{remove.disabled=false}
+    },'assessment-action assessment-delete-action');
+    actions.append(open,edit,remove);item.append(title,meta,actions);grid.append(item);
+  }
+  list.append(listHeading,grid);host.append(list);
 }
 function emptyProfile(){return {name:'',org:'',position:'',experience:'',specialty:[],other:'',familiarity:''}}
 function profileUI(rec) {
@@ -229,44 +228,27 @@ function auth(id){return {id,key:stored('edit/'+id)}}
 function mark(g,rec){return rec.weights[g]?'done':rec.forms[g]?'draft':'fresh'}
 function dossier(rec) {
   const id=rec.id;header(rec.profile.name,()=>go('forms'),[action(tr('profile'),()=>go('e/'+id+'/profile'))]);
-  const card=el('section',null,'bw-progress-card'),done=Object.keys(rec.weights).length;
-  const ring=el('div',pct(done/16),'bw-progress-ring');ring.style.setProperty('--fill',done/16*100+'%');
-  const copy=el('div');copy.append(el('strong',num(done)+' / '+num(16)+' · '+tr('groupCount')),el('p',tr('editHelp')));
-  card.append(ring,copy,copyButton('copyEdit','open/'+id+'/'+auth(id).key));
-  host.append(card);
-  const root='e/'+id,grid=el('div',null,'assessment-card-grid bw-grid bw-chapters');
-  const main=action('',()=>go(root+'/g/0'),'assessment-row bw-row');
-  main.dataset.tone='mint';main.append(stamp('layers'),el('strong',tr('main')),formStatus(0,rec));
-  const sub=action('',()=>go(root+'/sub'),'assessment-row bw-row');
   const count=window.BAMCO_WEIGHTING_CATALOG.filter((_,i)=>rec.weights[i+1]).length;
-  sub.dataset.tone='violet';sub.append(stamp('hierarchy','violet'),el('strong',tr('subgroup')),el('span',num(count)+' / '+num(window.BAMCO_WEIGHTING_CATALOG.length)+' · '+tr('groupCount'),'assessment-count'));
-  grid.append(main,sub);host.append(grid,guide());
-}
-function formStatus(g,rec){
-  const status=mark(g,rec);
-  return el('small',tr(status),'assessment-status bw-state '+status);
-}
-function subgroups(rec){
-  const root='e/'+rec.id;
-  header(tr('subgroup'),()=>go(root));
-  const grid=el('div',null,'assessment-card-grid bw-grid bw-group-grid');
-  for(let g=1;g<=window.BAMCO_WEIGHTING_CATALOG.length;g++){
-    const card=action('',()=>go(root+'/g/'+g),'assessment-row bw-row');
-    card.append(stamp(groupIcons[g],tones[(g-1)%tones.length]),el('strong',groupTitle(g)),formStatus(g,rec));
-    grid.append(card);
+  const section=el('section',null,'assessment-list-section'),heading=el('div',null,'assessment-list-heading');
+  heading.append(el('h2',tr('subgroup')),el('span',num(count)+' / '+num(groupCount())+' · '+tr('groupCount'),'assessment-count'));
+  const grid=el('div',null,'gate-grid three bw-groups');
+  for(let g=1;g<=groupCount();g++){
+    const card=action('',()=>go('e/'+rec.id+'/g/'+g),'gate-card bw-group-tile');
+    const art=el('span',null,'gate-illustration');art.append(stamp(groupIcons[g],tones[(g-1)%tones.length]));
+    card.append(art,el('strong',groupTitle(g)),el('span',tr(mark(g,rec)),'gate-cta'));grid.append(card);
   }
-  host.append(grid);
+  section.append(heading,grid);host.append(section,guide());
 }
 function newForm(n){return {best:null,worst:null,bo:Array(n).fill(null),ow:Array(n).fill(null)}}
 function groupForm(rec,g) {
-  const parent='e/'+rec.id+(g===0?'':'/sub');
+  const parent='e/'+rec.id;
   const names=items(g), base=rec.forms[g]||null;
   if(!editing){editingBase=base?clone(base):null;editing=clone(base||newForm(names.length))}
   const data=editing;
   const save=action(tr('save'),async()=>{
     const v=version;save.disabled=true;form.inert=true;
     status.replaceChildren();
-    try{await rpc('save',{...auth(rec.id),group:g,form:data,previous:editingBase});if(v===version&&host.isConnected)go(parent,true)}
+    try{await rpc('save_subcriteria',{...auth(rec.id),group:g,form:data,previous:editingBase});if(v===version&&host.isConnected)go(parent,true)}
     catch(e){if(v===version&&host.isConnected)errorBox(status,e,e.code==='40001'?()=>{editing=null;draw()}:null)}
     finally{save.disabled=false;form.inert=false}
   },'assessment-action assessment-create-action');
@@ -358,74 +340,99 @@ function consistencyCards(analysis){
   }
   return cards;
 }
-function reportHighlights(weights){
-  const sorted=weights.map((weight,i)=>({weight,i})).sort((a,b)=>b.weight-a.weight);
-  const high=sorted[0].weight,leaders=sorted.filter(v=>Math.abs(v.weight-high)<1e-10);
-  const feature=el('div',null,'bw-feature');
-  const hero=el('section',null,'bw-leader'),copy=el('div',null,'bw-leader-copy');
-  const caption=el('span',text('بیشترین وزن در میان شاخص‌های اصلی','Highest main criterion weight','主要指标最高权重'));
-  const name=leaders.length===1?groupTitle(leaders[0].i+1):text(num(leaders.length)+' شاخص هم‌وزن',num(leaders.length)+' tied criteria',num(leaders.length)+' 个指标并列');
-  copy.append(caption,el('h2',name),el('strong',pct(high),'bw-leader-value'));
-  const art=icon('award','0 0 208 152');art.classList.add('bw-award');
-  hero.append(copy,art);
-  const chart=el('section',null,'bw-chart'),title=el('h2',text('پنج شاخص با بیشترین وزن','Five highest-weight criteria','权重最高的五项指标'));
-  title.prepend(stamp('chart','violet'));chart.append(title);
-  const list=el('ol');
-  for(const [rank,{i,weight}] of sorted.slice(0,5).entries()){
-    const row=el('li');row.dataset.tone=tones[rank];
-    const name=el('span',groupTitle(i+1)),value=el('bdi',pct(weight));
-    const track=el('span',null,'bw-bar');track.setAttribute('aria-hidden','true');
-    const fill=el('i');fill.style.width=(high?100*weight/high:0)+'%';track.append(fill);
-    row.append(name,value,track);list.append(row);
-  }
-  chart.append(list);feature.append(hero,chart);return feature;
-}
-function individualGroup(g,weights,analysis,parentWeight){
-  const names=items(g),content=el('div');
-  const ranked=names.map((name,i)=>({name,i})).sort((a,b)=>weights[b.i]-weights[a.i]);
-  const headings=[tr('rank'),tr(g===0?'main':'subgroup'),tr('point')];
-  if(parentWeight!=null)headings.push(tr('overall'));
-  if(analysis)content.append(consistencyCards(analysis));
-  const rankedTable=table(headings,ranked.map(({name,i},rank)=>{
-    const row=[num(rank+1),name,decimal(weights[i],6)];
-    if(parentWeight!=null)row.push(pct(parentWeight*weights[i]));
-    return row;
-  }));rankedTable.classList.add('bw-ranked');content.append(rankedTable);
-  if(!analysis)return content;
-  const bounds=analysis.intervals.map(([lower,upper],i)=>({
-    name:names[i],lower,upper,center:(lower+upper)/2,halfWidth:(upper-lower)/2
-  })).sort((a,b)=>b.center-a.center);
-  const section=el('details',null,'bw-result bw-intervals');
-  section.append(el('summary',tr('intervalResults')),el('p',tr('intervalHelp')),
-    table([tr('rank'),tr(g===0?'main':'subgroup'),tr('lower'),tr('upper'),tr('center'),tr('halfWidth')],
-      bounds.map((v,i)=>[num(i+1),v.name,...[v.lower,v.upper,v.center,v.halfWidth].map(x=>decimal(x,4))])));
-  content.append(section);
-  return content;
-}
-function showWeights(rows,combined) {
-  const box=el('section',null,'bw-card bw-report');
-  const weights=Array.from({length:16},(_,g)=>items(g).map((_,j)=>rows.reduce((s,r)=>s+Number(r.weights[g][j]),0)/rows.length));
-  const main=el('section',null,'bw-report-section'),groups=el('section',null,'bw-report-section');
-  const mainTitle=el('h2',tr('main')),groupsTitle=el('h2',tr('subgroup'));
-  mainTitle.prepend(stamp('layers'));groupsTitle.prepend(stamp('hierarchy','violet'));
-  main.append(mainTitle,el('p',tr(combined?'aggregateNote':'individualNote'),'bw-report-note'));groups.append(groupsTitle);
-  box.append(reportHighlights(weights[0]),main,groups);
-  for(let g=0;g<weights.length;g++){
-    const parent=g===0?null:weights[0][g-1];
-    let body;
-    if(!combined)body=individualGroup(g,weights[g],rows[0].analyses?.[g],parent);
-    else if(g===0)body=table([tr('main'),tr('weight')],items(0).map((name,i)=>[name,pct(weights[0][i])]));
-    else body=table([tr('subgroup'),tr('local'),tr('overall')],items(g).map((name,i)=>[name,pct(weights[g][i]),pct(parent*weights[g][i])]));
-    if(g===0)main.append(body);
-    else{
-      const section=el('details',null,'bw-result'),summary=el('summary',groupTitle(g));
-      summary.prepend(stamp(groupIcons[g],tones[(g-1)%tones.length]));section.append(summary,body);groups.append(section);
+const sectorColors=['#388478','#a17bc1','#e3aa60','#678fc3','#d48399','#53979b',
+  '#a9ae65','#af8190','#5979a2','#d19470','#7f88b6','#78a183',
+  '#bf7977','#648fba','#b6a35a','#82749c','#55998c','#bd8f64',
+  '#9f7795','#729aaf','#8a9c6a','#aa8270'];
+function individualGroup(g,weights,analysis){
+  const names=items(g),ranked=weights.map((weight,index)=>({weight,index})).sort((a,b)=>b.weight-a.weight);
+  const content=el('div',null,'bw-group-report');
+  const chart=el('div',null,'bw-pie-layout'),figure=el('div',null,'bw-pie-figure');
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 240 240');svg.setAttribute('aria-hidden','true');
+  const center=el('div',null,'bw-pie-center'),centerValue=el('strong'),centerNumber=el('span');
+  center.append(centerValue,centerNumber);figure.append(svg,center);
+  const legend=el('ol',null,'bw-pie-legend'),buttons=[],sectors=[];
+  const detail=el('section',null,'bw-selection'),label=el('h3'),exact=el('span',null,'bw-exact');
+  detail.setAttribute('aria-live','polite');detail.append(label,exact);
+  const ranges=el('dl',null,'bw-bounds');
+  if(analysis)detail.append(ranges);
+  function select(i){
+    buttons.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));
+    sectors.forEach((p,j)=>p.classList.toggle('is-selected',j===i));
+    centerValue.textContent=pct(weights[i]);centerNumber.textContent=text('زیرشاخص','Subcriterion','子指标')+' '+num(i+1);
+    label.textContent=names[i];exact.textContent=tr('point')+' · '+decimal(weights[i],6);
+    if(!analysis)return;
+    const [lo,hi]=analysis.intervals[i];
+    ranges.replaceChildren();
+    for(const [k,value] of [['lower',lo],['upper',hi],['center',(lo+hi)/2],['halfWidth',(hi-lo)/2]]){
+      const pair=el('div');pair.append(el('dt',tr(k)),el('dd',decimal(value,4)));ranges.append(pair);
     }
   }
-  return box;
+  const total=weights.reduce((sum,w)=>sum+w,0);let angle=-Math.PI/2;
+  const point=(radius,a)=>[120+radius*Math.cos(a),120+radius*Math.sin(a)].join(' ');
+  for(const {weight,index} of ranked){
+    const span=2*Math.PI*weight/total,end=angle+span,large=span>Math.PI?1:0;
+    const color=sectorColors[index],sector=document.createElementNS(ns,'path');
+    const path='M'+point(114,angle)+' A114 114 0 '+large+' 1 '+point(114,end)
+      +' L'+point(66,end)+' A66 66 0 '+large+' 0 '+point(66,angle)+' Z';
+    sector.setAttribute('d',path);sector.setAttribute('fill',color);
+    sectors[index]=sector;svg.append(sector);
+    const tip=document.createElementNS(ns,'title');tip.textContent=names[index]+' · '+pct(weight);sector.append(tip);
+    if(span>0.21){
+      const [x,y]=point(92,angle+span/2).split(' ');
+      const id=document.createElementNS(ns,'text');id.setAttribute('x',x);id.setAttribute('y',y);
+      id.textContent=num(index+1);svg.append(id);
+    }
+    angle=end;
+    sector.onclick=()=>select(index);
+    const row=el('li'),b=action('',()=>select(index),'bw-slice-key');
+    const number=el('span',num(index+1),'bw-slice-number');number.style.setProperty('--slice-color',color);
+    b.append(number,el('span',names[index]),el('bdi',pct(weight)));buttons[index]=b;row.append(b);legend.append(row);
+  }
+  chart.append(figure,legend);content.append(chart);
+  if(analysis){const interval=el('h4',tr('intervalResults'));ranges.before(interval)}
+  content.append(detail);
+  if(analysis)content.append(consistencyCards(analysis));
+  select(ranked[0].index);return content;
+}
+function showWeights(rows,combined){
+  const box=el('section',null,'surface bw-card'),picker=el('label',tr('group'),'bw-group-select');
+  const select=el('select');
+  for(let g=1;g<=groupCount();g++){
+    const option=el('option',groupTitle(g));option.value=g;select.append(option);
+  }
+  select.value=String(selectedGroup);
+  picker.append(select);
+  const note=el('p',combined
+    ?text('سهم هر زیرشاخص، میانگین وزن آن در همین گروه بین ارزیابان دارای پرسش‌نامه‌ی کامل است.','Each share is the average within this group across completed questionnaires.','各占比为完成问卷的评估员在本组内权重的平均值。')
+    :text('هر برش سهم یک زیرشاخص از وزن همین گروه را نشان می‌دهد.','Each slice shows a subcriterion’s share within this group.','每个扇区表示该子指标在本组内的权重。'),'bw-report-note');
+  const report=el('div');box.append(picker,note,report);
+  select.onchange=()=>{
+    selectedGroup=Number(select.value);
+    const g=selectedGroup;
+    const weights=items(g).map((_,j)=>rows.reduce((sum,r)=>sum+Number(r.weights[g][j]),0)/rows.length);
+    report.replaceChildren(individualGroup(g,weights,combined?null:rows[0].analyses?.[g]));
+  };
+  select.onchange();return box;
+}
+async function sampleResults(v){
+  const back=()=>go('results');
+  header(text('نتایج نمونه‌ی آزمایشی','Sample questionnaire results','示例问卷结果'),back);
+  const wait=reportStatus(host,tr('load'));
+  try{
+    const response=await fetch('./assets/weighting-sample.json');
+    if(!response.ok)throw new Error('Sample unavailable');
+    const sample=await response.json();
+    if(v!==version||!host.isConnected)return;
+    wait.remove();host.append(showWeights([sample],false));
+  }catch(e){
+    if(v===version&&host.isConnected){wait.remove();errorBox(host,e,()=>draw())}
+  }
 }
 async function results(v){
-  header(tr('results'),()=>go(''));
+  const sample=action(text('مشاهده‌ی نمونه‌ی آزمایشی','View sample results','查看示例结果'),()=>go('sample'),'assessment-action assessment-secondary-action');
+  header(tr('results'),()=>go(''),[sample]);
   let rows;
   const current=panel();
   const panels=known('panel').map(([,p])=>p).filter(p=>p.manager&&p.ready);
@@ -440,11 +447,11 @@ async function results(v){
     sel.value=selectedScope;sel.onchange=()=>{selectedScope=sel.value;selectedResult=null;draw()};label.append(sel);filters.append(label);
   }
   const wait=reportStatus(host,tr('load'));
-  if(p?.manager&&p.ready)rows=await rpc('results',{panel:p.panel,manager:p.manager});
+  if(p?.manager&&p.ready)rows=await rpc('results_subcriteria',{panel:p.panel,manager:p.manager});
   else{
     const keys=Object.fromEntries(known('edit'));
-    const list=Object.keys(keys).length?await rpc('list',{keys}):[];
-    const mine=await Promise.all(list.filter(r=>r.completed===16).map(r=>rpc('open',auth(r.id))));
+    const list=Object.keys(keys).length?await rpc('list_subcriteria',{keys}):[];
+    const mine=await Promise.all(list.filter(r=>r.completed===groupCount()).map(r=>rpc('open',auth(r.id))));
     rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights,analyses:r.analyses}));
   }
   if(v!==version||!host.isConnected)return;wait.remove();
@@ -477,13 +484,14 @@ async function draw(){
     if(route==='forms')return await listForms(v);
     if(route==='new')return profileUI(null);
     if(route==='results')return await results(v);
+    if(route==='sample')return await sampleResults(v);
     const [kind,id,section,index]=route.split('/');
     if(kind!=='e'||!uuid.test(id))return go('',true);
     header(tr('forms'),()=>go('forms'));reportStatus(host,tr('load'));
     const rec=await rpc('open',auth(id));if(v!==version||!host.isConnected)return;
     if(section==='profile')profileUI(rec);
-    else if(section==='sub')subgroups(rec);
-    else if(section==='g'&&/^(?:[0-9]|1[0-5])$/.test(index))groupForm(rec,+index);
+    else if(section==='g'&&/^(?:[1-9]|1[0-5])$/.test(index))groupForm(rec,+index);
+    else if(section==='sub'||section==='g')return go('e/'+id,true);
     else dossier(rec);
   }catch(e){if(v===version&&host.isConnected){header(tr('forms'),()=>go(''));errorBox(host,e,()=>{editing=null;draw()})}}
 }

@@ -23,14 +23,16 @@ const {JSDOM} = require('jsdom');
       panels.set(args.panel,args.manager);
       sets.set(args.id,{id:args.id,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{},analyses:{}});
     }
-    if(operation==='list')return {data:[...sets.values()].filter(r=>args.keys[r.id]===r.key).map(r=>({...r,name:r.profile.name,completed:Object.keys(r.weights).length}))};
-    if(operation==='results'){
+    if(operation==='list_subcriteria')return {data:[...sets.values()].filter(r=>args.keys[r.id]===r.key).map(r=>({...r,name:r.profile.name,revision:'v1',completed:catalog.filter((_,i)=>r.weights[i+1]).length}))};
+    if(operation==='results_subcriteria'){
       assert.equal(panels.get(args.panel),args.manager);
-      return {data:[...sets.values()].filter(r=>Object.keys(r.weights).length===16).map(r=>({...r,name:r.profile.name}))};
+      return {data:[...sets.values()].filter(r=>catalog.every((_,i)=>r.weights[i+1])).map(r=>({...r,name:r.profile.name}))};
     }
     const rec=sets.get(args.id);
     assert(rec&&args.key===rec.key);
-    if(operation==='save'){
+    if(operation==='delete'){assert.equal(args.revision,'v1');sets.delete(args.id);return {data:{id:args.id}}}
+    if(operation==='save_subcriteria'){
+      assert(args.group>0&&args.group<=15);
       assert.equal(JSON.stringify(args.previous),JSON.stringify(rec.forms[args.group]||null));
       rec.forms[args.group]=structuredClone(args.form);
       const f=args.form;
@@ -49,17 +51,12 @@ const {JSDOM} = require('jsdom');
   assert(d.querySelector('.bw-guide[open]'));
   const name=d.querySelector('.bw-fields input');name.value='QA';name.dispatchEvent(new w.Event('input'));
   d.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await wait();
-  assert.deepEqual([...d.querySelectorAll('.bw-row strong')].map(x=>x.textContent),['شاخص‌های اصلی','زیرشاخص‌ها']);
+  assert.deepEqual([...d.querySelectorAll('.bw-group-tile strong')].map(x=>x.textContent),Array.from(catalog,x=>x.title[0]));
   const id=[...sets.keys()][0];
   function nav(route) {w.history.pushState(null,'','#'+route);mount()}
-  for(let g=0;g<16;g++){
-    const n=g===0?15:expectedSizes[g-1];
-    if(g===1){
-      d.querySelectorAll('.bw-row')[1].click();await wait();
-      assert.equal(d.querySelectorAll('.bw-row').length,15);
-      assert.equal(w.location.hash,'#e/'+id+'/sub');
-    }
-    d.querySelectorAll('.bw-row')[g===0?0:g-1].click();await wait();
+  for(let g=1;g<=15;g++){
+    const n=expectedSizes[g-1];
+    d.querySelectorAll('.bw-group-tile')[g-1].click();await wait();
     assert.equal(d.querySelectorAll('input[name=best]').length,n);
     assert(!/\b(?:C|SC)\d/.test(d.querySelector('main').textContent));
     if(g===1){
@@ -70,31 +67,56 @@ const {JSDOM} = require('jsdom');
     select('best',0);select('worst',n-1);
     assert(d.querySelector('input[name=bo-0][value="1"]').disabled);
     select('bo-'+(n-1),2);assert(d.querySelector('input[name=ow-0][value="2"]').checked);
-    if(g===0){
+    if(g===1){
       byText('button','ذخیره').click();await wait();
-      assert.equal(d.querySelector('.bw-row small').textContent,'در حال تکمیل');
-      d.querySelector('.bw-row').click();await wait();assert(d.querySelector('input[name=ow-0][value="2"]').checked);
-      select('bo-1',5);byText('button','بازگشت').click();await wait();d.querySelector('.bw-row').click();await wait();
+      assert.equal(d.querySelector('.bw-group-tile .gate-cta').textContent,'در حال تکمیل');
+      d.querySelector('.bw-group-tile').click();await wait();assert(d.querySelector('input[name=ow-0][value="2"]').checked);
+      select('bo-1',5);byText('button','بازگشت').click();await wait();d.querySelector('.bw-group-tile').click();await wait();
       assert(!d.querySelector('input[name=bo-1][value="5"]').checked);
     }
     for(let j=1;j<n-1;j++){select('bo-'+j,1);select('ow-'+j,2)}
     byText('button','ذخیره').click();await wait();
-    assert.equal(w.location.hash,'#e/'+id+(g===0?'':'/sub'));
+    assert.equal(w.location.hash,'#e/'+id);
   }
-  byText('button','بازگشت').click();await wait();
-  assert.equal(d.querySelectorAll('.bw-row').length,2);
-  nav('e/'+id+'/g/5');await wait();
-  assert(d.querySelector('.bw-intervals'));
-  byText('button','بازگشت').click();await wait();
-  assert.equal(d.querySelectorAll('.bw-row').length,15);
-  assert.equal(Object.keys(sets.get(id).weights).length,16);
+  assert.equal(Object.keys(sets.get(id).weights).length,15);
+  // Previously saved main weights must never enter the report.
+  sets.get(id).weights[0]=[];
+  nav('e/'+id+'/g/0');await wait();assert.equal(w.location.hash,'#e/'+id);
+  nav('e/'+id+'/g/5');await wait();assert(d.querySelector('.bw-pie-legend'));
   nav('results');await wait();
-  assert.equal(d.querySelectorAll('.bw-result').length,15);
-  assert.equal(d.querySelectorAll('.bw-result tbody tr').length,131);
-  const select=d.querySelector('.bw-filter:last-of-type select');select.value='1';select.dispatchEvent(new w.Event('change'));
-  assert(d.querySelector('.bw-card').textContent.includes('مدل خطی'));
-  assert.equal(d.querySelectorAll('.bw-intervals').length,16);
-  assert.equal(d.querySelectorAll('.bw-intervals tbody tr').length,146);
+  assert.equal(d.querySelectorAll('.bw-group-select option').length,15);
+  assert.equal(d.querySelectorAll('table').length,0);
+  const sel=d.querySelector('.bw-filter:last-of-type select');sel.value='1';sel.dispatchEvent(new w.Event('change'));
+  const group=d.querySelector('.bw-group-select select');
+  for(let i=1;i<=15;i++){
+    group.value=String(i);group.dispatchEvent(new w.Event('change'));
+    assert.equal(d.querySelectorAll('.bw-pie-figure path').length,expectedSizes[i-1]);
+    const keys=d.querySelectorAll('.bw-slice-key');
+    assert.equal(keys.length,expectedSizes[i-1]);keys[1].click();
+    assert.equal(keys[1].getAttribute('aria-pressed'),'true');
+    assert.equal(d.querySelector('.bw-selection h3').textContent,catalog[i-1].items[1][0]);
+    assert.equal(d.querySelectorAll('.bw-bounds dd').length,4);
+  }
   assert(d.querySelector('main').textContent.includes('مدل غیرخطی'));
-  w.close();console.log('PASS weighting: 16 forms, 131 names, independent drafts, mirrored comparisons, explicit saves, individual and group results.');
+  nav('forms');await wait();assert(!/پیوند|دعوت‌نامه/.test(d.querySelector('main').textContent));
+  w.confirm=()=>false;byText('button','حذف').click();await wait();assert.equal(sets.size,1);
+  w.confirm=()=>true;byText('button','حذف').click();await wait();assert.equal(sets.size,0);
+  assert.equal(d.querySelector('.assessment-row'),null);
+  nav('results');await wait();assert.equal(d.querySelector('.bw-pie-figure'),null);
+  const sample=JSON.parse(fs.readFileSync('assets/weighting-sample.json','utf8'));
+  const sampleGroups=Array.from({length:15},(_,i)=>String(i+1));
+  assert.deepEqual(Object.keys(sample.weights),sampleGroups);
+  assert.deepEqual(Object.keys(sample.analyses),sampleGroups);
+  for(const g of sampleGroups){
+    assert.equal(sample.weights[g].length,expectedSizes[g-1]);
+    assert.equal(sample.analyses[g].intervals.length,expectedSizes[g-1]);
+    assert(Math.abs(sample.weights[g].reduce((a,b)=>a+b,0)-1)<1e-9);
+  }
+  w.fetch=async url=>{assert.equal(url,'./assets/weighting-sample.json');return {ok:true,json:async()=>sample}};
+  byText('button','مشاهده‌ی نمونه‌ی آزمایشی').click();await wait();
+  assert.equal(w.location.hash,'#sample');
+  const sampleGroup=d.querySelector('.bw-group-select select');sampleGroup.value='11';sampleGroup.dispatchEvent(new w.Event('change'));
+  assert.deepEqual([...d.querySelectorAll('.bw-slice-key bdi')].map(n=>n.textContent),['۷۵٪','۲۵٪']);
+  byText('button','بازگشت').click();await wait();assert.equal(w.location.hash,'#results');
+  w.close();console.log('PASS questionnaire creation, 15 subcriterion groups, drafts, exact saves, pie selections and deletion.');
 })().catch(e=>{console.error(e);process.exitCode=1});

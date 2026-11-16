@@ -206,7 +206,7 @@ html[lang=en] body { font-family: Times New Roman, Times, serif; }
 #assessmentHub .gate-grid.four { width: min(100%, 60rem); grid-template-columns: repeat(2, minmax(0px, 1fr)); }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=daily-layout-1" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=case-pages-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=daily-layout-1" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=case-pages-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 </head>
 <body data-view="home">
 <header class="app-header">
@@ -564,8 +564,8 @@ function render() {
     if (window.BAMCO_WEIGHTING) open();
     else {
       host.textContent=tr('load');
-      Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js'),
-        loadExternal('./weighting.js'),loadStyles('weighting')]).then(open).catch(()=>{
+      Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js?v=subcriteria-1'),
+        loadExternal('./weighting.js?v=subcriteria-1'),loadStyles('weighting')]).then(open).catch(()=>{
           if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render));
         });
     }

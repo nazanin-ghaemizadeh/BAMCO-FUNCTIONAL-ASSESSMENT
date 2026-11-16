@@ -31,7 +31,9 @@ const words = {
   blocked:['ابتدا مهم‌ترین و کم‌اهمیت‌ترین شاخص را انتخاب کنید.','First select the most and least important criteria.','请先选择最重要和最不重要的指标。'],
   detail:['مشاهده زیرشاخص‌ها','View subcriteria','查看子指标'], start:['شروع پاسخ‌دهی','Start answering','开始填写'],
   groupCount:['فرم تکمیل‌شده','forms completed','份问卷已完成'], department:['مجموعهٔ ارزیابان','Evaluator group','评估组'],
-  openLatest:['باز کردن نسخهٔ ذخیره‌شده','Open saved version','打开已保存版本']
+  openLatest:['باز کردن نسخهٔ ذخیره‌شده','Open saved version','打开已保存版本'],
+  formsAction:['ایجاد و ادامهٔ پرسش‌نامه','Create or continue a questionnaire','创建或继续填写问卷'],
+  resultsAction:['مشاهدهٔ وزن شاخص‌ها','View criterion weights','查看指标权重']
 };
 const storePrefix='bamco-bwm-v1:';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -87,10 +89,10 @@ function errorBox(parent,error,fn) {
 function header(title,back,controls=[]) {
   host.replaceChildren(el('h1',title,'gate-title welcome-title'));
   const divider=el('div',null,'welcome-divider');divider.setAttribute('aria-hidden','true');divider.append(el('i'),el('i'),el('i'));
-  const bar=el('div',null,'bw-bar');bar.append(action(tr('back'),back,'assessment-action assessment-back-action'),...controls);
+  const bar=el('div',null,'assessment-page-toolbar');bar.append(action(tr('back'),back,'assessment-action assessment-back-action'),...controls);
   host.append(divider,bar);
 }
-function reportStatus(parent,msg) {const p=el('p',msg,'bw-status');p.setAttribute('role','status');parent.append(p);return p}
+function reportStatus(parent,msg,style='bw-status') {const p=el('p',msg,style);p.setAttribute('role','status');parent.append(p);return p}
 function copyButton(label,path) {
   const wrap=el('div',null,'bw-copy');const b=action(tr(label),async()=>{
     const url=link(path);wrap.querySelectorAll('input,small').forEach(n=>n.remove());
@@ -100,7 +102,7 @@ function copyButton(label,path) {
 }
 function guide(expanded=false) {
   const copy=window.BAMCO_WEIGHTING_COPY;
-  const details=el('details',null,'bw-card bw-guide');details.open=expanded;
+  const details=el('details',null,'surface bw-card bw-guide');details.open=expanded;
   details.append(el('summary',tr(0)));
   const body=el('div',null,'bw-prose');
   for(const [key] of Object.entries(copy).filter(([k])=>/^\d+$/.test(k)&&+k>0&&+k<65)){
@@ -116,32 +118,44 @@ function table(head,rows) {
   const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row)r.insertCell().textContent=value}
   scroll.append(t);return scroll;
 }
-function tiles(parent,options) {
-  const grid=el('div',null,'bw-tiles');
-  for(const [label,icon,path] of options){
-    const b=action('',()=>go(path),'bw-tile');const symbol=el('span',icon,'bw-symbol');symbol.setAttribute('aria-hidden','true');
-    b.append(symbol,el('strong',tr(label)));grid.append(b);
-  }parent.append(grid);
+function overview() {
+  header(tr('hub'),service.home);
+  const grid=el('div',null,'gate-grid bw-tiles');
+  const svgNamespace='http://www.w3.org/2000/svg';
+  for(const page of ['forms','results']){
+    const card=action('',()=>go(page),'gate-card bw-tile');
+    const illustration=el('span',null,'gate-illustration');
+    illustration.setAttribute('aria-hidden','true');
+    const svg=document.createElementNS(svgNamespace,'svg');
+    svg.setAttribute('viewBox','0 0 160 128');
+    const use=document.createElementNS(svgNamespace,'use');
+    use.setAttribute('href','./assets/weighting-sections.svg#'+page);
+    svg.append(use);
+    illustration.append(svg);
+    card.setAttribute('aria-label',tr(page));
+    card.append(illustration,el('strong',tr(page)),el('span',tr(page+'Action'),'gate-cta'));
+    grid.append(card);
+  }
+  host.append(grid);
 }
-function overview() {header(tr('hub'),service.home);tiles(host,[['forms','📝','forms'],['results','📊','results']])}
 function management(p) {
   if(!p?.manager||!p.ready)return;
-  const card=el('section',null,'bw-card');card.append(el('h2',tr('links')),el('p',tr('inviteHelp')));
+  const card=el('section',null,'surface bw-card');card.append(el('h2',tr('links')),el('p',tr('inviteHelp')));
   const buttons=el('div',null,'bw-actions');buttons.append(
     copyButton('copyInvite','invite/'+p.panel+'/'+p.invite),
     copyButton('copyManage','manage/'+p.panel+'/'+p.invite+'/'+p.manager)
   );card.append(buttons);host.append(card);
 }
 async function listForms(v) {
-  header(tr('forms'),()=>go(''),[action(tr('create'),()=>go('new'),'assessment-action bw-primary')]);
+  header(tr('forms'),()=>go(''),[action(tr('create'),()=>go('new'),'assessment-action assessment-create-action')]);
   management(panel());
-  const keys=Object.fromEntries(known('edit'));if(!Object.keys(keys).length){reportStatus(host,tr('empty'));return}
+  const keys=Object.fromEntries(known('edit'));if(!Object.keys(keys).length){reportStatus(host,tr('empty'),'assessment-empty-state');return}
   const wait=reportStatus(host,tr('load'));
   const rows=await rpc('list',{keys});if(v!==version||!host.isConnected)return;wait.remove();
-  if(!rows.length){reportStatus(host,tr('empty'));return}
-  const grid=el('div',null,'bw-grid');
+  if(!rows.length){reportStatus(host,tr('empty'),'assessment-empty-state');return}
+  const grid=el('div',null,'assessment-card-grid bw-grid');
   for(const row of rows){
-    const b=action('',()=>go('e/'+row.id),'bw-row');b.append(el('strong',row.name),el('span',num(row.completed)+' / '+num(16)+' · '+tr('groupCount')));grid.append(b);
+    const b=action('',()=>go('e/'+row.id),'assessment-row bw-row');b.append(el('strong',row.name),el('span',num(row.completed)+' / '+num(16)+' · '+tr('groupCount'),'assessment-count'));grid.append(b);
   }host.append(grid);
 }
 function emptyProfile(){return {name:'',org:'',position:'',experience:'',specialty:[],other:'',familiarity:''}}
@@ -151,7 +165,7 @@ function profileUI(rec) {
   const data=editing;
   header(tr(isNew?'create':'profile'),()=>go(isNew?'forms':'e/'+rec.id));
   host.append(guide(isNew));
-  const form=el('form',null,'bw-card');form.append(el('h2',tr(65)),el('h3',tr(67)));
+  const form=el('form',null,'surface bw-card');form.append(el('h2',tr(65)),el('h3',tr(67)));
   const fields=el('div',null,'bw-fields');
   for(const key of ['name','org','position']){
     const label=el('label',tr(key)),input=el('input');input.value=data[key]||'';input.required=key==='name';input.maxLength=150;
@@ -172,7 +186,7 @@ function profileUI(rec) {
     if(multiple){other.hidden=!(data.specialty||[]).includes(4);other.maxLength=200;other.value=data.other||'';other.setAttribute('aria-label',window.BAMCO_WEIGHTING_COPY.fields[4][li]);other.oninput=()=>data.other=other.value;set.append(other)}
     form.append(set);
   }
-  const save=el('button',tr(isNew?'create':'save'),'assessment-action bw-primary');save.type='submit';form.append(save);
+  const save=el('button',tr(isNew?'create':'save'),'assessment-action assessment-create-action');save.type='submit';form.append(save);
   form.onsubmit=async event=>{
     event.preventDefault();if(!data.name.trim()){fields.querySelector('input').focus();return}
     const v=version;save.disabled=true;form.querySelectorAll('.bw-status').forEach(n=>n.remove());
@@ -194,14 +208,14 @@ function auth(id){return {id,key:stored('edit/'+id)}}
 function mark(g,rec){return rec.weights[g]?'done':rec.forms[g]?'draft':'fresh'}
 function dossier(rec) {
   const id=rec.id;header(rec.profile.name,()=>go('forms'),[action(tr('profile'),()=>go('e/'+id+'/profile'))]);
-  const card=el('section',null,'bw-card');
+  const card=el('section',null,'surface bw-card');
   card.append(el('strong',num(Object.keys(rec.weights).length)+' / '+num(16)+' · '+tr('groupCount')),
     el('p',tr('editHelp')),copyButton('copyEdit','open/'+id+'/'+auth(id).key));
   host.append(card,guide());
-  const grid=el('div',null,'bw-grid');
+  const grid=el('div',null,'assessment-card-grid bw-grid');
   for(let g=0;g<16;g++){
-    const s=mark(g,rec);const b=action('',()=>go('e/'+id+'/g/'+g),'bw-row');
-    b.append(el('span',num(g+1),'bw-index'),el('strong',groupTitle(g)),el('small',tr(s),'bw-state '+s));grid.append(b);
+    const s=mark(g,rec);const b=action('',()=>go('e/'+id+'/g/'+g),'assessment-row bw-row');
+    b.append(el('span',num(g+1),'bw-index'),el('strong',groupTitle(g)),el('small',tr(s),'assessment-status bw-state '+s));grid.append(b);
   }host.append(grid);
 }
 function newForm(n){return {best:null,worst:null,bo:Array(n).fill(null),ow:Array(n).fill(null)}}
@@ -215,13 +229,13 @@ function groupForm(rec,g) {
     try{await rpc('save',{...auth(rec.id),group:g,form:data,previous:editingBase});if(v===version&&host.isConnected)go('e/'+rec.id,true)}
     catch(e){if(v===version&&host.isConnected)errorBox(status,e,e.code==='40001'?()=>{editing=null;draw()}:null)}
     finally{save.disabled=false;form.inert=false}
-  },'assessment-action bw-primary');
+  },'assessment-action assessment-create-action');
   header(groupTitle(g),()=>go('e/'+rec.id),[save]);
   const status=el('div');host.append(status,guide());
   const form=el('div');host.append(form);
-  const head=el('section',null,'bw-card');head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),
+  const head=el('section',null,'surface bw-card');head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),
     table([tr('number'),tr('criterion')],names.map((name,i)=>[num(i+1),name])));form.append(head);
-  const stage=el('section',null,'bw-card');stage.append(el('h2',tr(87)));form.append(stage);
+  const stage=el('section',null,'surface bw-card');stage.append(el('h2',tr(87)));form.append(stage);
   const choices=el('div',null,'bw-choices');stage.append(choices);
   const comparisons=el('div');form.append(comparisons);
   const selectors=[];
@@ -230,7 +244,7 @@ function groupForm(rec,g) {
     if(data.best===null||data.worst===null){reportStatus(comparisons,tr('blocked'));return}
     const mirrors=[];
     for(const [key,title,desc,help] of [['bo',107,108,109],['ow',117,118,119]]){
-      const card=el('section',null,'bw-card');card.append(el('h2',tr(title)),el('p',tr(desc)),el('p',tr(help),'bw-hint'));
+      const card=el('section',null,'surface bw-card');card.append(el('h2',tr(title)),el('p',tr(desc)),el('p',tr(help),'bw-hint'));
       names.forEach((name,i)=>{
         const from=key==='bo'?names[data.best]:name,to=key==='bo'?name:names[data.worst];
         const field=el('fieldset',null,'bw-comparison');
@@ -271,12 +285,12 @@ function groupForm(rec,g) {
       selectors.push([key,i,r]);l.append(r,document.createTextNode(name));set.append(l);
     });choices.append(set);
   }syncAnchors();
-  const endSave=action(tr('save'),()=>save.click(),'assessment-action bw-primary');
-  const foot=el('div',null,'bw-bar');foot.append(endSave);form.append(foot);
+  const endSave=action(tr('save'),()=>save.click(),'assessment-action assessment-create-action');
+  const foot=el('div',null,'assessment-page-toolbar');foot.append(endSave);form.append(foot);
 }
 function showWeights(rows,combined) {
   const weights=Array.from({length:16},(_,g)=>items(g).map((_,j)=>rows.reduce((s,r)=>s+Number(r.weights[g][j]),0)/rows.length));
-  const box=el('section',null,'bw-card');
+  const box=el('section',null,'surface bw-card');
   box.append(el('p',tr(combined?'aggregateNote':'individualNote')),table([tr('main'),tr('weight')],items(0).map((name,i)=>[name,pct(weights[0][i])])));
   for(let g=1;g<16;g++){
     const section=el('details',null,'bw-result');section.append(el('summary',groupTitle(g)),table([tr('subgroup'),tr('local'),tr('overall')],items(g).map((name,i)=>[name,pct(weights[g][i]),pct(weights[0][g-1]*weights[g][i])])));
@@ -293,7 +307,7 @@ async function results(v){
   if(!scopes.some(s=>s.value===selectedScope))selectedScope=current?.manager&&current.ready?current.panel:scopes[0]?.value;
   const p=panels.find(p=>p.panel===selectedScope);
   if(scopes.length>1){
-    const label=el('label',tr('department'),'bw-filter'),sel=el('select');
+    const label=el('label',tr('department'),'surface bw-filter'),sel=el('select');
     for(const s of scopes){const o=el('option',s.label);o.value=s.value;sel.append(o)}
     sel.value=selectedScope;sel.onchange=()=>{selectedScope=sel.value;selectedResult=null;draw()};label.append(sel);host.append(label);
   }
@@ -306,8 +320,8 @@ async function results(v){
     rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights}));
   }
   if(v!==version||!host.isConnected)return;wait.remove();
-  if(!rows.length){reportStatus(host,tr('noResults'));return}
-  const label=el('label',tr('analysis'),'bw-filter'),select=el('select');
+  if(!rows.length){reportStatus(host,tr('noResults'),'assessment-empty-state');return}
+  const label=el('label',tr('analysis'),'surface bw-filter'),select=el('select');
   function option(value,name){const o=el('option',name);o.value=value;select.append(o)}
   if(p?.manager&&p.ready)option('all',tr('all')+' ('+num(rows.length)+')');
   for(const r of rows)option(String(r.respondent),r.name+' · '+tr('respondent')+' '+num(r.respondent));

@@ -1,48 +1,140 @@
-#assessmentHub .weighting-workspace {max-width:68rem;margin:0 auto;color:var(--text)}
-#assessmentHub .weighting-workspace .welcome-title {display:block;margin:1.4rem 0 .6rem;text-align:center;font-size:clamp(1.65rem,3vw,2.7rem)}
-.weighting-workspace .welcome-divider {margin-bottom:1.3rem}
-.bw-bar,.bw-actions {display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
-.bw-bar {justify-content:space-between;margin:1rem 0}
-.bw-card,.bw-filter {background:#fff;border:1px solid #d7e6df;border-radius:18px;padding:clamp(1rem,2.6vw,2rem);margin:1rem 0;box-shadow:0 6px 22px #193d3108}
-.bw-card h2,.bw-card h3 {line-height:1.45;margin:.4rem 0 .9rem;color:#214e40}
-.bw-card p {margin:.5rem 0 .9rem;line-height:1.7}
-.bw-tiles,.bw-grid,.bw-fields,.bw-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
-.bw-tiles {max-width:47rem;margin:2rem auto}
-.bw-tile,.bw-row {border:1px solid #d6e5de;border-radius:16px;background:white;color:#234d41}
-.bw-tile {min-height:12rem;display:grid;place-content:center;justify-items:center;gap:.75rem;font-size:1.55rem}
-.bw-symbol {font-size:2.45rem;background:#eef6ef;border-radius:16px;padding:.6rem 1rem}
-.bw-tile:nth-child(2) .bw-symbol {background:#f2eff9}
-.bw-row {display:flex;gap:.65rem;align-items:center;text-align:start;padding:1rem;min-height:4.5rem}
-.bw-grid {margin:1rem 0}.bw-row strong {flex:1}.bw-index {color:#557268}.bw-state {font-size:.85em;color:#52685e}.bw-state.done {color:#176544}.bw-state.draft {color:#80551c}
-.bw-row:hover,.bw-tile:hover {border-color:#43896f;background:#f6fbf8}
-.bw-tile:focus-visible,.bw-row:focus-visible,.weighting-workspace summary:focus-visible {outline:3px solid #518e79;outline-offset:2px}
-.bw-guide summary,.bw-result summary {cursor:pointer;color:#254f42;font-weight:bold}
-.bw-prose {max-width:74ch;margin:1.2rem auto 0;line-height:1.75}
-.bw-guide[open] summary,.bw-result[open] summary {margin-bottom:1rem}
-.bw-status {padding:.85rem 1rem;border:1px solid #d8e7df;border-radius:12px;background:#f5faf7;margin:.75rem 0}
-.bw-guide h2:not(:first-child) {margin-top:1.5rem}
-.bw-fields label,.bw-filter {display:grid;gap:.3rem}
-.bw-fields {grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr))}
-.weighting-workspace fieldset {border:1px solid #d7e6df;border-radius:12px;padding:.8rem 1rem;min-width:0;margin:1rem 0}
-.weighting-workspace legend {color:#254f42;padding-inline:.25rem;font-weight:bold}
-.bw-options,.bw-ratings {display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
-.bw-options label,.bw-choices label {display:flex;align-items:baseline;gap:.4rem;cursor:pointer;padding:.25rem .4rem}
-.bw-choices label:has(:checked) {background:#eaf6ef;border-radius:6px}
-.weighting-workspace input:not([type=radio]):not([type=checkbox]),.weighting-workspace select {width:100%;max-width:33rem;min-height:2.55rem;border:1px solid #b9d0c2;border-radius:9px;padding:.35rem .65rem;color:inherit;background:#fff}
-.weighting-workspace input[type=radio],.weighting-workspace input[type=checkbox] {accent-color:#236a50;width:1rem;height:1rem;flex:none}
-.weighting-workspace [hidden] {display:none!important}
-.bw-ratings label {position:relative;cursor:pointer}
-.bw-ratings input {position:absolute;opacity:0}
-.bw-ratings span {display:grid;place-items:center;min-width:2.4rem;min-height:2.4rem;border-radius:9px;border:1px solid #bcd2c5;background:white;font-variant-numeric:tabular-nums}
-.bw-ratings input:checked+span {background:#286e54;color:white;border-color:#286e54}
-.bw-ratings input:focus-visible+span {outline:3px solid #618e7d;outline-offset:2px}
-.bw-ratings input:disabled:not(:checked)+span {opacity:.45}
-.bw-ratings:has(input:disabled) label {cursor:default}
-.bw-hint {color:#47665b}.bw-copy {display:grid;gap:.4rem}.bw-copy small {color:#205d43}
-.bw-table {max-width:100%;overflow-x:auto}
-.bw-table table {border-collapse:collapse;width:100%;font:inherit}
-.bw-table th,.bw-table td {padding:.55rem .8rem;border-bottom:1px solid #e0eae3;text-align:start}
-.bw-table th {background:#eff6f2;color:#254f42}.bw-result {margin:1rem 0;border-top:1px solid #d8e7df;padding-top:1rem}
-#assessmentHub .bw-primary {background:#246e51;color:white;border-color:#246e51}
-@media(max-width:650px){.bw-choices,.bw-grid {grid-template-columns:1fr}.bw-tiles {gap:.55rem}.bw-tile {min-height:9rem;font-size:1.2rem}.bw-ratings {gap:.25rem}.bw-ratings span {min-width:2rem}.bw-card {border-radius:12px}.bw-row {gap:.4rem}}
-#assessmentHub .weighting-workspace .bw-card,#assessmentHub .weighting-workspace .bw-filter {text-align:start}
+#assessmentHub .weighting-workspace {
+  width: 100%;
+  min-width: 0;
+  color: var(--text);
+}
+html[lang="fa"] .weighting-workspace {
+  --assessment-fa: 'Assessment Latin', 'B Nazanin', 'BNazanin', 'Daily Mileage Nazanin', Tahoma, serif;
+  font-family: var(--assessment-fa);
+}
+#landing #assessmentHub .weighting-workspace > .welcome-title {
+  display: block;
+  margin: 26px 0 0;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+#assessmentHub .weighting-workspace > .welcome-divider {margin: 14px auto 22px}
+#assessmentHub .gate-grid.bw-tiles {margin: 1rem auto}
+html[dir] #assessmentHub .bw-tile :is(strong, .gate-cta) {text-align: center !important}
+#assessmentHub .bw-grid {margin-block: 1rem}
+#assessmentHub .assessment-row.bw-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 82px;
+  padding: 14px 18px;
+}
+.bw-row strong {flex: 1; min-width: 0; overflow-wrap: anywhere; color: #203f36}
+.bw-index {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #edf5f0;
+  color: #3d6c56;
+}
+.bw-state.fresh {background: #edf1f4; color: #5c6f7b}
+.bw-state.draft {background: #fcf3e1; color: #80551c}
+.bw-state.done {background: #e7f5ec; color: #237256}
+.weighting-workspace .bw-card, .weighting-workspace .bw-filter {
+  margin: 1rem 0;
+  padding: clamp(16px, 2vw, 28px);
+  min-width: 0;
+  text-align: start;
+}
+.bw-card h2, .bw-card h3 {line-height: 1.5; margin: .4rem 0 .9rem; color: #294e42}
+.bw-card h2 {font-size: 24px}
+.bw-card p {margin: .5rem 0 .9rem; line-height: 1.8}
+.bw-prose {max-width: 74ch; margin: 1.2rem auto 0}
+.bw-guide h2:not(:first-child) {margin-top: 1.5rem}
+.bw-guide summary, .bw-result summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  color: #254f42;
+}
+.bw-guide summary::-webkit-details-marker, .bw-result summary::-webkit-details-marker {display: none}
+.bw-guide summary::after, .bw-result summary::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-inline-start: auto;
+  border: solid #53816c;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.bw-guide[open] > summary, .bw-result[open] > summary {margin-bottom: 1rem}
+.bw-guide[open] > summary::after, .bw-result[open] > summary::after {transform: rotate(225deg)}
+.bw-result {margin-top: 12px; padding: 12px 15px; border: 1px solid #d5e5dc; border-radius: 12px}
+.bw-status {padding: .85rem 1rem; border: 1px solid #d8e7df; border-radius: 12px; background: #f5faf7; margin: .75rem 0}
+.bw-actions, .bw-options {display: flex; align-items: center; flex-wrap: wrap; gap: 10px}
+.bw-copy, .bw-fields label, .bw-filter {display: grid; gap: 6px}
+.bw-copy {min-width: 0; max-width: 100%}
+.bw-fields, .bw-choices {display: grid; gap: 16px}
+.bw-fields {grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr))}
+.bw-choices {grid-template-columns: repeat(2, minmax(0, 1fr))}
+.weighting-workspace fieldset {min-width: 0; margin: 1rem 0; padding: 12px 15px; border: 1px solid #d5e5dc; border-radius: 12px}
+.weighting-workspace legend {max-width: 100%; padding-inline: .3rem; color: #254f42}
+.bw-options label, .bw-choices label {display: flex; align-items: baseline; gap: .5rem; cursor: pointer; padding: .3rem .5rem}
+.bw-choices label:has(:checked), .bw-options label:has(:checked) {background: #e7f5ec; color: #235d47; border-radius: 8px}
+.weighting-workspace input:not([type=radio]):not([type=checkbox]), .weighting-workspace select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border: 1px solid #cfe1d7;
+  border-radius: 12px;
+  padding: .4rem 1rem;
+  background-color: #fff;
+  color: inherit;
+}
+.weighting-workspace select {max-width: 33rem; background-color: #f8fcfa; cursor: pointer}
+.weighting-workspace input[type=radio], .weighting-workspace input[type=checkbox] {accent-color: #226c54; width: 1rem; height: 1rem; flex: none}
+.weighting-workspace [hidden] {display: none !important}
+.bw-ratings {display: grid; grid-template-columns: repeat(9, minmax(0, 44px)); gap: 6px}
+.bw-ratings label {position: relative; cursor: pointer}
+.bw-ratings input {position: absolute; opacity: 0}
+.bw-ratings span {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid #b9d7cb;
+  background: #f4faf7;
+  color: #254c3e;
+  font-variant-numeric: tabular-nums;
+}
+.bw-ratings input:checked + span {background: #226c54; color: white; border-color: #226c54}
+.bw-ratings input:disabled:not(:checked) + span {opacity: .45}
+.bw-ratings:has(input:disabled) label {cursor: default}
+.weighting-workspace :is(button, summary, input, select):focus-visible, .bw-ratings input:focus-visible + span {outline: 3px solid #518e79; outline-offset: 2px}
+.bw-hint, .bw-copy small {color: #47665b}
+.bw-table {max-width: 100%; overflow-x: auto; border: 1px solid #d5e5dc; border-radius: 12px}
+.bw-table table {border-collapse: separate; border-spacing: 0; width: 100%; min-width: 0; margin: 0; font: inherit}
+html[dir] body .bw-table :is(th, td) {text-align: center !important; vertical-align: middle; padding: 10px 12px; border: 0; border-bottom: 1px solid #e3ece7; white-space: normal; line-height: 1.6}
+.bw-table thead th {background: #22644f; color: #fff; font-weight: 400}
+.bw-table tbody tr:nth-child(even) {background: #f5f9f7}
+.bw-table tbody tr:last-child td {border-bottom: 0}
+@media (max-width: 700px) {
+  #assessmentHub .gate-grid.bw-tiles {grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 12px}
+  body[data-view=home] #landing #assessmentHub .bw-tile {height: clamp(165px, 44vw, 230px); min-width: 0; padding: 12px; gap: 6px; grid-template-rows: minmax(0, 1fr) auto auto}
+  body[data-view=home] #landing .bw-tile strong {font-size: clamp(18px, 4.8vw, 25px)}
+  body[data-view=home] #landing .bw-tile .gate-cta {padding-top: 0; font-size: 14px}
+  .bw-choices {grid-template-columns: 1fr; gap: 0}
+  .weighting-workspace .bw-card {padding: 16px}
+}
+@media (max-width: 500px) {
+  .bw-ratings {grid-template-columns: repeat(3, minmax(0, 1fr))}
+  #assessmentHub .assessment-row.bw-row {gap: 8px; flex-wrap: wrap; padding: 12px}
+  .bw-actions > .bw-copy {width: 100%}
+  .bw-choices fieldset {margin-block: .5rem}
+}
+@media (max-width: 319px) {
+  #assessmentHub .gate-grid.bw-tiles {grid-template-columns: 1fr}
+}

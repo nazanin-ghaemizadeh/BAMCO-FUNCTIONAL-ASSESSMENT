@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <symbol id="forms" viewBox="0 0 160 128">
+    <ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none" />
+    <rect x="43" y="21" width="75" height="87" rx="12" fill="#cbdced" stroke="#6c8da9" stroke-width="2.5" />
+    <rect x="50" y="29" width="61" height="71" rx="6" fill="#f7fbff" stroke="none" />
+    <rect x="64" y="14" width="34" height="18" rx="6" fill="#d9c8e9" stroke="#9980b5" stroke-width="2" />
+    <path d="M72 22h18" stroke="#fff" stroke-width="3" />
+    <path d="M61 48l4 4 7-9m-11 25l4 4 7-9m-11 25l4 4 7-9" fill="none" stroke="#6aab94" stroke-width="2.5" />
+    <path d="M80 48h20m-20 20h20m-20 20h15" stroke="#a0b6ca" stroke-width="3" />
+    <path d="M132 18v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5" />
+    <path d="M23 38v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5" />
+  </symbol>
+  <symbol id="results" viewBox="0 0 160 128">
+    <ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none" />
+    <rect x="28" y="19" width="106" height="88" rx="14" fill="#f5edf8" stroke="#b99ac7" stroke-width="2.5" />
+    <path d="M44 34v57h73" fill="none" stroke="#a18bac" stroke-width="2" />
+    <rect x="54" y="65" width="13" height="25" rx="4" fill="#a9d8c5" stroke="#78b29b" />
+    <rect x="76" y="51" width="13" height="39" rx="4" fill="#b9cce8" stroke="#8ca8cf" />
+    <rect x="98" y="35" width="13" height="55" rx="4" fill="#d8b8e2" stroke="#b18bc0" />
+    <path d="M53 51l22-13 18 5 19-19m-9 0h9v9" fill="none" stroke="#c7a16c" stroke-width="2.5" />
+    <path d="M132 18v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5" />
+    <path d="M23 38v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5" />
+  </symbol>
+</svg>

@@ -3,7 +3,7 @@ const coords={'تهران':[51.389,35.6892],'قم':[50.8764,34.6416],'کرج':[5
 const tehran=[{name:'میدان آزادی',coord:[51.338,35.6997]},{name:'میدان ونک',coord:[51.409,35.7575]},{name:'میدان تجریش',coord:[51.429,35.805]},{name:'میدان انقلاب',coord:[51.391,35.701]},{name:'میدان آزادی',coord:[51.338,35.6997]}];
 let request=0,map=null;const cache=new Map();
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const number=x=>Number(x).toLocaleString(document.documentElement.lang==='fa'?'fa-IR':'en-US',{maximumFractionDigits:1});
+const number=x=>Number(x).toLocaleString((String(document.documentElement.lang||'').toLowerCase().startsWith('fa')||document.documentElement.dir==='rtl')?'fa-IR':'en-US',{maximumFractionDigits:1});
 function points(p){
  if(Array.isArray(p.points)&&p.points.length>1)return p.points;
  const city=p.origin||'تهران',day=Number(p.day);

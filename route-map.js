@@ -16,11 +16,7 @@ function points(p){
   pt('یافت‌آباد',[51.33,35.65]),pt('آزادی',[51.338,35.6997])
  ];
  if(p.routeId==='urban'&&city==='ساری')return [
-  pt('مرکز ساری',[53.0586,36.5659]),pt('شمال ساری',[53.0586,36.605]),
-  pt('شرق ساری',[53.105,36.575]),pt('جنوب‌شرق ساری',[53.095,36.535]),
-  pt('جنوب ساری',[53.055,36.525]),pt('جنوب‌غرب ساری',[53.015,36.535]),
-  pt('غرب ساری',[53.005,36.57]),pt('شمال‌غرب ساری',[53.025,36.60]),
-  pt('مرکز ساری',[53.0586,36.5659])
+  pt('مرکز ساری',[53.0586,36.5659]),pt('شمال‌غرب ساری',[53.025,36.60]),pt('شمال ساری',[53.0586,36.605]),pt('شمال‌شرق ساری',[53.095,36.60]),pt('شرق ساری',[53.105,36.575]),pt('شمال‌شرق مرکزی',[53.085,36.585]),pt('مرکز ساری',[53.0586,36.5659]),pt('جنوب‌شرق ساری',[53.095,36.535]),pt('جنوب ساری',[53.055,36.525]),pt('جنوب‌غرب ساری',[53.015,36.535]),pt('غرب ساری',[53.005,36.57]),pt('مرکز غربی ساری',[53.03,36.565]),pt('مرکز ساری',[53.0586,36.5659]),pt('شمال‌غرب ساری',[53.025,36.60]),pt('شرق ساری',[53.105,36.575]),pt('جنوب‌غرب ساری',[53.015,36.535]),pt('مرکز ساری',[53.0586,36.5659])
  ];
  // A highway circuit via Qazvin and Karaj gives a real long-distance route
  // for the 250 km Tehran highway days.
@@ -85,7 +81,8 @@ async function mount(p){
   status.textContent='مسیر جاده‌ای بر اساس شبکه واقعی راه‌ها؛ طول پیمایش نمایش‌داده‌شده: '+number(planned)+' کیلومتر.';
   status.append(document.createElement('br'),'فقط بخشی از مسیر که با هدف روزانه تطبیق دارد نمایش داده شده است؛ ترافیک زنده لحاظ نشده است.');
   const list=host.parentElement.querySelector('ol');
-  if(list)list.innerHTML=ps.map((x,i)=>'<li>'+number(i+1)+'. '+esc(x.name)+'</li>').join('');
+  const visited=[ps[0]];let passed=0;for(let i=0;i<(road.legs||[]).length;i++){passed+=road.legs[i].distance;if(passed<=planned*1000+1)visited.push(ps[i+1]);else break;}
+  if(list)list.innerHTML=visited.map((x,i)=>'<li>'+number(i+1)+'. '+esc(x.name)+'</li>').join('');
   const link=host.parentElement.querySelector('a.map-link');
   if(link){
    const url=new URL(link.href);

@@ -549,3 +549,16 @@ html[dir=ltr] #assessmentPageActions:has(> :is(#dayFormExcel,#dayScoresExcel):no
   #bamco-day-workflow:has(.pre-drive-grid) {padding-inline:6px}
   #bamco-day-form .pre-drive {padding-inline:5px}
 }
+
+
+/* The daily route and ordered tests are defined by Drive Reference. */
+.drive-reference-summary{padding:20px 24px;margin:0 0 22px;border:1px solid #cde4dd;border-radius:22px;background:linear-gradient(115deg,#f0f8f4,#fbf9fd);text-align:center;color:#164b50}
+.drive-reference-summary h3{margin:10px 0;font-size:1.35rem;text-align:center}
+.drive-reference-summary p{margin:8px 0;text-align:center}
+.drive-reference-meta{display:flex;justify-content:center;gap:14px;font-size:.85rem;color:#64877e}
+.drive-reference-tests{margin-top:16px;border-top:1px solid #d8e8e1;padding-top:14px}
+.drive-reference-tests summary{cursor:pointer;text-align:center}
+.drive-reference-tests ol{max-width:960px;margin:16px auto 0;padding:0;list-style:none;display:grid;gap:8px;text-align:start}
+.drive-reference-tests li{display:flex;align-items:baseline;gap:14px;padding:10px 14px;border-radius:12px;background:#fff}
+.drive-reference-tests bdi{flex:0 0 90px;font-family:"Times New Roman",serif;direction:ltr;color:#64877e}
+.assessment-day-tile .day-route-label{line-height:1.55;white-space:normal}

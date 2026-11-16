@@ -149,7 +149,12 @@ function currentDay(){return state.tab==='drive'?state.driveDay:state.durDay}
 function scope(){return state.tab}
 function dayItems(){
 if(['comprehensive','supplementary'].includes(state.tab))return candidates(state.tab);
-if(state.tab==='drive')return candidates('drive').filter(t=>t.days.includes(state.driveDay));
+if(state.tab==='drive'){
+ const day=DB.driveDays.find(p=>p.day===state.driveDay);
+ const eligible=new Map(candidates('drive').map(t=>[t.sourceId,t]));
+ // Drive Reference owns the day and order; road flags belong to durability.
+ return (day?.testIds||DB.tests.filter(t=>t.days.includes(state.driveDay)).map(t=>t.sourceId)).map(id=>eligible.get(id)).filter(Boolean);
+}
 return durabilityTestsForDay(state.durDay,dayCategoryPlan())
 }
 function updateDayMileage(tab, day, km) {
@@ -276,15 +281,22 @@ function dayRouteAppearance(p){
  };
  return {kind,icon:'<svg viewBox="0 0 96 96" aria-hidden="true">'+(icons[kind]||icons.rural)+'</svg>',label:text};
 }
+function driveDaySummary(showTests=false){
+ if(state.tab!=='drive')return '';
+ const p=driveProgram().find(p=>p.day===state.driveDay);
+ if(!p)return '';
+ const items=dayItems();
+ return '<section class="drive-reference-summary" data-drive-reference="'+p.day+'"><div class="drive-reference-meta"><span>Drive Reference</span><span>'+number(p.stage)+' / '+number(p.stageDay)+'</span></div><h3>'+esc(fa(p.route))+'</h3><p>'+number(p.km)+' '+esc(fa('کیلومتر'))+' · '+number(items.length)+' '+esc(fa('آزمون'))+'</p>'+(showTests?'<details class="drive-reference-tests"><summary>'+esc(fa('فهرست آزمون‌های قابلیت رانندگی'))+'</summary><ol>'+items.map(t=>'<li data-source-test="'+esc(t.sourceId)+'"><bdi>'+esc(t.sourceId)+'</bdi><span>'+esc(fa(t.name))+'</span></li>').join('')+'</ol></details>':'')+'</section>';
+}
 function renderDayNavigation(){
  const c=dayContext(),host=byId('dayNavigation');
  host.classList.toggle('hidden',!c||!['days','menu'].includes(dayScreen));
  if(!c){host.replaceChildren();return}
  if(dayScreen==='days'){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan();
-  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(theme.label)+'"><span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span><span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer"><span class="day-route-label">'+esc(theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small>'+(p.needsRoute?'<small>نیازمند انتخاب مسیر</small>':'')+'</span></button>'}).join('')+'</div>';
+  host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{const theme=dayRouteAppearance(p);return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'" aria-label="روز '+number(p.day)+'، '+esc(state.tab==='drive'?p.route:theme.label)+'"><span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span><span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer"><span class="day-route-label">'+esc(state.tab==='drive'?p.route:theme.label)+'</span><small>'+number(p.km)+' کیلومتر</small>'+(p.needsRoute?'<small>نیازمند انتخاب مسیر</small>':'')+'</span></button>'}).join('')+'</div>';
  }else if(dayScreen==='menu'){
-  host.innerHTML='<div class="assessment-day-sections">'+[
+  host.innerHTML=driveDaySummary(true)+'<div class="assessment-day-sections">'+[
    ['form','فرم روزانه','ثبت اطلاعات پیمایش و شرایط روز','▤'],
    ['route','مسیر پیمایش','مشاهده نقشه و مشخصات مسیر','↗'],
    ['scores','امتیازدهی','ثبت نمره، یادداشت و تصویر آزمون‌ها','☆']
@@ -304,7 +316,7 @@ if(!p){s.innerHTML='<div class="empty">برنامه روزانه پیدا نشد
 const indexText=state.tab==='drive'?'برنامه ۲۶ روزه قابلیت رانندگی':'برنامه انعطاف‌پذیر دوام';
 
 const remainingMeta=(state.tab==='durability'?'<span class="meta-tag">پیمایش تجمعی برنامه: '+number(p.cum)+' کیلومتر</span>':'')+(milestone.length?'<span class="meta-tag">کنترل: '+milestone.map(x=>number(x)+'٪').join('، ')+'</span>':'');
-s.innerHTML='<div id="bamco-day-route" class="bamco-day-route">'+(remainingMeta?'<div class="day-meta">'+remainingMeta+'</div>':'')+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'</div>'
+s.innerHTML=driveDaySummary()+'<div id="bamco-day-route" class="bamco-day-route">'+(remainingMeta?'<div class="day-meta">'+remainingMeta+'</div>':'')+(p.over?'<div class="notice">هدف پیمایش این روز از سقف پیشنهادی نوع مسیر بیشتر است. پیش از اجرای میدانی مسیر یا تعداد روزها را بازبینی کنید.</div>':'')+mapHtml(p)+'</div>'
 
 }
 const scoreColors=[null,['#f9e6ea','#e7b0ba','#ac2441'],['#fae1e5','#eba2b0','#be304a'],['#fae8e1','#f5b49d','#c84c33'],['#fff0df','#f5c09a','#cf752a'],['#fff4df','#f5ce8f','#cb8a1d'],['#fff7dd','#e9d075','#b79817'],['#eff6df','#bdd889','#619825'],['#e4f4e8','#9fd5ad','#22834e'],['#def1eb','#93ceb6','#167d55'],['#dcefe8','#85c1aa','#0e7451']];
@@ -327,7 +339,7 @@ const q=fa(state.query).toLowerCase();
 const filtered=all.filter(t=>(state.category==='همه'||t.cat===state.category)&&(!q||fa([t.id,t.cat,t.sub,t.name].join(' ')).toLowerCase().includes(q)));
 const size=12,pages=Math.max(1,Math.ceil(filtered.length/size)),page=Math.min(state.page,pages-1);state.page=page;
 const select=filtered.slice(page*size,(page+1)*size);
-let html='<div class="section-heading"><div><h2>فهرست آزمون‌های '+(state.tab==='drive'?'قابلیت رانندگی':state.tab==='durability'?'دوام عملکردی':state.tab==='comprehensive'?'ارزیابی جامع خودرو':'استاتیک')+'</h2><p>'+number(all.length)+' آزمون در این بخش · '+number(filtered.length)+' مورد مطابق فیلتر</p></div><input class="search" id="questionSearch" placeholder="جست‌وجوی شاخص یا عنوان آزمون" value="'+esc(state.query)+'"></div>';
+let html=driveDaySummary()+'<div class="section-heading"><div><h2>فهرست آزمون‌های '+(state.tab==='drive'?'قابلیت رانندگی':state.tab==='durability'?'دوام عملکردی':state.tab==='comprehensive'?'ارزیابی جامع خودرو':'استاتیک')+'</h2><p>'+number(all.length)+' آزمون در این بخش · '+number(filtered.length)+' مورد مطابق فیلتر</p></div><input class="search" id="questionSearch" placeholder="جست‌وجوی شاخص یا عنوان آزمون" value="'+esc(state.query)+'"></div>';
 if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDay))html+='<p class="notice">پیش‌نمایش آزمون‌ها بر اساس برنامه است؛ برای ثبت نمره ابتدا پیمایش واقعی روز را ذخیره کنید.</p>';
 if(!select.length)html+='<div class="empty">آزمونی مطابق فیلتر یا روز انتخاب‌شده پیدا نشد.</div>';
 for(const t of select)html+=questionCard(t);
@@ -791,4 +803,5 @@ document.addEventListener('bamco:render',routeChoices);
 
 state.tab='home';
 })();
+
 

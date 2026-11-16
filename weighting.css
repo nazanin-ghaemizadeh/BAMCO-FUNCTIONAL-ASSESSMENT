@@ -138,3 +138,5 @@ html[dir] body .bw-table :is(th, td) {text-align: center !important; vertical-al
 @media (max-width: 319px) {
   #assessmentHub .gate-grid.bw-tiles {grid-template-columns: 1fr}
 }
+.weighting-workspace .bw-table + .bw-table {margin-top: 1rem}
+.bw-intervals .bw-table table {min-width: 32rem}

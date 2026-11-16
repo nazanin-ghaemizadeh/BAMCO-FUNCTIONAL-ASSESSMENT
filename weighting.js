@@ -10,30 +10,38 @@ const words = {
   denied:['این پیوند دسترسی معتبر نیست.','This access link is invalid.','此访问链接无效。'],
   storage:['برای نگهداری پیوند خصوصی، ذخیره‌سازی مرورگر را فعال کنید.','Enable browser storage to retain the private link.','请启用浏览器存储以保留专用链接。'],
   empty:['هنوز پرسش‌نامه‌ای در این مرورگر ایجاد یا باز نشده است.','No questionnaires have been created or opened in this browser.','此浏览器尚未创建或打开问卷。'],
-  noResults:['پس از تکمیل هر ۱۶ فرم، نتیجهٔ ارزیاب اینجا نمایش داده می‌شود.','An evaluator’s results appear here after all 16 forms are complete.','评估员完成全部16份问卷后，此处将显示其结果。'],
+  noResults:['پس از تکمیل هر ۱۶ فرم، نتیجه‌ی ارزیاب اینجا نمایش داده می‌شود.','An evaluator’s results appear here after all 16 forms are complete.','评估员完成全部16份问卷后，此处将显示其结果。'],
   main:['شاخص‌های اصلی','Main criteria','主要指标'], subgroup:['زیرشاخص‌ها','Subcriteria','子指标'],
   group:['گروه شاخص','Criterion group','指标组'], criterion:['شاخص','Criterion','指标'],
   number:['ردیف','No.','序号'], value:['مقدار','Value','数值'], meaning:['مفهوم','Meaning','含义'],
   done:['تکمیل‌شده','Complete','已完成'], draft:['در حال تکمیل','In progress','填写中'], fresh:['شروع نشده','Not started','未开始'],
   respondent:['ارزیاب','Evaluator','评估员'], profile:['ویرایش مشخصات ارزیاب','Edit evaluator details','编辑评估员信息'],
-  copyEdit:['کپی پیوند خصوصی ادامهٔ پاسخ‌دهی','Copy private edit link','复制个人续填链接'],
+  copyEdit:['کپی پیوند خصوصی ادامه‌ی پاسخ‌دهی','Copy private edit link','复制个人续填链接'],
   copyInvite:['کپی دعوت‌نامه برای ارزیاب جدید','Copy invitation for a new evaluator','复制新评估员邀请链接'],
   copyManage:['کپی پیوند خصوصی مدیریت نتایج','Copy private results management link','复制结果管理专用链接'],
   copied:['پیوند کپی شد.','Link copied.','链接已复制。'], choose:['انتخاب کنید','Select','请选择'],
-  all:['تجمیع همهٔ ارزیابان','All evaluators combined','汇总所有评估员'],
+  all:['تجمیع همه‌ی ارزیابان','All evaluators combined','汇总所有评估员'],
   overall:['وزن نهایی در کل ارزیابی','Overall weight','总权重'], local:['وزن در گروه','Weight within group','组内权重'],
   weight:['وزن شاخص اصلی','Main criterion weight','主要指标权重'], analysis:['نمایش نتیجه','Show results for','选择结果'],
   aggregateNote:['هر ارزیابِ دارای ۱۶ فرم کامل سهم یکسانی دارد. وزن‌های اصلی و وزن‌های درون هر گروه جداگانه میانگین‌گیری می‌شوند. وزن نهایی هر زیرشاخص حاصل‌ضرب وزن گروه در وزن درون‌گروهی آن است.','Each evaluator with 16 completed forms has equal weight. Main and within-group weights are averaged separately. An overall subcriterion weight is the product of its main and within-group weights.','完成全部16份问卷的评估员等权参与汇总。分别计算主要指标和组内权重的平均值。子指标总权重等于所属主要指标权重乘以组内权重。'],
   individualNote:['وزن‌ها با مدل خطی بهترین–بدترین محاسبه شده‌اند. وزن نهایی هر زیرشاخص حاصل‌ضرب وزن شاخص اصلی در وزن آن زیرشاخص در گروه است.','Weights use the linear Best–Worst Method. Overall subcriterion weight equals main criterion weight times within-group weight.','采用线性最佳–最差法计算权重。子指标总权重等于所属主要指标权重乘以组内权重。'],
   links:['دسترسی ارزیابان','Evaluator access','评估员访问'],
-  inviteHelp:['برای جمع‌آوری پاسخ‌ها در همین گروه، دعوت‌نامه را برای ارزیابان بفرستید. هر نفر با آن یک مجموعهٔ مستقل ایجاد می‌کند. پیوند خصوصی مدیریت، نتایج همهٔ افراد این گروه را باز می‌کند.','Send the invitation to collect responses in this group. Each evaluator creates their own set. The private management link opens results for the whole group.','发送邀请以在本组收集答卷。每位评估员独立创建一套问卷。管理专用链接可查看本组所有结果。'],
+  inviteHelp:['برای جمع‌آوری پاسخ‌ها در همین گروه، دعوت‌نامه را برای ارزیابان بفرستید. هر نفر با آن یک مجموعه‌ی مستقل ایجاد می‌کند. پیوند خصوصی مدیریت، نتایج همه‌ی افراد این گروه را باز می‌کند.','Send the invitation to collect responses in this group. Each evaluator creates their own set. The private management link opens results for the whole group.','发送邀请以在本组收集答卷。每位评估员独立创建一套问卷。管理专用链接可查看本组所有结果。'],
   editHelp:['برای ادامه در دستگاه دیگر، پیوند خصوصی همین ارزیاب را نگه دارید.','Keep this evaluator’s private link to continue on a different device.','请保留此评估员的专用链接，以便在其他设备上续填。'],
   blocked:['ابتدا مهم‌ترین و کم‌اهمیت‌ترین شاخص را انتخاب کنید.','First select the most and least important criteria.','请先选择最重要和最不重要的指标。'],
   detail:['مشاهده زیرشاخص‌ها','View subcriteria','查看子指标'], start:['شروع پاسخ‌دهی','Start answering','开始填写'],
-  groupCount:['فرم تکمیل‌شده','forms completed','份问卷已完成'], department:['مجموعهٔ ارزیابان','Evaluator group','评估组'],
-  openLatest:['باز کردن نسخهٔ ذخیره‌شده','Open saved version','打开已保存版本'],
-  formsAction:['ایجاد و ادامهٔ پرسش‌نامه','Create or continue a questionnaire','创建或继续填写问卷'],
-  resultsAction:['مشاهدهٔ وزن شاخص‌ها','View criterion weights','查看指标权重']
+  groupCount:['فرم تکمیل‌شده','forms completed','份问卷已完成'], department:['مجموعه‌ی ارزیابان','Evaluator group','评估组'],
+  openLatest:['باز کردن نسخه‌ی ذخیره‌شده','Open saved version','打开已保存版本'],
+  linearModel:['مدل خطی','Linear model','线性模型'], nonlinearModel:['مدل غیرخطی','Nonlinear model','非线性模型'],
+  model:['مدل','Model','模型'], deviation:['انحراف بهینه','Optimal deviation','最优偏差'], verdict:['وضعیت سازگاری','Consistency','一致性'],
+  perfect:['کاملاً سازگار','Fully consistent','完全一致'], acceptable:['قابل قبول','Acceptable','可接受'], revisit:['نیازمند بازبینی','Review comparisons','建议复核'],
+  intervalResults:['بازه‌های بهینه‌ی مدل غیرخطی','Optimal intervals of the nonlinear model','非线性模型的最优区间'],
+  intervalHelp:['رتبه‌بندی این جدول بر اساس مرکز بازه است. کران پایین و بالا از کمینه و بیشینه کردن وزن هر معیار در انحراف بهینه‌ی مدل غیرخطی به دست می‌آیند.','Intervals are ranked by their centers. The bounds minimize and maximize each criterion weight at the nonlinear model’s optimal deviation.','按区间中心排名。在非线性模型的最优偏差下最小化和最大化各指标权重，得到上下界。'],
+  lower:['کران پایین','Lower bound','下界'], upper:['کران بالا','Upper bound','上界'], center:['مرکز بازه','Interval center','区间中心'],
+  halfWidth:['نیم‌عرض بازه','Half-width','半宽'], rank:['رتبه','Rank','排名'], point:['وزن خطی','Linear weight','线性权重'],
+  savedAnalysis:['نتیجه‌ی آخرین پاسخ‌های ذخیره‌شده','Results of the last saved answers','上次保存的答卷结果'],
+  formsAction:['ایجاد و ادامه‌ی پرسش‌نامه','Create or continue a questionnaire','创建或继续填写问卷'],
+  resultsAction:['مشاهده‌ی وزن شاخص‌ها','View criterion weights','查看指标权重']
 };
 const storePrefix='bamco-bwm-v1:';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -212,26 +220,50 @@ function dossier(rec) {
   card.append(el('strong',num(Object.keys(rec.weights).length)+' / '+num(16)+' · '+tr('groupCount')),
     el('p',tr('editHelp')),copyButton('copyEdit','open/'+id+'/'+auth(id).key));
   host.append(card,guide());
+  const root='e/'+id;
   const grid=el('div',null,'assessment-card-grid bw-grid');
-  for(let g=0;g<16;g++){
-    const s=mark(g,rec);const b=action('',()=>go('e/'+id+'/g/'+g),'assessment-row bw-row');
-    b.append(el('span',num(g+1),'bw-index'),el('strong',groupTitle(g)),el('small',tr(s),'assessment-status bw-state '+s));grid.append(b);
-  }host.append(grid);
+  const main=action('',()=>go(root+'/g/0'),'assessment-row bw-row');
+  main.append(el('strong',tr('main')),formStatus(0,rec));
+  const sub=action('',()=>go(root+'/sub'),'assessment-row bw-row');
+  const count=window.BAMCO_WEIGHTING_CATALOG.filter((_,i)=>rec.weights[i+1]).length;
+  sub.append(el('strong',tr('subgroup')),el('span',num(count)+' / '+num(window.BAMCO_WEIGHTING_CATALOG.length)+' · '+tr('groupCount'),'assessment-count'));
+  grid.append(main,sub);host.append(grid);
+}
+function formStatus(g,rec){
+  const status=mark(g,rec);
+  return el('small',tr(status),'assessment-status bw-state '+status);
+}
+function subgroups(rec){
+  const root='e/'+rec.id;
+  header(tr('subgroup'),()=>go(root));
+  const grid=el('div',null,'assessment-card-grid bw-grid');
+  for(let g=1;g<=window.BAMCO_WEIGHTING_CATALOG.length;g++){
+    const card=action('',()=>go(root+'/g/'+g),'assessment-row bw-row');
+    card.append(el('span',num(g),'bw-index'),el('strong',groupTitle(g)),formStatus(g,rec));
+    grid.append(card);
+  }
+  host.append(grid);
 }
 function newForm(n){return {best:null,worst:null,bo:Array(n).fill(null),ow:Array(n).fill(null)}}
 function groupForm(rec,g) {
+  const parent='e/'+rec.id+(g===0?'':'/sub');
   const names=items(g), base=rec.forms[g]||null;
   if(!editing){editingBase=base?clone(base):null;editing=clone(base||newForm(names.length))}
   const data=editing;
   const save=action(tr('save'),async()=>{
     const v=version;save.disabled=true;form.inert=true;
     status.replaceChildren();
-    try{await rpc('save',{...auth(rec.id),group:g,form:data,previous:editingBase});if(v===version&&host.isConnected)go('e/'+rec.id,true)}
+    try{await rpc('save',{...auth(rec.id),group:g,form:data,previous:editingBase});if(v===version&&host.isConnected)go(parent,true)}
     catch(e){if(v===version&&host.isConnected)errorBox(status,e,e.code==='40001'?()=>{editing=null;draw()}:null)}
     finally{save.disabled=false;form.inert=false}
   },'assessment-action assessment-create-action');
-  header(groupTitle(g),()=>go('e/'+rec.id),[save]);
+  header(groupTitle(g),()=>go(parent),[save]);
   const status=el('div');host.append(status,guide());
+  if(rec.analyses?.[g]){
+    const saved=el('details',null,'surface bw-card bw-guide');
+    saved.append(el('summary',tr('savedAnalysis')),individualGroup(g,rec.weights[g],rec.analyses[g]));
+    host.append(saved);
+  }
   const form=el('div');host.append(form);
   const head=el('section',null,'surface bw-card');head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),
     table([tr('number'),tr('criterion')],names.map((name,i)=>[num(i+1),name])));form.append(head);
@@ -288,14 +320,57 @@ function groupForm(rec,g) {
   const endSave=action(tr('save'),()=>save.click(),'assessment-action assessment-create-action');
   const foot=el('div',null,'assessment-page-toolbar');foot.append(endSave);form.append(foot);
 }
+const decimal=(number,digits)=>new Intl.NumberFormat(locales[li],{
+  minimumFractionDigits:digits,maximumFractionDigits:digits,useGrouping:false
+}).format(number);
+function consistencyLabel(error,ratio){
+  return tr(error<=1e-8?'perfect':ratio<=0.30?'acceptable':'revisit');
+}
+function individualGroup(g,weights,analysis,parentWeight){
+  const names=items(g),content=el('div');
+  const ranked=names.map((name,i)=>({name,i})).sort((a,b)=>weights[b.i]-weights[a.i]);
+  const headings=[tr('rank'),tr(g===0?'main':'subgroup'),tr('point')];
+  if(parentWeight!=null)headings.push(tr('overall'));
+  content.append(table(headings,ranked.map(({name,i},rank)=>{
+    const row=[num(rank+1),name,decimal(weights[i],6)];
+    if(parentWeight!=null)row.push(pct(parentWeight*weights[i]));
+    return row;
+  })));
+  if(!analysis)return content;
+  const {epsilon,xi,ci,linearCR,nonlinearCR,intervals}=analysis;
+  const metrics=[
+    [tr('linearModel')+' (ε)',epsilon,linearCR],
+    [tr('nonlinearModel')+' (ξ)',xi,nonlinearCR]
+  ];
+  content.append(table([tr('model'),tr('deviation'),'CI','CR',tr('verdict')],metrics.map(([label,deviation,ratio])=>[
+    label,decimal(deviation,6),decimal(ci,4),decimal(ratio,4),consistencyLabel(deviation,ratio)
+  ])));
+  const bounds=intervals.map(([lower,upper],i)=>({
+    name:names[i],lower,upper,center:(lower+upper)/2,halfWidth:(upper-lower)/2
+  })).sort((a,b)=>b.center-a.center);
+  const section=el('details',null,'bw-result bw-intervals');
+  section.append(el('summary',tr('intervalResults')),el('p',tr('intervalHelp')),
+    table([tr('rank'),tr(g===0?'main':'subgroup'),tr('lower'),tr('upper'),tr('center'),tr('halfWidth')],
+      bounds.map((v,i)=>[num(i+1),v.name,...[v.lower,v.upper,v.center,v.halfWidth].map(x=>decimal(x,4))])));
+  content.append(section);
+  return content;
+}
 function showWeights(rows,combined) {
-  const weights=Array.from({length:16},(_,g)=>items(g).map((_,j)=>rows.reduce((s,r)=>s+Number(r.weights[g][j]),0)/rows.length));
   const box=el('section',null,'surface bw-card');
-  box.append(el('p',tr(combined?'aggregateNote':'individualNote')),table([tr('main'),tr('weight')],items(0).map((name,i)=>[name,pct(weights[0][i])])));
-  for(let g=1;g<16;g++){
-    const section=el('details',null,'bw-result');section.append(el('summary',groupTitle(g)),table([tr('subgroup'),tr('local'),tr('overall')],items(g).map((name,i)=>[name,pct(weights[g][i]),pct(weights[0][g-1]*weights[g][i])])));
-    box.append(section);
-  }return box;
+  box.append(el('p',tr(combined?'aggregateNote':'individualNote')));
+  const weights=Array.from({length:16},(_,g)=>items(g).map((_,j)=>rows.reduce((s,r)=>s+Number(r.weights[g][j]),0)/rows.length));
+  for(let g=0;g<weights.length;g++){
+    const parent=g===0?null:weights[0][g-1];
+    let body;
+    if(!combined)body=individualGroup(g,weights[g],rows[0].analyses?.[g],parent);
+    else if(g===0)body=table([tr('main'),tr('weight')],items(0).map((name,i)=>[name,pct(weights[0][i])]));
+    else body=table([tr('subgroup'),tr('local'),tr('overall')],items(g).map((name,i)=>[name,pct(weights[g][i]),pct(parent*weights[g][i])]));
+    if(g===0)box.append(body);
+    else{
+      const section=el('details',null,'bw-result');section.append(el('summary',groupTitle(g)),body);box.append(section);
+    }
+  }
+  return box;
 }
 async function results(v){
   header(tr('results'),()=>go(''));
@@ -317,7 +392,7 @@ async function results(v){
     const keys=Object.fromEntries(known('edit'));
     const list=Object.keys(keys).length?await rpc('list',{keys}):[];
     const mine=await Promise.all(list.filter(r=>r.completed===16).map(r=>rpc('open',auth(r.id))));
-    rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights}));
+    rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights,analyses:r.analyses}));
   }
   if(v!==version||!host.isConnected)return;wait.remove();
   if(!rows.length){reportStatus(host,tr('noResults'),'assessment-empty-state');return}
@@ -354,6 +429,7 @@ async function draw(){
     header(tr('forms'),()=>go('forms'));reportStatus(host,tr('load'));
     const rec=await rpc('open',auth(id));if(v!==version||!host.isConnected)return;
     if(section==='profile')profileUI(rec);
+    else if(section==='sub')subgroups(rec);
     else if(section==='g'&&/^(?:[0-9]|1[0-5])$/.test(index))groupForm(rec,+index);
     else dossier(rec);
   }catch(e){if(v===version&&host.isConnected){header(tr('forms'),()=>go(''));errorBox(host,e,()=>{editing=null;draw()})}}

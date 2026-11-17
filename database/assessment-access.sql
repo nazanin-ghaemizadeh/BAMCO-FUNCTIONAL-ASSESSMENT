@@ -119,7 +119,7 @@ end;
 $$;
 create or replace function public.bamco_assessment(operation text,args jsonb default '{}')
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare actor jsonb:=private.bamco_actor(); g jsonb:=coalesce(actor->'grants','[]'::jsonb); state text; old_doc jsonb; result jsonb; needed text;
+declare actor jsonb:=private.bamco_actor(); g jsonb:=coalesce(actor->'grants','[]'::jsonb); state text; kind text; old_doc jsonb; result jsonb; needed text;
 begin
   if actor is null then raise insufficient_privilege;end if;
   if actor->>'admin'='true' then return private.bamco_assessment_impl(operation,args);end if;
@@ -130,12 +130,16 @@ begin
     if not (g ?& array['active','setup']) then raise insufficient_privilege;end if;
     args:=args || jsonb_build_object('snapshot',private.bamco_merge_snapshot('{}',coalesce(args->'snapshot','{}'),g));
   else
-    select a.status,a.snapshot into state,old_doc from public.bamco_assessments a where a.id=(args->>'id')::uuid for update;
+    select a.status,a.snapshot,a.assessment_type into state,old_doc,kind from public.bamco_assessments a where a.id=(args->>'id')::uuid for update;
     if state is null then return null;end if;
     needed:=case state when 'active' then 'active' else 'history' end;
     if not coalesce(g ? needed,false) then raise insufficient_privilege;end if;
+    if kind is not null then
+      g:=g - array(select k from unnest(array['drive','durability','static','comprehensive']) k where k<>kind);
+    end if;
     case operation
       when 'open' then
+        if kind is not null and not (g ?| array[kind,'setup','results']) then raise insufficient_privilege;end if;
         result:=private.bamco_assessment_impl(operation,args);
         return jsonb_set(result,'{snapshot}',private.bamco_view_snapshot(old_doc,g));
       when 'save' then
@@ -144,7 +148,7 @@ begin
       when 'edit' then
         if not(g ? 'setup') or (args ? 'status' and not(g ?& array['active','history'])) then raise insufficient_privilege;end if;
       when 'gps_start','gps_point','gps_stop' then
-        if state<>'active' or not(g ?| array['drive','durability']) then raise insufficient_privilege;end if;
+        if state<>'active' or (kind is not null and kind not in ('drive','durability')) or not(g ?| array['drive','durability']) then raise insufficient_privilege;end if;
       else raise insufficient_privilege;
     end case;
   end if;

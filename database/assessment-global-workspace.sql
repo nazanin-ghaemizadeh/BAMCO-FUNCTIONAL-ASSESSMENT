@@ -69,6 +69,11 @@ create schema if not exists private;
 revoke all on schema private from public;
 grant usage on schema private to anon, authenticated;
 
+-- NULL identifies existing cases that shared data across assessment modules.
+alter table public.bamco_assessments
+  add column if not exists assessment_type text
+  check (assessment_type in ('drive','durability','static','comprehensive'));
+
 create or replace function private.bamco_assessment_impl(operation text, args jsonb default '{}'::jsonb)
 returns jsonb
 language plpgsql
@@ -98,6 +103,7 @@ begin
     select coalesce(jsonb_agg(jsonb_build_object(
       'id', a.id,
       'title', a.title,
+      'assessment_type', a.assessment_type,
       'status', a.status,
       'revision', a.revision,
       'created_at', a.created_at,
@@ -116,10 +122,13 @@ begin
        or octet_length(coalesce(args->'snapshot','{}'::jsonb)::text) > 12000000 then
       raise exception 'Invalid assessment snapshot' using errcode = '22023';
     end if;
+    if coalesce(args->>'assessment_type','') not in ('drive','durability','static','comprehensive') then
+      raise exception 'Select an assessment type' using errcode = '22023';
+    end if;
     insert into public.bamco_assessments as a
-      (title, snapshot, updated_at)
+      (title, assessment_type, snapshot, updated_at)
     values
-      (clean_title, coalesce(args->'snapshot','{}'::jsonb), now())
+      (clean_title, args->>'assessment_type', coalesce(args->'snapshot','{}'::jsonb), now())
     returning jsonb_build_object('id', a.id) into result;
 
   elsif operation = 'open' then
@@ -127,6 +136,7 @@ begin
     select jsonb_build_object(
       'id', a.id,
       'title', a.title,
+      'assessment_type', a.assessment_type,
       'status', a.status,
       'snapshot', a.snapshot,
       'revision', a.revision,

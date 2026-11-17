@@ -305,6 +305,8 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-hint {font-size:14px;color:#587065;margin:8px 0 0;line-height:1.55}
 .portal-actions {margin-top:14px}
 .portal-editor>.portal-actions {position:sticky;bottom:-18px;z-index:1;margin:0 -22px -18px;padding:12px 22px;border-top:1px solid #dbe7e0;background:#f7faf8}
+#portalDialog .portal-remove {margin-inline-start:auto;color:#9c3838;background:#fff7f6;border:1px solid #e4bdb9;border-radius:10px;padding:8px 13px}
+#portalDialog .portal-remove:hover {background:#fbe9e6}
 .portal-editor>.portal-notice:empty {display:none}
 @media (max-width:600px) {
   .portal-dialog-head {padding:12px 16px}
@@ -412,6 +414,10 @@ const words={
  full:['دسترسی کامل مدیر','Full administrator access','完整管理权限'],name:['نام و نام خانوادگی','Full name','姓名'],
  optional:['رمز جدید (اختیاری)','New password (optional)','新密码（可选）'],save:['ذخیره کاربر','Save user','保存用户'],back:['بازگشت','Back','返回'],
  error:['ذخیره انجام نشد. اطلاعات را بررسی کنید و دوباره تلاش کنید.','Could not save. Check the form and try again.','保存失败，请检查后重试。'],
+ removeUser:['حذف کاربر','Remove user','移除用户'],userRemoved:['کاربر از سامانه حذف شد.','User removed from this application.','用户已从本系统移除。'],
+ removePrompt:['«{user}» از سامانه ارزیابی عملکرد خودرو حذف شود؟ با حذف کاربر، دسترسی او قطع می‌شود و سوابق ارزیابی حفظ می‌شوند.','Remove {user} from Vehicle Performance Assessment? Their access will end and assessment records will be kept.','要从车辆性能评估系统移除 {user} 吗？该用户将失去访问权限，已有的评估记录将保留。'],
+ removeFailed:['حذف کاربر انجام نشد. دوباره تلاش کنید.','Could not remove the user. Try again.','未能移除用户，请重试。'],
+ restoredEmail:['دسترسی کاربر برقرار شد. برای ورود از رمز فعلی حساب ایمیل استفاده می‌شود.','Access restored. Sign in with the existing account password.','访问权限已恢复，请使用该邮箱账户的现有密码登录。'],
  duplicate:['این نام کاربری قبلا ثبت شده است.','This login is already registered.','此邮箱已注册。'],
  main:['بخش‌های اصلی','Main sections','主要模块'],inside:['داخل هر پرونده','Inside each case','档案内模块'],
  accessHint:['برای دسترسی به داخل پرونده، ارزیابی‌های فعال یا تاریخچه را انتخاب کنید. «گزارش و نتایج» شامل داشبورد و نمره‌های ثبت‌شده در همه انواع ارزیابی است.','Select Active assessments or Assessment history for case access. Reports and results includes dashboards and recorded scores across assessment types.','请先选择进行中的评估或评估历史。报告与结果包含各评估类型的仪表板与已记录评分。'],
@@ -523,6 +529,7 @@ function tasks(form,label,submit,back){
  const status=element('p','','portal-notice');status.setAttribute('role','status');form.append(status,area);
  form.onsubmit=async e=>{e.preventDefault();if(ok.disabled)return;ok.disabled=true;status.textContent='';
  try{await submit()}catch(err){status.textContent=t(err.ui||messageFor(err,err.code==='duplicate_email'?'duplicate':'error'))}finally{ok.disabled=false}};
+ return area;
 }
 function validatePassword(p,managed=false){if(p.length<(managed?6:8)||new TextEncoder().encode(p).length>72)throw Object.assign(Error(),{ui:managed?'managedWeak':'weak'})}
 function changeOwnPassword(){
@@ -552,7 +559,7 @@ async function openUsers(status){
  const tools=element('div','','portal-directory-tools');
  const add=button('add',()=>editUser(null),'portal-primary portal-add');
  tools.append(add);
- const message=element('span',status==='savedUser'?t(status):'','portal-save-note');
+ const message=element('span',['savedUser','userRemoved','restoredEmail'].includes(status)?t(status):'','portal-save-note');
  message.setAttribute('role','status');
  tools.append(message);
  const list=element('div','','portal-user-list');
@@ -633,14 +640,32 @@ function editUser(person){
  password.className='portal-issued-password';
  const readGrants=permissionFields(form,person);
  let originalPassword='';
- tasks(form,'save',async()=>{
+ const actions=tasks(form,'save',async()=>{
   const changed=password.value!==originalPassword?password.value:'';
   if(changed)validatePassword(changed,isHandle(login.value.trim().toLowerCase()));
-  await request('/functions/v1/assessment-user-admin',{
+  const result=await request('/functions/v1/assessment-user-admin',{
    id:person?.id,name:name.value.trim(),email:login.value.trim(),password:changed,grants:readGrants()
   },await token());
-  if(form.isConnected&&$('portalDialog').open)await openUsers('savedUser');
+  if(form.isConnected&&$('portalDialog').open)await openUsers(result?.existing_password?'restoredEmail':'savedUser');
  },openUsers);
+ if(person&&!person.admin&&person.id!==profile.id){
+  const remove=button('removeUser',async()=>{
+   if(actions.querySelector('[type=submit]').disabled)return;
+   const identity=person.name+' ('+(person.username||person.email)+')';
+   if(!window.confirm(t('removePrompt').replace('{user}',()=>identity)))return;
+   const controls=actions.querySelectorAll('button');
+   controls.forEach(control=>control.disabled=true);
+   const response=await rpc('bamco_remove_access',{staff_id:person.id});
+   if(!form.isConnected||!$('portalDialog').open)return;
+   if(response.error){
+    form.querySelector('.portal-notice').textContent=t('removeFailed');
+    controls.forEach(control=>control.disabled=false);
+    return;
+   }
+   await openUsers('userRemoved');
+  },'portal-remove');
+  actions.append(remove);
+ }
  if(!managed)return;
  const utilities=element('div','','portal-account-tools');
  const status=element('span','','portal-hint');status.setAttribute('role','status');

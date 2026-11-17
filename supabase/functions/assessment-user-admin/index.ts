@@ -46,12 +46,27 @@ Deno.serve(async req => {
     metadata.bamco_staff_ref = version.reference;
     password = version.auth_password;
   }
+  let restoring = false;
+  if (!data.id) {
+    const lookup = await fetch(supabase+"/rest/v1/rpc/bamco_removed_user_id",{
+      method:"POST",headers,body:JSON.stringify({login_email:email})
+    });
+    if (!lookup.ok) return reply({error:"lookup_failed"},503);
+    const removedId = await lookup.json();
+    if (removedId) {
+      endpoint += "/"+removedId;
+      restoring = true;
+      metadata.bamco_functional_removed = false;
+      // An email identity can sign in to other applications using its existing password.
+      if (!managed) password = undefined;
+    }
+  }
   const body = {email,email_confirm:true,app_metadata:metadata,...(password?{password}:{})};
-  const result = await fetch(endpoint,{method:data.id?"PUT":"POST",headers,body:JSON.stringify(body)});
+  const result = await fetch(endpoint,{method:(data.id||restoring)?"PUT":"POST",headers,body:JSON.stringify(body)});
   if (!result.ok) {
     const problem = await result.json().catch(()=>({}));
     const duplicate = ["email_exists","user_already_exists","email_address_already_exists"].includes(problem.code) || /already registered|already been registered|already exists/i.test(problem.msg||"");
     return reply({error:duplicate?"duplicate_email":"auth_rejected"},duplicate?409:400);
   }
-  return reply({ok:true},200);
+  return reply({ok:true,existing_password:restoring&&!managed},200);
 });

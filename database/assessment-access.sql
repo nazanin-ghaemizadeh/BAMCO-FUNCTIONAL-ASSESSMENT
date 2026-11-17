@@ -7,7 +7,9 @@ returns jsonb language sql stable security definer set search_path='' as $$
   from auth.users u join auth.sessions s on s.user_id=u.id
   where u.id=(select auth.uid()) and s.id::text=(select auth.jwt()->>'session_id')
     and (u.banned_until is null or u.banned_until <= now())
-    and jsonb_typeof(u.raw_app_meta_data->'bamco_functional')='object';
+    and jsonb_typeof(u.raw_app_meta_data->'bamco_functional')='object'
+    and (not (u.raw_app_meta_data ? 'bamco_functional_since')
+      or s.created_at >= (u.raw_app_meta_data->>'bamco_functional_since')::timestamptz);
 $$;
 revoke all on function private.bamco_actor() from public, anon, authenticated;
 
@@ -26,6 +28,58 @@ begin
     from auth.users u where jsonb_typeof(u.raw_app_meta_data->'bamco_functional')='object');
 end;
 $$;
+
+-- Remove membership in this application. Other applications may use the same Auth identity.
+create or replace function public.bamco_remove_access(staff_id uuid)
+returns void language plpgsql security definer set search_path='' as $$
+declare actor jsonb := private.bamco_actor(); meta jsonb; secret_ref text;
+begin
+  if (actor->>'admin')::boolean is distinct from true or staff_id is null or staff_id=auth.uid() then
+    raise insufficient_privilege;
+  end if;
+  select raw_app_meta_data into meta from auth.users where id=staff_id for update;
+  if meta->>'bamco_functional_removed'='true' then return; end if;
+  if (meta->'bamco_functional'->>'admin')::boolean is distinct from false then
+    raise insufficient_privilege;
+  end if;
+  secret_ref := meta->>'bamco_staff_ref';
+  update auth.users set raw_app_meta_data=(meta-'bamco_functional'-'bamco_staff_ref'-'bamco_functional_since')
+    || '{"bamco_functional_removed":true}'::jsonb, updated_at=now() where id=staff_id;
+  delete from vault.secrets s where s.id::text=secret_ref and s.description='bamco-functional/staff-login/v1'
+    and not exists(select 1 from auth.users u where u.raw_app_meta_data->>'bamco_staff_ref'=secret_ref);
+end;
+$$;
+revoke all on function public.bamco_remove_access(uuid) from public, anon, authenticated;
+grant execute on function public.bamco_remove_access(uuid) to authenticated;
+
+-- A deliberate new enrollment can reuse a removed login. Normal edits cannot reinstate it.
+create or replace function public.bamco_removed_user_id(login_email text)
+returns uuid language sql stable security definer set search_path='' as $$
+  select id from auth.users where lower(email)=lower(login_email)
+    and raw_app_meta_data->>'bamco_functional_removed'='true'
+    and (raw_app_meta_data->'bamco_functional') is null;
+$$;
+revoke all on function public.bamco_removed_user_id(text) from public, anon, authenticated;
+grant execute on function public.bamco_removed_user_id(text) to service_role;
+
+create or replace function private.bamco_guard_reenrollment()
+returns trigger language plpgsql set search_path='' as $$
+begin
+  if old.raw_app_meta_data->>'bamco_functional_removed' is distinct from 'true'
+    or new.raw_app_meta_data->>'bamco_functional_removed' is distinct from 'false' then
+    raise insufficient_privilege;
+  end if;
+  new.raw_app_meta_data := (new.raw_app_meta_data-'bamco_functional_removed')
+    || jsonb_build_object('bamco_functional_since',clock_timestamp());
+  return new;
+end;
+$$;
+revoke all on function private.bamco_guard_reenrollment() from public, anon, authenticated;
+drop trigger if exists bamco_guard_reenrollment on auth.users;
+create trigger bamco_guard_reenrollment before update of raw_app_meta_data on auth.users
+  for each row when (jsonb_typeof(new.raw_app_meta_data->'bamco_functional')='object'
+    and (old.raw_app_meta_data->>'bamco_functional_removed'='true' or new.raw_app_meta_data ? 'bamco_functional_removed'))
+  execute function private.bamco_guard_reenrollment();
 
 -- Unknown/legacy keys stay in the stored snapshot on a partial save.
 create or replace function private.bamco_field_scope(k text)

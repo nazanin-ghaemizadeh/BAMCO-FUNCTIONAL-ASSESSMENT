@@ -14,7 +14,7 @@ async function visit(admin,staffLink=false){
  const profile={id:'qa',name:'QA',email:'qa@example.invalid',admin,grants:admin?[]:['active','drive']};
  if(staffLink)profile.username=staffName;
  const calls=[],writes=[];
- let newUser,issuedPassword,failCredential=false;
+ let newUser,issuedPassword,failCredential=false,allowRemoval=false;
  w.fetch=async(url,opts)=>{
   const path=new URL(url).pathname,data=JSON.parse(opts.body);calls.push(path);
   const response=(value,status=200)=>({ok:status<300,status,json:async()=>value});
@@ -25,6 +25,11 @@ async function visit(admin,staffLink=false){
   if(path==='/auth/v1/user'){assert.equal(opts.method,'PUT');assert.deepEqual(data,{current_password:'synthetic-only',password:'synthetic-next'});return response({id:'qa'})}
   if(path.endsWith('bamco_access_profile'))return response(profile);
   if(path.endsWith('bamco_access_users')){assert(admin);return response(newUser?[profile,newUser]:[profile])}
+  if(path.endsWith('bamco_remove_access')){
+   assert(admin);assert.equal(data.staff_id,'new');
+   if(!allowRemoval)return response({},503);
+   newUser=null;return response(null);
+  }
   if(path.endsWith('assessment-user-admin')){
    assert(admin);writes.push(data);
    newUser={id:'new',name:data.name,email:data.email+'@staff.bamco.invalid',username:data.email,grants:data.grants,admin:false};
@@ -91,6 +96,13 @@ async function visit(admin,staffLink=false){
   assert.equal(visiblePassword().value,'');assert(!visiblePassword().disabled);
   failCredential=false;currentEditor().querySelector('.portal-account-tools button:not([hidden])').click();
   await until(()=>visiblePassword()?.value==='changed-fixture');assert.equal(writes.length,3);
+  const remove=()=>d.querySelector('.portal-remove').click();
+  w.confirm=message=>{assert(message.includes(newUser.username));return false};remove();
+  assert(!calls.some(path=>path.endsWith('bamco_remove_access')));assert(currentEditor());
+  w.confirm=()=>true;remove();await until(()=>currentEditor()?.textContent.includes('حذف کاربر انجام نشد'));
+  allowRemoval=true;remove();await until(()=>directory().length===1);
+  assert(d.querySelector('.portal-save-note').textContent.includes('حذف شد'));assert(!newUser);
+  directory()[0].click();assert(!d.querySelector('.portal-remove'));
  }else{
   assert.equal(d.querySelectorAll('#portalTools button').length,1);
   for(const card of d.querySelectorAll('[data-boot-screen]'))assert.equal(card.hidden,card.dataset.bootScreen!=='active');

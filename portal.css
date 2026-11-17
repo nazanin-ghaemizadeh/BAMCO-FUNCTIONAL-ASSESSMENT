@@ -8,7 +8,7 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-art img {width:100%;height:auto;max-width:445px}
 .portal-form-side h2,#portalDialog h2 {font-size:clamp(24px,2.5vw,34px);font-weight:400;color:#2c4b41;margin:0 0 16px}
 #portalGate label,.portal-fields label {display:block;margin:12px 0 5px;color:#365c4d}
-#portalGate input,.portal-fields input:not([type=checkbox]) {width:100%;min-height:46px;padding:8px 12px;background:#fff;border:1px solid #cfe1d7;border-radius:12px;font:inherit;box-sizing:border-box}
+#portalGate input:not([type=checkbox]),.portal-fields input:not([type=checkbox]) {width:100%;min-height:46px;padding:8px 12px;background:#fff;border:1px solid #cfe1d7;border-radius:12px;font:inherit;box-sizing:border-box}
 #portalGate input[dir=ltr],.portal-fields input[dir=ltr]{text-align:left!important;font-family:'Times New Roman',serif}
 .portal-password {position:relative}.portal-password input#portalPassword {padding-left:44px}
 #portalReveal {position:absolute;left:3px;top:3px;width:39px;height:40px;background:none;box-shadow:none;border:0;display:grid;place-items:center;padding:7px;color:#507364}
@@ -34,3 +34,10 @@ html body [hidden] {display:none!important}
 html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :is(button,input,label) {font-family:var(--assessment-fa)}
 @media(max-width:700px){#portalGate{padding-top:8px}.portal-login-card{grid-template-columns:1fr .95fr;gap:12px;padding:22px}.portal-form-side h2{font-size:26px}.portal-art img{max-width:280px}}
 @media(max-width:520px){.portal-login-card{grid-template-areas:"art" "form";grid-template-columns:1fr;padding:16px 22px;gap:4px;max-width:400px}.portal-art img{width:150px}.portal-form-side h2{margin-bottom:8px}.portal-checks{grid-template-columns:1fr}}
+
+#portalGate label,#portalDialog :is(label,legend,h2,h3,h4,b,small,.portal-hint,.portal-notice) {text-align:start!important;text-align-last:auto;word-spacing:normal;letter-spacing:normal}
+.portal-fields > label > span {display:block;margin-block-end:4px}
+#portalGate .portal-trust {display:flex;align-items:center;gap:8px;font-size:15px}
+.portal-trust input {accent-color:#226c54;width:16px;height:16px}
+.portal-credential input {direction:ltr;font-family:monospace!important;text-align:left!important}
+.portal-credential .portal-actions {margin-block:5px 12px}

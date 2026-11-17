@@ -1,19 +1,25 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {JSDOM,VirtualConsole}=require('jsdom');
+const {webcrypto,createHash}=require('node:crypto');
 const tick=()=>new Promise(r=>setTimeout(r,0));
 async function until(check){for(let i=0;i<80;i++){if(check())return;await tick()}assert.fail('Portal did not reach expected state')}
-async function visit(admin){
- const w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test/',runScripts:'outside-only',virtualConsole:new VirtualConsole()}).window;
+async function visit(admin,staffLink=false){
+ const deviceKey='ab'.repeat(24),staffName='test_staff';
+ const w=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://example.test/'+(staffLink?'#staff='+staffName+'&key='+deviceKey:''),runScripts:'outside-only',virtualConsole:new VirtualConsole()}).window;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
  w.HTMLDialogElement.prototype.close=function(){this.open=false};
+ Object.defineProperty(w,'crypto',{value:webcrypto});
  const d=w.document;w.TextEncoder=TextEncoder;w.structuredClone=structuredClone;w.scrollTo=()=>{};
  const profile={id:'qa',name:'QA',email:'qa@example.invalid',admin,grants:admin?[]:['active','drive']};
+ if(staffLink)profile.username=staffName;
  const calls=[];let newUser;
  w.fetch=async(url,opts)=>{
   const path=new URL(url).pathname,data=JSON.parse(opts.body);calls.push(path);
   const response=(value,status=200)=>({ok:status<300,status,json:async()=>value});
-  if(path==='/auth/v1/token')return data.password==='synthetic-only'?response({access_token:'fixture-access',refresh_token:'fixture-refresh',expires_in:3600}):response({},400);
+  if(path==='/auth/v1/token'&&staffLink)assert.equal(data.email,staffName+'@staff.bamco.invalid');
+  const expected=staffLink?createHash('sha256').update(deviceKey+':'+staffName).digest('hex'):'synthetic-only';
+  if(path==='/auth/v1/token')return data.password===expected?response({access_token:'fixture-access',refresh_token:'fixture-refresh',expires_in:3600}):response({},400);
   assert.equal(opts.headers.Authorization,'Bearer fixture-access');
   if(path==='/auth/v1/user'){assert.equal(opts.method,'PUT');assert.deepEqual(data,{current_password:'synthetic-only',password:'synthetic-next'});return response({id:'qa'})}
   if(path.endsWith('bamco_access_profile'))return response(profile);
@@ -25,12 +31,19 @@ async function visit(admin){
  for(const script of d.scripts)w.eval(script.textContent);
  assert.deepEqual(calls,[]);assert(d.querySelector('#workspaceMain').hidden);
  assert.equal(d.querySelector('#portalGate').textContent.includes('بازیابی'),false);
- d.querySelector('#portalEmail').value='qa@example.invalid';d.querySelector('#portalPassword').value='incorrect';
+ if(staffLink){assert.equal(w.location.hash,'');assert.equal(d.querySelector('#portalEmail').value,staffName);d.querySelector('#portalRemember').checked=true}
+ else {
+  d.querySelector('#portalEmail').value=staffName;d.querySelector('#portalPassword').value=staffName;
+  d.querySelector('#portalLogin').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  await until(()=>d.querySelector('#portalNotice').textContent.includes('لینک اختصاصی'));assert.deepEqual(calls,[]);
+  d.querySelector('#portalEmail').value='qa@example.invalid';
+ }d.querySelector('#portalPassword').value='incorrect';
  const submit=f=>f.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
  submit(d.querySelector('#portalLogin'));await until(()=>d.querySelector('#portalNotice').textContent.includes('صحیح نیست'));
  assert(d.querySelector('#workspaceMain').hidden);
- d.querySelector('#portalPassword').value='synthetic-only';submit(d.querySelector('#portalLogin'));await until(()=>!d.querySelector('#workspaceMain').hidden);
+ d.querySelector('#portalPassword').value=staffLink?staffName:'synthetic-only';submit(d.querySelector('#portalLogin'));await until(()=>!d.querySelector('#workspaceMain').hidden);
  assert(d.querySelector('#portalGate').hidden);assert.equal(d.querySelector('#portalPassword').value,'');
+ if(staffLink)assert.equal(w.localStorage.getItem('bamco-functional.device.'+staffName),deviceKey);
  if(admin){
   d.querySelector('#portalTools button').click();await until(()=>d.querySelector('#portalDialogBody .portal-person'));
   d.querySelector('.portal-person button').click();
@@ -50,4 +63,4 @@ async function visit(admin){
  }
  w.close();
 }
-(async()=>{await visit(false);await visit(true);console.log('PASS production login, invalid credentials, scoped home and admin account form.')})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{await visit(false);await visit(true);await visit(false,true);console.log('PASS production login, invalid credentials, scoped home and admin account form.')})().catch(e=>{console.error(e);process.exit(1)});

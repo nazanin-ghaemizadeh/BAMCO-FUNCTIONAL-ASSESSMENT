@@ -5,10 +5,11 @@
     <div class="portal-form-side">
       <h2 data-pt="signIn">ورود به سامانه</h2>
       <form id="portalLogin">
-        <label for="portalEmail" data-pt="email">نام کاربری (ایمیل)</label>
-        <input id="portalEmail" type="email" dir="ltr" autocomplete="username" required maxlength="254">
+        <label for="portalEmail" data-pt="email">نام کاربری یا ایمیل</label>
+        <input id="portalEmail" type="text" autocapitalize="none" spellcheck="false" dir="ltr" autocomplete="username" required maxlength="254">
         <label for="portalPassword" data-pt="password">رمز عبور</label>
         <div class="portal-password"><input id="portalPassword" type="password" dir="ltr" autocomplete="current-password" required><button type="button" id="portalReveal" aria-label="نمایش رمز عبور" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div>
+        <label id="portalTrust" class="portal-trust" hidden><input id="portalRemember" type="checkbox"><span data-pt="remember">این دستگاه را به خاطر بسپار</span></label>
         <p id="portalNotice" class="portal-notice" role="status"></p>
         <button type="submit" class="portal-primary" data-pt="signIn">ورود به سامانه</button>
       </form>

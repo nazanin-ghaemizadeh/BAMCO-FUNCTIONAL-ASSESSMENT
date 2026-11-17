@@ -6,13 +6,13 @@ const key='bamco-functional.auth.v1';
 const $=id=>document.getElementById(id);
 const words={
  motto1:['کیفیت از','Quality starts with','品质源于'],motto2:['ارزیابی دقیق','precise assessment','精准评估'],motto3:['آغاز می‌شود.','.','。'],
- signIn:['ورود به سامانه','Sign in','登录系统'],email:['نام کاربری (ایمیل)','Username (email)','用户名（电子邮箱）'],password:['رمز عبور','Password','密码'],
+ signIn:['ورود به سامانه','Sign in','登录系统'],email:['نام کاربری یا ایمیل','Username or email','用户名或邮箱'],password:['رمز عبور','Password','密码'],
  show:['نمایش رمز عبور','Show password','显示密码'],hide:['پنهان کردن رمز عبور','Hide password','隐藏密码'],close:['بستن','Close','关闭'],
  ownPassword:['تغییر رمز من','Change my password','修改我的密码'],currentPassword:['رمز عبور فعلی','Current password','当前密码'],
  newPass:['رمز عبور جدید','New password','新密码'],set:['ذخیره رمز عبور','Save password','保存密码'],
  changed:['رمز عبور شما تغییر کرد.','Your password was changed.','您的密码已修改。'],
  savedPass:['رمز ذخیره شد. اکنون وارد شوید.','Password saved. You can now sign in.','密码已保存，请登录。'],
- loginFailed:['ایمیل یا رمز عبور صحیح نیست.','Incorrect email or password.','邮箱或密码有误。'],forbidden:['این حساب مجوز ورود به سامانه را ندارد.','This account has no portal access.','此账户无权访问此系统。'],
+ loginFailed:['نام کاربری یا رمز عبور صحیح نیست.','Incorrect username or password.','邮箱或密码有误。'],forbidden:['این حساب مجوز ورود به سامانه را ندارد.','This account has no portal access.','此账户无权访问此系统。'],
  network:['اتصال به سرویس برقرار نشد. دوباره تلاش کنید.','Could not reach the service. Try again.','无法连接服务，请重试。'],
  limited:['تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.','Too many attempts. Try again shortly.','请求过多，请稍后重试。'],
  out:['خروج','Sign out','退出'],users:['مدیریت کاربران','User management','用户管理'],add:['تعریف کاربر','Add user','添加用户'],edit:['ویرایش','Edit','编辑'],
@@ -20,15 +20,44 @@ const words={
  optional:['رمز جدید (اختیاری)','New password (optional)','新密码（可选）'],save:['ذخیره کاربر','Save user','保存用户'],back:['بازگشت','Back','返回'],
  empty:['هنوز بخشی به این حساب اختصاص داده نشده است.','No sections have been assigned to this account.','此账户尚未分配模块。'],
  error:['ذخیره انجام نشد. اطلاعات را بررسی کنید و دوباره تلاش کنید.','Could not save. Check the form and try again.','保存失败，请检查后重试。'],
- duplicate:['این ایمیل قبلاً ثبت شده است.','This email is already registered.','此邮箱已注册。'],
+ duplicate:['این نام کاربری قبلا ثبت شده است.','This login is already registered.','此邮箱已注册。'],
  main:['بخش‌های اصلی','Main sections','主要模块'],inside:['داخل هر پرونده','Inside each case','档案内模块'],
- accessHint:['برای دسترسی به داخل پرونده، ارزیابی‌های فعال یا تاریخچه را انتخاب کنید. «گزارش و نتایج» شامل داشبورد و نمره‌های ثبت‌شدهٔ همهٔ انواع ارزیابی است.','Select Active assessments or Assessment history for case access. Reports and results includes dashboards and recorded scores across assessment types.','请先选择进行中的评估或评估历史。报告与结果包含各评估类型的仪表板与已记录评分。'],
+ accessHint:['برای دسترسی به داخل پرونده، ارزیابی‌های فعال یا تاریخچه را انتخاب کنید. «گزارش و نتایج» شامل داشبورد و نمره‌های ثبت‌شده در همه انواع ارزیابی است.','Select Active assessments or Assessment history for case access. Reports and results includes dashboards and recorded scores across assessment types.','请先选择进行中的评估或评估历史。报告与结果包含各评估类型的仪表板与已记录评分。'],
  active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],weighting:['وزن‌دهی','Weighting','权重设置'],observer:['نظارت بر موقعیت مکانی','Location monitoring','位置监控'],
  setup:['مشخصات خودرو','Vehicle specifications','车辆规格'],drive:['قابلیت رانندگی','Drivability','驾驶性能'],durability:['آزمون دوام','Durability testing','耐久试验'],static:['بررسی استاتیک','Static inspection','静态检查'],
  comprehensive:['ارزیابی جامع','Comprehensive assessment','综合评估'],results:['گزارش و نتایج','Reports and results','报告与结果'],
  weak:['رمز باید حداقل ۸ نویسه و حداکثر ۷۲ بایت باشد.','Use at least 8 characters and at most 72 bytes.','密码至少八个字符，最多七十二字节。'],
+ credentials:['رمز و لینک ورود','Password and sign-in link','密码与登录链接'],link:['لینک اختصاصی ورود','Private sign-in link','专属登录链接'],
+ copy:['کپی لینک','Copy link','复制链接'],copied:['لینک کپی شد.','Link copied.','链接已复制。'],
+ remember:['این دستگاه را به خاطر بسپار','Remember this device','记住此设备'],
+ needLink:['برای ورود با این نام کاربری، لینک اختصاصی خود را از مدیر بگیرید و باز کنید.','Open your private sign-in link from the administrator.','请打开管理员提供的专属登录链接。'],
+ credentialHint:['این لینک را فقط در اختیار همین کاربر بگذارید.','Share this link only with this user.','请仅与该用户分享此链接。'],
+ managedWeak:['رمز باید حداقل ۶ نویسه و حداکثر ۷۲ بایت باشد.','Use at least 6 characters and at most 72 bytes.','密码至少六个字符，最多七十二字节。'],
  wait:['در حال اتصال…','Connecting…','正在连接…'],car:['خودروی خندان در حال ارزیابی','A smiling car being inspected','正在接受检查的微笑汽车']
 };
+const staffDomain='staff.bamco.invalid';
+const isHandle=value=>/^[a-z][a-z0-9_]{2,31}$/.test(value);
+const linkSlot=username=>'bamco-functional.device.'+username;
+let invitation=null;
+function readInvitation(){
+ const params=new URLSearchParams(location.hash.slice(1));
+ if(!params.has('staff'))return;
+ const username=params.get('staff'),key=params.get('key')||'';
+ history.replaceState(null,'',location.pathname+location.search);
+ if(!isHandle(username)||!(/^[a-f0-9]{48}$/).test(key))return;
+ invitation={username,key};
+ $('portalEmail').value=username;$('portalTrust').hidden=false;
+}
+function storedDevice(username){try{return localStorage.getItem(linkSlot(username))}catch{return null}}
+async function signInCredentials(input,password){
+ const username=input.trim().toLowerCase();
+ if(!isHandle(username))return {email:username,password};
+ const key=invitation?.username===username?invitation.key:storedDevice(username);
+ if(!key)throw Object.assign(Error(),{ui:'needLink'});
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(key+':'+password));
+ const secret=Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+ return {email:username+'@'+staffDomain,password:secret};
+}
 const groups={main:['active','history','weighting','observer'],inside:['setup','drive','durability','static','comprehensive','results']};
 let session,profile,refreshing,startWorkspace,lang='fa';
 const t=id=>words[id][['fa','en','zh'].indexOf(lang)]||words[id][0];
@@ -89,7 +118,7 @@ function openDialog(title){
  if(!$('portalDialog').open)$('portalDialog').showModal();return host;
 }
 function field(form,title,type,value='',required=true){
- const label=element('label',t(title)),input=element('input');input.type=type;input.required=required;input.value=value;
+ const label=element('label'),input=element('input');label.append(element('span',t(title)));input.type=type;input.required=required;input.value=value;
  if(type==='email'||type==='password')input.dir='ltr';if(type==='password')input.autocomplete='new-password';
  label.append(input);form.append(label);return input;
 }
@@ -100,7 +129,7 @@ function tasks(form,label,submit,back){
  form.onsubmit=async e=>{e.preventDefault();if(ok.disabled)return;ok.disabled=true;status.textContent='';
  try{await submit()}catch(err){status.textContent=t(err.ui||messageFor(err,err.code==='duplicate_email'?'duplicate':'error'))}finally{ok.disabled=false}};
 }
-function validatePassword(p){if(p.length<8||new TextEncoder().encode(p).length>72)throw Object.assign(Error(),{ui:'weak'})}
+function validatePassword(p,managed=false){if(p.length<(managed?6:8)||new TextEncoder().encode(p).length>72)throw Object.assign(Error(),{ui:managed?'managedWeak':'weak'})}
 function changeOwnPassword(){
  if(!profile?.admin)return;
  const host=openDialog('ownPassword'),form=element('form','','portal-fields');host.append(form);
@@ -128,13 +157,33 @@ async function openUsers(){
  const r=await rpc('bamco_access_users');if(!panel.isConnected)return;
  if(r.error){list.append(element('p',t('network'),'portal-notice'),button('back',openUsers));return}
  for(const person of r.data){const row=element('article','','portal-person'),identity=element('div');identity.append(element('b',person.name));
- const email=element('small',person.email);email.dir='ltr';identity.append(email);row.append(identity);
+ const email=element('small',person.username||person.email);email.dir='ltr';identity.append(email);row.append(identity);
  if(person.admin){
    row.append(element('span',t('full'),'portal-hint'));
    if(person.id===profile.id)row.append(button('ownPassword',changeOwnPassword));
  }
- else {const actions=element('div','','portal-actions');actions.append(button('edit',()=>editUser(person)),button('view',()=>userView(person)));row.append(actions)}
+ else {const actions=element('div','','portal-actions');if(person.username)actions.append(button('credentials',()=>showCredential(person)));
+ actions.append(button('edit',()=>editUser(person)),button('view',()=>userView(person)));row.append(actions)}
  list.append(row)}
+}
+async function showCredential(person){
+ if(!profile?.admin)return;
+ const host=openDialog('credentials'),panel=element('div','','portal-fields portal-credential');
+ host.append(panel);panel.append(element('h3',person.name),element('p',t('wait'),'portal-hint'));
+ const response=await rpc('bamco_staff_credential',{staff_id:person.id});
+ if(!panel.isConnected||!$('portalDialog').open)return;
+ panel.replaceChildren(element('h3',person.name));
+ if(response.error){panel.append(element('p',t('error'),'portal-notice'),button('back',openUsers));return}
+ const value=response.data;
+ const username=field(panel,'email','text',person.username);username.readOnly=true;username.dir='ltr';
+ const password=field(panel,'password','password',value.password);password.readOnly=true;password.autocomplete='off';
+ const toggle=button('show',()=>{const hide=password.type==='text';password.type=hide?'password':'text';toggle.textContent=t(hide?'show':'hide')});
+ const url=new URL('./',location.href);url.hash=new URLSearchParams({staff:person.username,key:value.key}).toString();
+ const link=field(panel,'link','password',url.href);link.readOnly=true;link.autocomplete='off';
+ const status=element('p','','portal-hint');status.setAttribute('role','status');
+ const copy=button('copy',async()=>{try{await navigator.clipboard.writeText(url.href);status.textContent=t('copied')}catch{link.type='text';link.select()}});
+ const actions=element('div','','portal-actions');actions.append(toggle,copy);
+ panel.append(actions,status,element('p',t('credentialHint'),'portal-hint'),button('edit',()=>editUser(person)),button('back',openUsers));
 }
 function userView(person){
  const h=openDialog('view');h.append(element('h3',person.name));const main=groups.main.filter(k=>person.grants.includes(k));
@@ -144,13 +193,13 @@ function userView(person){
 }
 function editUser(person){
  const host=openDialog(person?'edit':'add'),form=element('form','','portal-fields');host.append(form);
- const name=field(form,'name','text',person?.name),email=field(form,'email','email',person?.email),password=field(form,person?'optional':'password','password','',!person);
- name.maxLength=80;email.maxLength=254;const inputs=new Map();let inside;
+ const name=field(form,'name','text',person?.name),email=field(form,'email','text',person?.username||person?.email),password=field(form,person?'optional':'password','password','',!person);
+ name.maxLength=80;email.maxLength=254;email.dir='ltr';email.autocapitalize='none';email.spellcheck=false;const inputs=new Map();let inside;
  for(const [key,ids] of Object.entries(groups)){const set=element('fieldset'),wrap=element('div','','portal-checks');if(key==='inside')inside=set;set.append(element('legend',t(key)),wrap);
  for(const id of ids){const label=element('label'),input=element('input');input.type='checkbox';input.checked=person?.grants.includes(id)||false;label.append(input,document.createTextNode(t(id)));wrap.append(label);inputs.set(id,input)}
  form.append(set)}
  const sync=()=>{inside.disabled=!inputs.get('active').checked&&!inputs.get('history').checked};form.onchange=sync;sync();form.append(element('p',t('accessHint'),'portal-hint'));
- tasks(form,'save',async()=>{if(password.value)validatePassword(password.value);const grants=[...inputs].filter(([id,input])=>input.checked&&(!groups.inside.includes(id)||!inside.disabled)).map(([id])=>id);
+ tasks(form,'save',async()=>{if(password.value)validatePassword(password.value,isHandle(email.value.trim().toLowerCase()));const grants=[...inputs].filter(([id,input])=>input.checked&&(!groups.inside.includes(id)||!inside.disabled)).map(([id])=>id);
  await request('/functions/v1/assessment-user-admin',{id:person?.id,name:name.value.trim(),email:email.value.trim(),password:password.value,grants},await token());await openUsers()},openUsers);
 }
 let started=false;
@@ -158,11 +207,16 @@ async function start(onReady,initialLanguage){
  startWorkspace=onReady;applyLanguage(initialLanguage);
  if(started)return;started=true;
  document.addEventListener('visibilitychange',recheck);window.addEventListener('focus',recheck);setInterval(recheck,300000);
+ $('portalDialog').addEventListener('close',()=>{$('portalDialogBody').replaceChildren()});
  $('portalClose').onclick=()=>$('portalDialog').close();
+ readInvitation();
  $('portalReveal').onclick=()=>{const f=$('portalPassword'),show=f.type==='password';f.type=show?'text':'password';$('portalReveal').setAttribute('aria-pressed',String(show));$('portalReveal').setAttribute('aria-label',t(show?'hide':'show'))};
  const form=$('portalLogin');form.onsubmit=async e=>{e.preventDefault();const submit=form.querySelector('[type=submit]');if(submit.disabled)return;submit.disabled=true;notice('wait');
- try{const s=await request('/auth/v1/token?grant_type=password',{email:$('portalEmail').value.trim(),password:$('portalPassword').value});
- remember(s);await authenticate();form.reset();$('portalPassword').type='password';$('portalReveal').setAttribute('aria-pressed','false');$('portalReveal').setAttribute('aria-label',t('show'));notice()}catch(err){notice(messageFor(err,'loginFailed'))}finally{submit.disabled=false}};
+ try{const credentials=await signInCredentials($('portalEmail').value,$('portalPassword').value);
+ const s=await request('/auth/v1/token?grant_type=password',credentials);
+ remember(s);await authenticate();
+ if(invitation&&profile.username===invitation.username&&$('portalRemember').checked){try{localStorage.setItem(linkSlot(invitation.username),invitation.key)}catch{}}
+ invitation=null;$('portalTrust').hidden=true;form.reset();$('portalPassword').type='password';$('portalReveal').setAttribute('aria-pressed','false');$('portalReveal').setAttribute('aria-label',t('show'));notice()}catch(err){notice(err.ui||messageFor(err,'loginFailed'))}finally{submit.disabled=false}};
  if(recoveryLanding())return;
  try{session=JSON.parse(sessionStorage.getItem(key)||'null')}catch{}
  if(session){notice('wait');try{await authenticate();notice()}catch(e){if([400,401,403].includes(e.status))lock();notice(messageFor(e,'loginFailed'))}}

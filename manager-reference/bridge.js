@@ -1,6 +1,6 @@
 'use strict';
 const dashboardHost=window.parent!==window?window.parent.BAMCO_MANAGER:null;
-if(!dashboardHost)throw Error('این داشبورد را از پروندهٔ خودرو باز کنید.');
+if(!dashboardHost)throw Error('این داشبورد را از پرونده خودرو باز کنید.');
 const dashboardData=dashboardHost.data();
 const dashboardValues={...(dashboardData.settings.storage||{})};
 const dashboardStorage={

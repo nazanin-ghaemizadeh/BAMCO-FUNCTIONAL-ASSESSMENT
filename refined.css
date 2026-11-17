@@ -129,9 +129,9 @@ html[dir=ltr] #vehicleForm select{background-position:right 14px center}
 .route-progress-table tfoot th,.route-progress-table tfoot td{background:#e6f2eb;color:#214e3e;font-weight:700;border-top:2px solid #94bca9}
 .route-table-note{font-size:15px;color:#647d72;line-height:1.8;margin:10px 0 0}
 
-/* Reference-style assessment rows and justified site text. */
-html[dir=rtl] body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,th,button,input,textarea,select,span,strong,b){text-align:justify;text-justify:inter-word}
-#landing .gate-card strong,#moduleLanding .gate-card strong,.gate-title,.welcome-title{ text-align:justify }
+/* Justification is reserved for continuous assessment text. */
+html[dir=rtl] body :where(p,dd,li,td,textarea){text-align:justify;text-justify:inter-word}
+#landing .gate-card strong,#moduleLanding .gate-card strong,.gate-title{ text-align:start }
 .question{padding:20px 0 24px;border:0;border-bottom:1px dashed #d3e3ee;border-radius:0;background:#fff;box-shadow:none}
 .question-head{margin-bottom:12px}
 .question h3{font-size:20px;color:#305c82;font-weight:700}
@@ -153,7 +153,7 @@ html[dir=rtl] body :where(h1,h2,h3,h4,p,small,label,dt,dd,li,caption,summary,td,
 .assessment-attachment .note-wrap{margin:0;border:0;border-top:1px solid #e0ebf3;border-radius:0 0 12px 12px;background:#fff}
 @media(max-width:700px){.test-conditions>div{display:block}.test-conditions dt{margin-bottom:2px}.test-conditions dd{margin-bottom:8px}.question .scores{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
-html[dir=rtl] body :where(h1,h2,h3,h4,p,dt,dd,li,caption,summary),html[dir=rtl] .question :is(.test-hierarchy span,.note-wrap textarea){text-align:justify!important;text-justify:inter-word}
+html[dir=rtl] body :where(p,dd,li),html[dir=rtl] .question :is(.test-hierarchy span,.note-wrap textarea){text-align:justify!important;text-justify:inter-word}
 html[dir=ltr] :is(#landing,#moduleLanding) .gate-card :is(strong,.gate-cta),html[dir=ltr] :is(.score strong,.score small){text-align:center}
 
 /* Unified green assessment details and native Persian image picker. */

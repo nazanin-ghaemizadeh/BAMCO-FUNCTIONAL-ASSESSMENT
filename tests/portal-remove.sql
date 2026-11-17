@@ -1,4 +1,5 @@
--- Run inside a rolled-back transaction. UUIDs, sessions and names below are fixtures.
+-- UUIDs, sessions and names below are fixtures.
+begin;
 do $test$
 declare
   staff uuid := gen_random_uuid(); manager uuid := gen_random_uuid();
@@ -45,3 +46,5 @@ begin
   if private.bamco_actor()->>'id' is distinct from staff::text then raise exception 'Fresh member cannot enter'; end if;
 end;
 $test$;
+
+rollback;

@@ -227,7 +227,6 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-primary {background:#226c54;color:#fff;border-color:#226c54}
 .portal-primary:disabled,.portal-secondary:disabled {opacity:.6;cursor:wait}
 #portalLogin .portal-primary {width:100%;margin-block-start:15px}
-.portal-link {padding:9px 0;margin-block-start:5px;min-height:36px;background:transparent;border:0;box-shadow:none;color:#326a56;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .portal-notice {font-size:16px;color:#874d39;margin:6px 0 0;overflow-wrap:anywhere}.portal-notice:empty{display:none}
 #portalDialog {width:min(600px,calc(100vw - 24px));max-height:87dvh;overflow:auto;box-sizing:border-box;border:1px solid #cfe1d7;border-radius:22px;padding:18px 22px;color:#25443b;box-shadow:0 20px 70px #18382e26}
 #portalDialog::backdrop {background:#173c3599}
@@ -271,7 +270,6 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
         <p id="portalNotice" class="portal-notice" role="status"></p>
         <button type="submit" class="portal-primary" data-pt="signIn">ورود به سامانه</button>
       </form>
-      <button id="portalRecover" class="portal-link" type="button" data-pt="recover">تعیین یا بازیابی رمز عبور</button>
     </div>
     <div class="portal-art"><img src="./assets/car-inspection.svg" width="464" height="332" alt="خودروی خندان در حال ارزیابی" id="portalCar"></div>
   </div>
@@ -294,10 +292,9 @@ const words={
  motto1:['کیفیت از','Quality starts with','品质源于'],motto2:['ارزیابی دقیق','precise assessment','精准评估'],motto3:['آغاز می‌شود.','.','。'],
  signIn:['ورود به سامانه','Sign in','登录系统'],email:['نام کاربری (ایمیل)','Username (email)','用户名（电子邮箱）'],password:['رمز عبور','Password','密码'],
  show:['نمایش رمز عبور','Show password','显示密码'],hide:['پنهان کردن رمز عبور','Hide password','隐藏密码'],close:['بستن','Close','关闭'],
- recover:['تعیین یا بازیابی رمز عبور','Set or reset password','设置或重置密码'],send:['ارسال ایمیل تعیین رمز','Send password email','发送重置邮件'],
- emailed:['لینک ایمیل را کپی و اینجا وارد کنید. اگر ایمیل حاوی کد است، همان کد را وارد کنید.','Copy the link from your email into the field below, or enter the code from the email.','请复制邮件中的链接或验证码并填入下方。'],
- proof:['لینک یا کد دریافتی','Email link or code','邮件链接或验证码'],newPass:['رمز عبور جدید','New password','新密码'],set:['ذخیره رمز عبور','Save password','保存密码'],
- invalidLink:['لینک یا کد معتبر نیست یا منقضی شده است.','The link or code is invalid or expired.','链接或验证码无效或已过期。'],
+ ownPassword:['تغییر رمز من','Change my password','修改我的密码'],currentPassword:['رمز عبور فعلی','Current password','当前密码'],
+ newPass:['رمز عبور جدید','New password','新密码'],set:['ذخیره رمز عبور','Save password','保存密码'],
+ changed:['رمز عبور شما تغییر کرد.','Your password was changed.','您的密码已修改。'],
  savedPass:['رمز ذخیره شد. اکنون وارد شوید.','Password saved. You can now sign in.','密码已保存，请登录。'],
  loginFailed:['ایمیل یا رمز عبور صحیح نیست.','Incorrect email or password.','邮箱或密码有误。'],forbidden:['این حساب مجوز ورود به سامانه را ندارد.','This account has no portal access.','此账户无权访问此系统。'],
  network:['اتصال به سرویس برقرار نشد. دوباره تلاش کنید.','Could not reach the service. Try again.','无法连接服务，请重试。'],
@@ -388,28 +385,23 @@ function tasks(form,label,submit,back){
  try{await submit()}catch(err){status.textContent=t(err.ui||messageFor(err,err.code==='duplicate_email'?'duplicate':'error'))}finally{ok.disabled=false}};
 }
 function validatePassword(p){if(p.length<8||new TextEncoder().encode(p).length>72)throw Object.assign(Error(),{ui:'weak'})}
-function openRecovery(){
- const host=openDialog('recover'),form=element('form','','portal-fields');host.append(form);
- const email=field(form,'email','email',$('portalEmail').value);email.autocomplete='email';
- tasks(form,'send',async()=>{
-  const address=email.value.trim();await request('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{email:address});
-  const f=element('form','','portal-fields');host.replaceChildren(element('p',t('emailed'),'portal-hint'),f);
-  const proof=field(f,'proof','text'),pw=field(f,'newPass','password');proof.dir='ltr';proof.autocomplete='one-time-code';
-  tasks(f,'set',async()=>{
-   validatePassword(pw.value);let code=proof.value.trim(),verification;
-   if(/^https?:/i.test(code)){let u;try{u=new URL(code)}catch{}if(!u||u.origin!==root||u.pathname!=='/auth/v1/verify'||u.searchParams.get('type')!=='recovery'||!u.searchParams.get('token'))throw Object.assign(Error(),{ui:'invalidLink'});
-    verification={token_hash:u.searchParams.get('token'),type:'recovery'};
-   }else{verification={type:'recovery',email:address,token:code}}
-   const s=await request('/auth/v1/verify',verification).catch(e=>{throw Object.assign(e,{ui:'invalidLink'})});
-   await request('/auth/v1/user',{password:pw.value},s.access_token,'PUT');
-   await request('/auth/v1/logout?scope=local',{},s.access_token).catch(()=>{});$('portalDialog').close();$('portalEmail').value=address;notice('savedPass');
-  },openRecovery);
- });
+function changeOwnPassword(){
+ if(!profile?.admin)return;
+ const host=openDialog('ownPassword'),form=element('form','','portal-fields');host.append(form);
+ const current=field(form,'currentPassword','password'),next=field(form,'newPass','password');
+ current.autocomplete='current-password';
+ tasks(form,'set',async()=>{
+  validatePassword(next.value);
+  await request('/auth/v1/user',{current_password:current.value,password:next.value},await token(),'PUT');
+  form.reset();
+  const status=element('p',t('changed'));status.setAttribute('role','status');
+  host.replaceChildren(status,button('back',openUsers));
+ },openUsers);
 }
 function recoveryLanding(){
  const hash=new URLSearchParams(location.hash.slice(1));if(hash.get('type')!=='recovery'||!hash.has('access_token'))return false;
  const recovery=hash.get('access_token');history.replaceState(null,'',location.pathname+location.search);
- const form=element('form','','portal-fields');openDialog('recover').append(form);
+ const form=element('form','','portal-fields');openDialog('newPass').append(form);
  const pw=field(form,'newPass','password');tasks(form,'set',async()=>{validatePassword(pw.value);await request('/auth/v1/user',{password:pw.value},recovery,'PUT');await request('/auth/v1/logout?scope=local',{},recovery).catch(()=>{});$('portalDialog').close();notice('savedPass')});
  return true;
 }
@@ -421,7 +413,10 @@ async function openUsers(){
  if(r.error){list.append(element('p',t('network'),'portal-notice'),button('back',openUsers));return}
  for(const person of r.data){const row=element('article','','portal-person'),identity=element('div');identity.append(element('b',person.name));
  const email=element('small',person.email);email.dir='ltr';identity.append(email);row.append(identity);
- if(person.admin)row.append(element('span',t('full'),'portal-hint'));
+ if(person.admin){
+   row.append(element('span',t('full'),'portal-hint'));
+   if(person.id===profile.id)row.append(button('ownPassword',changeOwnPassword));
+ }
  else {const actions=element('div','','portal-actions');actions.append(button('edit',()=>editUser(person)),button('view',()=>userView(person)));row.append(actions)}
  list.append(row)}
 }
@@ -447,7 +442,7 @@ async function start(onReady,initialLanguage){
  startWorkspace=onReady;applyLanguage(initialLanguage);
  if(started)return;started=true;
  document.addEventListener('visibilitychange',recheck);window.addEventListener('focus',recheck);setInterval(recheck,300000);
- $('portalClose').onclick=()=>$('portalDialog').close();$('portalRecover').onclick=openRecovery;
+ $('portalClose').onclick=()=>$('portalDialog').close();
  $('portalReveal').onclick=()=>{const f=$('portalPassword'),show=f.type==='password';f.type=show?'text':'password';$('portalReveal').setAttribute('aria-pressed',String(show));$('portalReveal').setAttribute('aria-label',t(show?'hide':'show'))};
  const form=$('portalLogin');form.onsubmit=async e=>{e.preventDefault();const submit=form.querySelector('[type=submit]');if(submit.disabled)return;submit.disabled=true;notice('wait');
  try{const s=await request('/auth/v1/token?grant_type=password',{email:$('portalEmail').value.trim(),password:$('portalPassword').value});

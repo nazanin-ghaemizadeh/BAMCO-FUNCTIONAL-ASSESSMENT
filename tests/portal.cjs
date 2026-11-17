@@ -14,7 +14,8 @@ async function visit(admin){
   const path=new URL(url).pathname,data=JSON.parse(opts.body);calls.push(path);
   const response=(value,status=200)=>({ok:status<300,status,json:async()=>value});
   if(path==='/auth/v1/token')return data.password==='synthetic-only'?response({access_token:'fixture-access',refresh_token:'fixture-refresh',expires_in:3600}):response({},400);
-  if(path!=='/auth/v1/recover')assert.equal(opts.headers.Authorization,'Bearer fixture-access');
+  assert.equal(opts.headers.Authorization,'Bearer fixture-access');
+  if(path==='/auth/v1/user'){assert.equal(opts.method,'PUT');assert.deepEqual(data,{current_password:'synthetic-only',password:'synthetic-next'});return response({id:'qa'})}
   if(path.endsWith('bamco_access_profile'))return response(profile);
   if(path.endsWith('bamco_access_users')){assert(admin);return response(newUser?[profile,newUser]:[profile])}
   if(path.endsWith('assessment-user-admin')){assert(admin);newUser={...data,id:'new',admin:false};assert.deepEqual(data.grants,['active','drive']);return response({ok:true})}
@@ -23,6 +24,7 @@ async function visit(admin){
  };
  for(const script of d.scripts)w.eval(script.textContent);
  assert.deepEqual(calls,[]);assert(d.querySelector('#workspaceMain').hidden);
+ assert.equal(d.querySelector('#portalGate').textContent.includes('بازیابی'),false);
  d.querySelector('#portalEmail').value='qa@example.invalid';d.querySelector('#portalPassword').value='incorrect';
  const submit=f=>f.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
  submit(d.querySelector('#portalLogin'));await until(()=>d.querySelector('#portalNotice').textContent.includes('صحیح نیست'));
@@ -31,6 +33,12 @@ async function visit(admin){
  assert(d.querySelector('#portalGate').hidden);assert.equal(d.querySelector('#portalPassword').value,'');
  if(admin){
   d.querySelector('#portalTools button').click();await until(()=>d.querySelector('#portalDialogBody .portal-person'));
+  d.querySelector('.portal-person button').click();
+  const passwordForm=d.querySelector('#portalDialogBody form');
+  passwordForm.querySelector('[autocomplete=current-password]').value='synthetic-only';
+  passwordForm.querySelector('[autocomplete=new-password]').value='synthetic-next';
+  submit(passwordForm);await until(()=>d.querySelector('#portalDialogBody').textContent.includes('تغییر کرد.'));
+  d.querySelector('#portalDialogBody button').click();await until(()=>d.querySelector('.portal-person'));
   d.querySelector('#portalDialogBody .portal-primary').click();
   const f=d.querySelector('#portalDialogBody form'),fields=f.querySelectorAll('input');
   fields[0].value='Evaluator';fields[1].value='evaluator@example.invalid';fields[2].value='synthetic-example';

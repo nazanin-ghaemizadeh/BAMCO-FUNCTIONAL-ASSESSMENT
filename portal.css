@@ -17,7 +17,6 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-primary {background:#226c54;color:#fff;border-color:#226c54}
 .portal-primary:disabled,.portal-secondary:disabled {opacity:.6;cursor:wait}
 #portalLogin .portal-primary {width:100%;margin-block-start:15px}
-.portal-link {padding:9px 0;margin-block-start:5px;min-height:36px;background:transparent;border:0;box-shadow:none;color:#326a56;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .portal-notice {font-size:16px;color:#874d39;margin:6px 0 0;overflow-wrap:anywhere}.portal-notice:empty{display:none}
 #portalDialog {width:min(600px,calc(100vw - 24px));max-height:87dvh;overflow:auto;box-sizing:border-box;border:1px solid #cfe1d7;border-radius:22px;padding:18px 22px;color:#25443b;box-shadow:0 20px 70px #18382e26}
 #portalDialog::backdrop {background:#173c3599}

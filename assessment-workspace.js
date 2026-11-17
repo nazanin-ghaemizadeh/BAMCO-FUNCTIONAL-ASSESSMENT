@@ -9,10 +9,10 @@ let app = window.BAMCO_ASSESSMENT;
 const portal=window.BAMCO_PORTAL;
 const can=permission=>portal.can(permission);
 const requestRpc=(name,args={})=>portal.rpc(name,args);
-const types={drive:'steering-brakes',durability:'wheels',static:'body',comprehensive:'final'};
+const types=['drive','durability','static','comprehensive'];
 const canCreate=()=>can('active')&&can('setup');
 const canTrack=type=>(!type||type==='drive'||type==='durability')&&(type?can(type):can('drive')||can('durability'));
-const canOpenCase=type=>can('setup')||can('results')||(type?can(type):Object.keys(types).some(can));
+const canOpenCase=type=>can('setup')||can('results')||(type?can(type):types.some(can));
 const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
@@ -399,11 +399,11 @@ function caseURL(id) {
 }
 function urlCategory(){
  const type=new URLSearchParams(location.search).get('type');
- return Object.hasOwn(types,type)?type:null;
+ return types.includes(type)?type:null;
 }
 async function navigate(next,writeURL=true,type=null) {
   if(next!=='home'&&!can(next)){next='home';writeURL=true}
-  const nextType=next==='active'&&Object.hasOwn(types,type)?type:null;
+  const nextType=next==='active'&&types.includes(type)?type:null;
   if(writeURL && (next!==listScreen()||nextType!==urlCategory())){
     const url=new URL(location.href);
     url.searchParams.delete('observer');
@@ -445,15 +445,16 @@ async function navigate(next,writeURL=true,type=null) {
 function typeIcon(key){
   const ns='http://www.w3.org/2000/svg';
   const svg=document.createElementNS(ns,'svg'),use=document.createElementNS(ns,'use');
-  svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');
-  use.setAttribute('href','./checklist-icons.svg#'+types[key]);svg.append(use);return svg;
+  svg.setAttribute('viewBox','0 0 160 128');svg.setAttribute('aria-hidden','true');
+  use.setAttribute('href','./assets/assessment-modules.svg#'+key);svg.append(use);return svg;
 }
 function renderCategories(){
-  const grid=node('div','','assessment-type-grid');
-  for(const type of Object.keys(types)){
-    const card=node('button','','assessment-type-card');card.type='button';card.dataset.type=type;
+  const grid=node('div','','gate-grid assessment-type-grid');
+  for(const type of types){
+    const card=node('button','','gate-card assessment-type-card');card.type='button';card.dataset.type=type;
     const count=rows.filter(row=>row.assessment_type===type).length;
-    card.append(typeIcon(type),node('strong',tr(type)),node('span',count.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count'));
+    const illustration=node('span','','gate-illustration');illustration.setAttribute('aria-hidden','true');illustration.append(typeIcon(type));
+    card.append(illustration,node('strong',tr(type)),node('span',count.toLocaleString(locale())+' '+tr('assessmentCount'),'gate-cta'));
     card.onclick=()=>navigate('active',true,type);grid.append(card);
   }
   hub.append(grid);
@@ -466,7 +467,7 @@ function openCreate(){
   const title=field('text','name');title.maxLength=120;
   const label=node('label',tr('name'));label.append(title);
   const choices=node('fieldset','','assessment-type-picker');choices.append(node('legend',tr('chooseType')));
-  for(const type of Object.keys(types)){
+  for(const type of types){
     const option=node('label'),radio=node('input');radio.type='radio';radio.name='assessmentType';radio.value=type;radio.required=true;
     option.append(radio,typeIcon(type),node('span',tr(type)));choices.append(option);
   }
@@ -477,7 +478,7 @@ function openCreate(){
   dialog.append(heading,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   form.onsubmit=async event=>{
     event.preventDefault();const type=form.elements.assessmentType.value,name=title.value.trim();
-    if(!Object.hasOwn(types,type)||!name||submit.disabled)return;
+    if(!types.includes(type)||!name||submit.disabled)return;
     submit.disabled=true;status.textContent=tr('saving');
     const {data,error}=await ownerRequest('create',{title:name,assessment_type:type});
     if(!dialog.isConnected||!dialog.open)return;

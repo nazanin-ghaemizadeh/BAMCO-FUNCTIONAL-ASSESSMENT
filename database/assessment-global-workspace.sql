@@ -69,10 +69,14 @@ create schema if not exists private;
 revoke all on schema private from public;
 grant usage on schema private to anon, authenticated;
 
--- NULL identifies existing cases that shared data across assessment modules.
+-- Assessments created before types were introduced are drivability cases.
 alter table public.bamco_assessments
   add column if not exists assessment_type text
   check (assessment_type in ('drive','durability','static','comprehensive'));
+
+update public.bamco_assessments
+  set assessment_type = 'drive', revision = revision + 1, updated_at = now()
+  where assessment_type is null;
 
 create or replace function private.bamco_assessment_impl(operation text, args jsonb default '{}'::jsonb)
 returns jsonb

@@ -69,20 +69,20 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 .assessment-type-picker label {display:flex;align-items:center;gap:6px;padding:9px;border:1px solid #d6e5dc;border-radius:11px;background:white;cursor:pointer}
 .assessment-type-picker label:has(:checked){border-color:#499276;background:#e8f4ed}
 .assessment-type-picker input {accent-color:#257456;flex:0 0 auto}
-.assessment-type-picker svg {width:26px;height:26px;flex:none}
+.assessment-type-picker svg {width:40px;height:32px;flex:none}
 .assessment-create-form [role=status]:empty {display:none}
 .assessment-create-actions {display:flex;gap:8px}
-.assessment-type-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:52rem;margin:2.8rem auto 1.5rem}
-#assessmentHub .assessment-type-card {width:100%;min-height:155px;display:grid;justify-items:center;align-content:center;gap:8px;background:#f7fbf8;border:1px solid #c9e0d4;border-radius:20px;color:#264f41}
-#assessmentHub .assessment-type-card:hover {border-color:#66a48e}
-#assessmentHub .assessment-type-card:nth-child(2){background:#faf6fc;border-color:#ded3e8}
-#assessmentHub .assessment-type-card:nth-child(3){background:#fcf8f0;border-color:#e9dcc5}
-#assessmentHub .assessment-type-card:nth-child(4){background:#f2f7fa;border-color:#cbdde7}
-.assessment-type-card svg {width:64px;height:64px}
-.assessment-type-card strong {font-size:22px}
+#assessmentHub .gate-grid.assessment-type-grid {width:min(100%,54rem);grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,22px)}
+body[data-view="home"] #assessmentHub .assessment-type-card {height:clamp(190px,25vh,230px);min-height:0;grid-template-rows:minmax(0,1fr) auto auto;gap:6px;padding:14px 20px}
+body[data-view="home"] #assessmentHub .assessment-type-card strong {font-size:clamp(20px,2vw,27px)}
+#assessmentHub .assessment-type-card .gate-cta {font-variant-numeric:tabular-nums}
+@media(max-width:480px){
+  body[data-view="home"] #assessmentHub .assessment-type-card {height:175px;padding:10px}
+  body[data-view="home"] #assessmentHub .assessment-type-card strong {font-size:19px}
+}
 .assessment-legacy {margin:1.5rem auto;text-align:start;max-width:52rem}
 .assessment-legacy summary {cursor:pointer;color:#456657}
-@media(max-width:480px){.assessment-type-grid{gap:9px}.assessment-type-card strong{font-size:17px}.assessment-type-picker label{flex-wrap:wrap}}
+@media(max-width:480px){.assessment-type-picker label{flex-wrap:wrap}}
 #assessmentHub .assessment-create-action {min-width:9rem;background:#226c54;color:#fff;border-color:#226c54}
 #assessmentHub .assessment-create-action:hover:not(:disabled) {background:#195840;border-color:#195840;color:#fff}
 #assessmentHub .assessment-list-section {margin-top:1.2rem;text-align:start}

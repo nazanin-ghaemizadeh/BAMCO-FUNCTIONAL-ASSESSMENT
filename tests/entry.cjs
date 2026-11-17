@@ -63,7 +63,7 @@ function visit(path,url,reply,options={}){
   assert(!l.querySelector('#caseView'));
   landing.close();
 
-  const newRows=[];
+  const newRows=[1,2,3].map(i=>({...row,id:'previous-'+i,title:'Vehicle '+i,assessment_type:'drive'}));
   const typedHome=visit('index.html','https://example.test/',({operation,args})=>{
     if(operation==='list')return args.status==='active'?newRows:[];
     assert.equal(operation,'create');
@@ -79,6 +79,18 @@ function visit(path,url,reply,options={}){
   assert.equal(new URL(typedHome.w.location.href).searchParams.get('type'),'durability');
   ui.querySelector('.assessment-back-action').click();
   assert.equal(ui.querySelectorAll('.assessment-type-card').length,4);
+  const sprite=new JSDOM(fs.readFileSync('assets/assessment-modules.svg','utf8'),{contentType:'image/svg+xml'});
+  for(const card of ui.querySelectorAll('.assessment-type-card')){
+    const type=card.dataset.type;
+    assert.equal(card.querySelector('use').getAttribute('href'),'./assets/assessment-modules.svg#'+type);
+    assert(sprite.window.document.getElementById(type));
+  }
+  sprite.window.close();
+  assert.equal(ui.querySelector('[data-type=drive] .gate-cta').textContent,'۳ ارزیابی');
+  assert.equal(ui.querySelector('details'),null);
+  ui.querySelector('[data-type=drive]').click();
+  await until(()=>ui.querySelectorAll('.assessment-row-title').length===3);
+  ui.querySelector('.assessment-back-action').click();
   ui.querySelector('[data-type=static]').click();
   await until(()=>ui.querySelector('.assessment-empty-state'));assert.equal(ui.querySelector('.assessment-row'),null);
   typedHome.close();

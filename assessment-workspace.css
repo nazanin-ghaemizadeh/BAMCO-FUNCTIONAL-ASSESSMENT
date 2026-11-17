@@ -8,9 +8,10 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 .location-summary,.location-grid {width:min(100%,76rem);margin-inline:auto}
 .location-summary {display:flex;justify-content:space-between;align-items:baseline;gap:8px 20px;flex-wrap:wrap;margin-block:0 12px;color:#365d50;text-align:start}
 .location-interval,.location-card time {color:#59756a;font-size:.94rem}
-.location-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,25rem),1fr));gap:18px}
+.location-grid {display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(18px,3vw,32px)}
 .location-card {display:grid;min-width:0;margin:0;border:1px solid #cddfd6;border-radius:18px;background:#fff;box-shadow:0 6px 20px #244c3d0d;overflow:hidden;isolation:isolate}
-.location-map {height:clamp(240px,35vh,370px);direction:ltr;text-align:start;background:#e9f1ec}
+.location-map {height:clamp(320px,58vh,640px);direction:ltr;text-align:start;background:#e9f1ec}
+.location-map .leaflet-control-zoom a {width:40px;height:40px;line-height:40px}
 .location-card figcaption {display:grid;gap:3px;padding:12px 16px;text-align:center;color:#25483c}
 .location-card figcaption strong {text-align:center;font-size:1.25rem;line-height:1.5;overflow-wrap:anywhere}
 .location-pin {border:3px solid white;border-radius:50%;background:#207456;box-shadow:0 0 0 5px #21846040,0 2px 5px #0c413a80}

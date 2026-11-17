@@ -206,7 +206,7 @@ html[lang=en] body { font-family: Times New Roman, Times, serif; }
 #assessmentHub .gate-grid.four { width: min(100%, 60rem); grid-template-columns: repeat(2, minmax(0px, 1fr)); }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=live-maps-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=stacked-maps-2" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -1520,7 +1520,7 @@ function addLocationCard(view,point,coords) {
   figure.append(panel,caption);
   view.grid.append(figure);
 
-  const map = L.map(panel,{scrollWheelZoom:false}).setView(coords,15);
+  const map = L.map(panel).setView(coords,15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);

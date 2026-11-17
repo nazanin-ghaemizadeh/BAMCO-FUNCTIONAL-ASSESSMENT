@@ -812,7 +812,7 @@ function addLocationCard(view,point,coords) {
   figure.append(panel,caption);
   view.grid.append(figure);
 
-  const map = L.map(panel,{scrollWheelZoom:false}).setView(coords,15);
+  const map = L.map(panel).setView(coords,15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);

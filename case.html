@@ -10,7 +10,7 @@
 <link rel="icon" type="image/webp" id="brandIcon">
 <style>[hidden]{display:none!important}</style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=live-maps-1"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=stacked-maps-2"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -1434,7 +1434,7 @@ function addLocationCard(view,point,coords) {
   figure.append(panel,caption);
   view.grid.append(figure);
 
-  const map = L.map(panel,{scrollWheelZoom:false}).setView(coords,15);
+  const map = L.map(panel).setView(coords,15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);

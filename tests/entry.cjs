@@ -98,10 +98,13 @@ function visit(path,url,reply,options={}){
 
   const point=(id,title,latitude)=>({assessment_id:id,title,latitude,longitude:51,recorded_at:'2026-10-01T08:00:00Z',accuracy_m:12});
   let points=[point('a','Case A',35),point('b','Case B',36)],calls=0,poll,replyToPoll;
+  const maps=[];
   const observer=visit('index.html','https://example.test/?view=observer',()=>{
     calls++;
     return points;
   },{beforeStart(w){
+    w.eval(fs.readFileSync('vendor/leaflet-1.9.4.js','utf8'));
+    w.L.Map.addInitHook(function(){maps.push(this)});
     w.setInterval=(fn,ms)=>{assert.equal(ms,10000);poll=fn;return 51};
     w.clearInterval=id=>{assert.equal(id,51);poll=null};
   }});
@@ -110,11 +113,17 @@ function visit(path,url,reply,options={}){
   assert.deepEqual(captions(),['Case A','Case B']);
   const first=observer.d.querySelector('.location-map'),marker=first.querySelector('.location-pin');
   assert(marker);assert.equal(first.nextElementSibling.tagName,'FIGCAPTION');
+  assert(maps[0].scrollWheelZoom.enabled());
+  assert(maps[0].dragging.enabled());
+  first.querySelector('.leaflet-control-zoom-in').click();
+  assert.equal(maps[0].getZoom(),16);
+  assert.equal(maps[1].getZoom(),15);
   points=[point('c','Case C',33),point('a','Case A renamed',34)];
   await poll();
   assert.deepEqual(captions(),['Case A renamed','Case C']);
   assert.equal(observer.d.querySelector('.location-map'),first);
   assert.equal(first.querySelector('.location-pin'),marker);
+  assert.equal(maps[0].getZoom(),16,'Updates preserve zoom on the existing map');
   points=Promise.reject(new Error('offline'));await poll();
   assert.equal(captions().length,2);assert(observer.d.querySelector('.location-summary').textContent.includes('آخرین موقعیت دریافتی'));
   points=[];await poll();assert.deepEqual(captions(),[]);

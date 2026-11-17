@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<script>document.documentElement.lang='fa';document.documentElement.dir='rtl';try{localStorage.setItem('bamco-assessment-language','fa')}catch(e){}</script>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#153a60"><meta name="description" content="سامانه مستقل آزمون قابلیت رانندگی و دوام عملکردی و بررسی استاتیک خودروسازان بم">
 <link data-style="zh" data-href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap">
@@ -207,28 +207,258 @@ html[lang=en] body { font-family: Times New Roman, Times, serif; }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
 <link rel="stylesheet" data-shell-style href="./refined.css?v=daily-layout-1" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=case-pages-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<style id="portal-styles">
+#portalGate {width:min(100%,960px);margin:0 auto;text-align:center;padding:clamp(10px,4.8dvh,46px) 0 26px}
+html body #portalMotto {color:#25443b;text-align:center!important;font-size:clamp(22px,min(3.4vw,5dvh),48px);margin:0;line-height:1.4}
+#portalMotto em {color:#2b8b79;font-style:normal}
+.portal-login-card {display:grid;grid-template-areas:"art form";grid-template-columns:1.1fr 1fr;direction:ltr;align-items:center;gap:clamp(22px,5vw,54px);padding:clamp(28px,4vw,52px);max-width:870px;margin:auto;border:1.5px solid transparent;border-radius:27px;background:linear-gradient(145deg,#fff,#fcfdfc) padding-box,linear-gradient(125deg,#63bba5,#a6c8d7 37%,#c4a4d5 65%,#e5bb80) border-box;box-shadow:0 18px 55px #345b4a0c}
+.portal-form-side {grid-area:form;min-width:0;text-align:start}
+html[dir=rtl] .portal-form-side {direction:rtl}
+.portal-art {grid-area:art;background:radial-gradient(ellipse at 51% 53%,#e9f7f0 0%,#f6f1f94a 54%,transparent 73%);display:grid;place-items:center}
+.portal-art img {width:100%;height:auto;max-width:445px}
+.portal-form-side h2,#portalDialog h2 {font-size:clamp(24px,2.5vw,34px);font-weight:400;color:#2c4b41;margin:0 0 16px}
+#portalGate label,.portal-fields label {display:block;margin:12px 0 5px;color:#365c4d}
+#portalGate input,.portal-fields input:not([type=checkbox]) {width:100%;min-height:46px;padding:8px 12px;background:#fff;border:1px solid #cfe1d7;border-radius:12px;font:inherit;box-sizing:border-box}
+#portalGate input[dir=ltr],.portal-fields input[dir=ltr]{text-align:left!important;font-family:'Times New Roman',serif}
+.portal-password {position:relative}.portal-password input#portalPassword {padding-left:44px}
+#portalReveal {position:absolute;left:3px;top:3px;width:39px;height:40px;background:none;box-shadow:none;border:0;display:grid;place-items:center;padding:7px;color:#507364}
+#portalReveal svg {width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6}
+.portal-primary,.portal-secondary,#portalClose {min-height:42px;padding:7px 16px;border:1px solid #b9d7cb;border-radius:12px;background:#f4faf7;color:#254c3e;cursor:pointer;text-align:center!important}
+.portal-primary {background:#226c54;color:#fff;border-color:#226c54}
+.portal-primary:disabled,.portal-secondary:disabled {opacity:.6;cursor:wait}
+#portalLogin .portal-primary {width:100%;margin-block-start:15px}
+.portal-link {padding:9px 0;margin-block-start:5px;min-height:36px;background:transparent;border:0;box-shadow:none;color:#326a56;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.portal-notice {font-size:16px;color:#874d39;margin:6px 0 0;overflow-wrap:anywhere}.portal-notice:empty{display:none}
+#portalDialog {width:min(600px,calc(100vw - 24px));max-height:87dvh;overflow:auto;box-sizing:border-box;border:1px solid #cfe1d7;border-radius:22px;padding:18px 22px;color:#25443b;box-shadow:0 20px 70px #18382e26}
+#portalDialog::backdrop {background:#173c3599}
+.portal-dialog-head,.portal-toolbar,.portal-person,.portal-actions {display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.portal-dialog-head {border-bottom:1px solid #dce9e2;padding-bottom:12px;margin-bottom:12px}.portal-dialog-head h2 {margin:0!important;font-size:25px!important}
+#portalClose {width:40px;min-width:0;padding:0;font-size:25px}
+.portal-person {padding:13px 0;border-bottom:1px solid #e6eeea}.portal-person b,.portal-person small{display:block}.portal-person small{color:#557267;overflow-wrap:anywhere}
+.portal-actions {justify-content:flex-start;margin-top:14px}.portal-person .portal-actions{margin:0}
+.portal-fields fieldset {border:0;padding:0;margin:15px 0}.portal-fields legend{font-weight:700}
+.portal-checks {display:grid;grid-template-columns:1fr 1fr;gap:7px}.portal-checks label {display:flex;gap:7px;align-items:center;margin:0;padding:6px 8px;border:1px solid #dce9e2;border-radius:10px;font-weight:400;font-size:16px}
+.portal-checks input {width:17px;min-width:17px;accent-color:#226c54}.portal-hint{font-size:15px;color:#557267;margin-block:8px;line-height:1.55}
+#portalTools {display:flex;gap:8px;flex-wrap:wrap;z-index:1;align-items:center}.app-header .headerActions {flex-wrap:wrap}
+#portalTools button {background:#ffffff14;border:1px solid #ffffff52;color:#fff;border-radius:10px;padding:6px 11px;text-align:center;min-height:36px}
+html body [hidden] {display:none!important}
+html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :is(button,input,label) {font-family:var(--assessment-fa)}
+@media(max-width:700px){#portalGate{padding-top:8px}.portal-login-card{grid-template-columns:1fr .95fr;gap:12px;padding:22px}.portal-form-side h2{font-size:26px}.portal-art img{max-width:280px}}
+@media(max-width:520px){.portal-login-card{grid-template-areas:"art" "form";grid-template-columns:1fr;padding:16px 22px;gap:4px;max-width:400px}.portal-art img{width:150px}.portal-form-side h2{margin-bottom:8px}.portal-checks{grid-template-columns:1fr}}
+</style>
 </head>
 <body data-view="home">
 <header class="app-header">
   <div class="brand"><img class="brand-logo original-brand-logo" src="data:image/webp;base64,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" alt="نشان خودروسازان بم"><div><b id="brandName">خودروسازان بم</b><strong id="brandTitle">ارزیابی عملکرد و دوام خودرو</strong></div></div>
-  <div class="header-right headerActions"><div id="assessmentLanguages" role="group" aria-label="انتخاب زبان">
+  <div class="header-right headerActions"><div id="portalTools" hidden></div><div id="assessmentLanguages" role="group" aria-label="انتخاب زبان">
     <button type="button" data-language="fa" lang="fa" aria-label="فارسی" title="فارسی" aria-pressed="true"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#fff" d="M0 0h30v20H0z"/><path fill="#239f40" d="M0 0h30v6.7H0z"/><path fill="#da232d" d="M0 13.3h30V20H0z"/><path fill="#da232d" d="M15 7.4c.8 1.2 1.3 2.7.5 4.1 1.3-.5 1.8-1.6 1.5-2.9 1.3 1.6.4 3.6-1.7 4l-.3.5-.3-.5c-2.1-.4-3-2.4-1.7-4-.3 1.3.2 2.4 1.5 2.9-.8-1.4-.3-2.9.5-4.1z"/></svg></button>
     <button type="button" data-language="en" lang="en" aria-label="English" title="English" aria-pressed="false"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#16366c" d="M0 0h30v20H0z"/><path stroke="#fff" stroke-width="4" d="m0 0 30 20m0-20L0 20"/><path stroke="#c8102e" stroke-width="1.5" d="m0 0 30 20m0-20L0 20"/><path stroke="#fff" stroke-width="7" d="M15 0v20M0 10h30"/><path stroke="#c8102e" stroke-width="4" d="M15 0v20M0 10h30"/></svg></button>
     <button type="button" data-language="zh" lang="zh" aria-label="中文" title="中文" aria-pressed="false"><svg viewBox="0 0 30 20" aria-hidden="true"><path fill="#de2910" d="M0 0h30v20H0z"/><path fill="#ffde00" d="m5 2 1 2.5 2.8.1-2.2 1.7.7 2.7L5 7.4 2.7 9l.7-2.7L1.2 4.6 4 4.5z"/><g fill="#ffde00"><path id="bamcoFlagStar" d="m10 1 .3.7.8.1-.6.5.2.8-.7-.4-.7.4.2-.8-.6-.5.8-.1z"/><use href="#bamcoFlagStar" x="2" y="2"/><use href="#bamcoFlagStar" x="2" y="5"/><use href="#bamcoFlagStar" y="7"/></g></svg></button>
   </div><span id="headerVehicle" class="hidden" aria-hidden="true"></span></div>
 </header>
-<main class="main"><section id="landing" class="landing-shell">
+<!--portal-markup-->
+<section id="portalGate" aria-labelledby="portalMotto">
+  <h1 id="portalMotto" class="welcome-title"><span data-pt="motto1">کیفیت از</span> <em data-pt="motto2">ارزیابی دقیق</em> <span data-pt="motto3">آغاز می‌شود.</span></h1>
+  <div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="portal-login-card">
+    <div class="portal-form-side">
+      <h2 data-pt="signIn">ورود به سامانه</h2>
+      <form id="portalLogin">
+        <label for="portalEmail" data-pt="email">نام کاربری (ایمیل)</label>
+        <input id="portalEmail" type="email" dir="ltr" autocomplete="username" required maxlength="254">
+        <label for="portalPassword" data-pt="password">رمز عبور</label>
+        <div class="portal-password"><input id="portalPassword" type="password" dir="ltr" autocomplete="current-password" required><button type="button" id="portalReveal" aria-label="نمایش رمز عبور" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div>
+        <p id="portalNotice" class="portal-notice" role="status"></p>
+        <button type="submit" class="portal-primary" data-pt="signIn">ورود به سامانه</button>
+      </form>
+      <button id="portalRecover" class="portal-link" type="button" data-pt="recover">تعیین یا بازیابی رمز عبور</button>
+    </div>
+    <div class="portal-art"><img src="./assets/car-inspection.svg" width="464" height="332" alt="خودروی خندان در حال ارزیابی" id="portalCar"></div>
+  </div>
+</section>
+<dialog id="portalDialog" aria-labelledby="portalDialogTitle"><div class="portal-dialog-head"><h2 id="portalDialogTitle"></h2><button id="portalClose" type="button" aria-label="بستن">×</button></div><div id="portalDialogBody"></div></dialog>
+<!--/portal-markup-->
+<main class="main" id="workspaceMain" hidden><section id="landing" class="landing-shell">
   <div id="assessmentHub"><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid four"><button class="gate-card" type="button" data-gate-icon="setup" aria-label="ارزیابی‌های فعال" data-boot-screen="active"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="113" rx="53" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M38 70V42c0-16 13-26 28-26h28c15 0 28 10 28 26v28" fill="#9dd4c5" stroke="#3f8473" stroke-width="2.5"></path><path d="M49 48v-7c0-10 8-16 18-16h26c10 0 18 6 18 16v7z" fill="#edf9fa" stroke="#6aab9d" stroke-width="2"></path><path d="M62 29l-8 14m21-14l-8 14" stroke="#fff" stroke-width="3" opacity=".9"></path><rect x="33" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="108" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="20" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><rect x="122" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><path d="M31 68c0-12 10-20 22-20h54c12 0 22 8 22 20v20c0 10-9 15-19 15H50c-10 0-19-5-19-15z" fill="#c6e9de" stroke="#3f8473" stroke-width="2.5"></path><ellipse cx="51" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><ellipse cx="109" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><circle cx="53" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><circle cx="107" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><ellipse cx="46" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><ellipse cx="114" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><path d="M70 84q10 11 20 0" stroke="#4b8575" stroke-width="2.5" fill="none"></path><path d="M58 97h44" stroke="#fff" stroke-width="3"></path><path d="M130 13v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M21 29v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path><path d="M140 79v7m-3.5-3.5h7" stroke="#b5a0d1" stroke-width="2"></path></svg></span><strong>ارزیابی‌های فعال</strong><span class="gate-cta">ورود به ارزیابی‌ها</span></button><button class="gate-card" type="button" data-gate-icon="results" aria-label="تاریخچه ارزیابی‌ها" data-boot-screen="history"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><rect x="28" y="19" width="106" height="88" rx="14" fill="#f5edf8" stroke="#b99ac7" stroke-width="2.5"></rect><path d="M44 34v57h73" fill="none" stroke="#a18bac" stroke-width="2"></path><rect x="54" y="65" width="13" height="25" rx="4" fill="#a9d8c5" stroke="#78b29b"></rect><rect x="76" y="51" width="13" height="39" rx="4" fill="#b9cce8" stroke="#8ca8cf"></rect><rect x="98" y="35" width="13" height="55" rx="4" fill="#d8b8e2" stroke="#b18bc0"></rect><path d="M53 51l22-13 18 5 19-19m-9 0h9v9" fill="none" stroke="#c7a16c" stroke-width="2.5"></path><path d="M132 18v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M23 38v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>تاریخچه ارزیابی‌ها</strong><span class="gate-cta">مشاهده نتایج ثبت‌شده</span></button><button class="gate-card" type="button" data-gate-icon="weighting" data-boot-screen="weighting" aria-label="وزن‌دهی"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09"/><rect x="69" y="91" width="22" height="13" rx="5" fill="#d8b8e2" stroke="#b18bc0" stroke-width="2"/><rect x="48" y="103" width="64" height="9" rx="4.5" fill="#c7e5da" stroke="#78aa98" stroke-width="2"/><path d="M80 25v68M37 37l86-8" stroke="#a58bb8" stroke-width="5" stroke-linecap="round"/><circle cx="80" cy="30" r="9" fill="#eedbb2" stroke="#c7a16c" stroke-width="2"/><path d="m38 39-18 36h36L38 39Zm85-8-18 36h36l-18-36Z" fill="#f5edf8" stroke="#b99ac7" stroke-width="2" stroke-linejoin="round"/><path d="M19 75q19 31 38 0Z" fill="#a9d8c5" stroke="#78b29b" stroke-width="2"/><path d="M104 67q19 31 38 0Z" fill="#b9cce8" stroke="#8ca8cf" stroke-width="2"/><path d="M80 75q5 6 10 0" fill="none" stroke="#6e927f" stroke-width="2" stroke-linecap="round"/><path d="M132 12v10m-5-5h10M23 27v8m-4-4h8" stroke="#c7a16c" stroke-width="2.5" stroke-linecap="round"/></svg></span><strong>وزن‌دهی</strong><span class="gate-cta">وزن‌دهی زیرشاخص‌ها</span></button><button class="gate-card" type="button" data-gate-icon="observer" aria-label="نظارت بر موقعیت مکانی" data-boot-screen="observer"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M29 53l35-13 33 13 34-13v56l-34 13-33-13-35 13z" fill="#edf7f3" stroke="#78a99a" stroke-width="2.5" stroke-linejoin="round"></path><path d="M64 40v56m33-43v56M40 88l17-13 14 6 19-12 18 8 11-12" fill="none" stroke="#8ebbad" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M80 13c-15 0-27 12-27 27 0 17 27 38 27 38s27-21 27-38c0-15-12-27-27-27z" fill="#d9c8e9" stroke="#9980b5" stroke-width="2.5"></path><circle cx="80" cy="40" r="10" fill="#fbf7fd" stroke="#9980b5" stroke-width="2"></circle><path d="M127 15v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M24 30v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>نظارت بر موقعیت مکانی</strong><span class="gate-cta">مشاهده موقعیت خودرو</span></button></div></div>
-<script>
-(function(){
- const copy={fa:['کیفیت از ','ارزیابی دقیق',' آغاز می‌شود.','ارزیابی‌های فعال','تاریخچه ارزیابی‌ها','نظارت بر موقعیت مکانی','ورود به ارزیابی‌ها','مشاهده نتایج ثبت‌شده','مشاهده موقعیت خودرو'],en:['Quality starts with ','precise assessment','.','Active assessments','Assessment history','Location Monitoring','View active assessments','Browse completed assessments','View vehicle location'],zh:['品质源于','精准评估','。','进行中的评估','评估历史','位置监控','查看进行中的评估','查看已完成的评估','查看车辆位置']};
- function show(lang){const c=copy[lang]||copy.fa,hub=document.getElementById('assessmentHub'),title=hub.querySelector('h1');title.replaceChildren(document.createTextNode(c[0]));const accent=document.createElement('span');accent.textContent=c[1];title.append(accent,document.createTextNode(c[2]));hub.querySelectorAll('.gate-card:not([data-gate-icon="weighting"])').forEach((card,i)=>{card.querySelector('strong').textContent=c[i+3];card.querySelector('.gate-cta').textContent=c[i+6];card.setAttribute('aria-label',c[i+3])});document.querySelectorAll('[data-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===lang)))}
- document.getElementById('brandIcon').href=document.querySelector('.brand-logo').src;
- document.addEventListener('click',function(event){if(window.BAMCO_WORKSPACE_READY)return;const card=event.target.closest('[data-boot-screen]');if(card){event.preventDefault();window.BAMCO_BOOT_SCREEN=card.dataset.bootScreen;card.setAttribute('aria-busy','true')}const language=event.target.closest('[data-language]');if(language){const value=language.dataset.language;try{localStorage.setItem('bamco-assessment-language',value)}catch(e){}document.documentElement.lang=value;document.documentElement.dir=value==='fa'?'rtl':'ltr';show(value)}});
-})();
-</script>
+
 </section>
 </main>
+<script id="portal-runtime">
+(() => {
+'use strict';
+const root='https://cwpfzvcwuiawjtvsnpkq.supabase.co';
+const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
+const key='bamco-functional.auth.v1';
+const $=id=>document.getElementById(id);
+const words={
+ motto1:['کیفیت از','Quality starts with','品质源于'],motto2:['ارزیابی دقیق','precise assessment','精准评估'],motto3:['آغاز می‌شود.','.','。'],
+ signIn:['ورود به سامانه','Sign in','登录系统'],email:['نام کاربری (ایمیل)','Username (email)','用户名（电子邮箱）'],password:['رمز عبور','Password','密码'],
+ show:['نمایش رمز عبور','Show password','显示密码'],hide:['پنهان کردن رمز عبور','Hide password','隐藏密码'],close:['بستن','Close','关闭'],
+ recover:['تعیین یا بازیابی رمز عبور','Set or reset password','设置或重置密码'],send:['ارسال ایمیل تعیین رمز','Send password email','发送重置邮件'],
+ emailed:['لینک ایمیل را کپی و اینجا وارد کنید. اگر ایمیل حاوی کد است، همان کد را وارد کنید.','Copy the link from your email into the field below, or enter the code from the email.','请复制邮件中的链接或验证码并填入下方。'],
+ proof:['لینک یا کد دریافتی','Email link or code','邮件链接或验证码'],newPass:['رمز عبور جدید','New password','新密码'],set:['ذخیره رمز عبور','Save password','保存密码'],
+ invalidLink:['لینک یا کد معتبر نیست یا منقضی شده است.','The link or code is invalid or expired.','链接或验证码无效或已过期。'],
+ savedPass:['رمز ذخیره شد. اکنون وارد شوید.','Password saved. You can now sign in.','密码已保存，请登录。'],
+ loginFailed:['ایمیل یا رمز عبور صحیح نیست.','Incorrect email or password.','邮箱或密码有误。'],forbidden:['این حساب مجوز ورود به سامانه را ندارد.','This account has no portal access.','此账户无权访问此系统。'],
+ network:['اتصال به سرویس برقرار نشد. دوباره تلاش کنید.','Could not reach the service. Try again.','无法连接服务，请重试。'],
+ limited:['تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.','Too many attempts. Try again shortly.','请求过多，请稍后重试。'],
+ out:['خروج','Sign out','退出'],users:['مدیریت کاربران','User management','用户管理'],add:['تعریف کاربر','Add user','添加用户'],edit:['ویرایش','Edit','编辑'],
+ view:['نمای کاربر','User view','用户视图'],full:['دسترسی کامل مدیر','Full administrator access','完整管理权限'],name:['نام و نام خانوادگی','Full name','姓名'],
+ optional:['رمز جدید (اختیاری)','New password (optional)','新密码（可选）'],save:['ذخیره کاربر','Save user','保存用户'],back:['بازگشت','Back','返回'],
+ empty:['هنوز بخشی به این حساب اختصاص داده نشده است.','No sections have been assigned to this account.','此账户尚未分配模块。'],
+ error:['ذخیره انجام نشد. اطلاعات را بررسی کنید و دوباره تلاش کنید.','Could not save. Check the form and try again.','保存失败，请检查后重试。'],
+ duplicate:['این ایمیل قبلاً ثبت شده است.','This email is already registered.','此邮箱已注册。'],
+ main:['بخش‌های اصلی','Main sections','主要模块'],inside:['داخل هر پرونده','Inside each case','档案内模块'],
+ accessHint:['برای دسترسی به داخل پرونده، ارزیابی‌های فعال یا تاریخچه را انتخاب کنید. «گزارش و نتایج» شامل داشبورد و نمره‌های ثبت‌شدهٔ همهٔ انواع ارزیابی است.','Select Active assessments or Assessment history for case access. Reports and results includes dashboards and recorded scores across assessment types.','请先选择进行中的评估或评估历史。报告与结果包含各评估类型的仪表板与已记录评分。'],
+ active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],weighting:['وزن‌دهی','Weighting','权重设置'],observer:['نظارت بر موقعیت مکانی','Location monitoring','位置监控'],
+ setup:['مشخصات خودرو','Vehicle specifications','车辆规格'],drive:['قابلیت رانندگی','Drivability','驾驶性能'],durability:['آزمون دوام','Durability testing','耐久试验'],static:['بررسی استاتیک','Static inspection','静态检查'],
+ comprehensive:['ارزیابی جامع','Comprehensive assessment','综合评估'],results:['گزارش و نتایج','Reports and results','报告与结果'],
+ weak:['رمز باید حداقل ۸ نویسه و حداکثر ۷۲ بایت باشد.','Use at least 8 characters and at most 72 bytes.','密码至少八个字符，最多七十二字节。'],
+ wait:['در حال اتصال…','Connecting…','正在连接…'],car:['خودروی خندان در حال ارزیابی','A smiling car being inspected','正在接受检查的微笑汽车']
+};
+const groups={main:['active','history','weighting','observer'],inside:['setup','drive','durability','static','comprehensive','results']};
+let session,profile,refreshing,startWorkspace,lang='fa';
+const t=id=>words[id][['fa','en','zh'].indexOf(lang)]||words[id][0];
+const can=id=>Boolean(profile&&(profile.admin||profile.grants.includes(id)));
+function element(tag,text,cls){const el=document.createElement(tag);if(text)el.textContent=text;if(cls)el.className=cls;return el}
+function button(label,fn,cls='portal-secondary'){const b=element('button',t(label),cls);b.type='button';b.onclick=fn;return b}
+function notice(id=''){ $('portalNotice').textContent=id?t(id):''; }
+function remember(s){session=s?{access_token:s.access_token,refresh_token:s.refresh_token,until:Date.now()+1000*(s.expires_in||3600)}:null;
+ try{if(session)sessionStorage.setItem(key,JSON.stringify(session));else sessionStorage.removeItem(key)}catch{}}
+async function request(path,body,token,method='POST'){
+ const response=await fetch(root+path,{method,cache:'no-store',headers:{apikey:apiKey,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
+ const data=await response.json().catch(()=>null);
+ if(!response.ok){const e=new Error('Request failed');e.status=response.status;e.code=data?.error||data?.code;throw e}
+ return data;
+}
+function lock(){remember(null);profile=null;$('workspaceMain').hidden=true;$('portalGate').hidden=false;$('portalTools').hidden=true;if($('portalDialog').open)$('portalDialog').close()}
+async function token(){
+ if(!session)throw Error('No session');
+ if(Date.now()+60000<session.until)return session.access_token;
+ if(!refreshing){const old=session;refreshing=request('/auth/v1/token?grant_type=refresh_token',{refresh_token:old.refresh_token}).then(s=>{if(session!==old)throw Error('Session changed');remember(s);return session.access_token}).catch(e=>{if(session===old&&[400,401,403].includes(e.status)){lock();location.reload()}throw e}).finally(()=>refreshing=null)}
+ return refreshing;
+}
+async function rpc(name,args={}){try{return {data:await request('/rest/v1/rpc/'+name,args,await token()),error:null}}catch(error){return {data:null,error}}}
+function applyLanguage(value){
+ lang=value;for(const el of document.querySelectorAll('[data-pt]'))el.textContent=t(el.dataset.pt);
+ $('portalClose').setAttribute('aria-label',t('close'));$('portalCar').alt=t('car');$('portalReveal').setAttribute('aria-label',t($('portalPassword').type==='text'?'hide':'show'));
+ if(profile)toolsBar();
+}
+async function authenticate(){
+ const p=await request('/rest/v1/rpc/bamco_access_profile',{},await token());
+ if(!p||!Array.isArray(p.grants)){lock();throw Object.assign(Error('No portal access'),{accessDenied:true})}
+ profile=p;$('portalGate').hidden=true;$('workspaceMain').hidden=false;toolsBar();startWorkspace();
+}
+function messageFor(e,fallback){if(e.status===429)return 'limited';if(e.accessDenied)return 'forbidden';if(!e.status)return 'network';return fallback}
+let checking=false;
+async function recheck(){
+ if(!profile||checking||document.visibilityState==='hidden')return;
+ checking=true;
+ try{
+  const current=await request('/rest/v1/rpc/bamco_access_profile',{},await token());
+  if(!current){lock();location.reload();return}
+  if(current.admin!==profile.admin||JSON.stringify(current.grants)!==JSON.stringify(profile.grants)){
+    $('workspaceMain').hidden=true;location.reload();
+  }
+ }catch(e){if(e.status===401||e.status===403){lock();location.reload()}}finally{checking=false}
+}
+async function signOut(){
+ if(window.BAMCO_CASES?.hasUnsaved?.()&&!confirm(lang==='fa'?'تغییرات ذخیره‌نشده دارید. خارج می‌شوید؟':lang==='en'?'Discard unsaved changes and sign out?':'放弃未保存的更改并退出？'))return;
+ const access=session?.access_token;try{if(access)await request('/auth/v1/logout?scope=local',{},access)}finally{lock();location.replace('./')}
+}
+function toolsBar(){
+ const host=$('portalTools');host.hidden=false;host.replaceChildren();
+ if(profile.admin)host.append(button('users',openUsers));
+ host.append(button('out',signOut));
+}
+function openDialog(title){
+ $('portalDialogTitle').textContent=t(title);const host=$('portalDialogBody');host.replaceChildren();
+ if(!$('portalDialog').open)$('portalDialog').showModal();return host;
+}
+function field(form,title,type,value='',required=true){
+ const label=element('label',t(title)),input=element('input');input.type=type;input.required=required;input.value=value;
+ if(type==='email'||type==='password')input.dir='ltr';if(type==='password')input.autocomplete='new-password';
+ label.append(input);form.append(label);return input;
+}
+function tasks(form,label,submit,back){
+ const area=element('div','','portal-actions'),ok=element('button',t(label),'portal-primary');ok.type='submit';area.append(ok);
+ if(back)area.append(button('back',back));
+ const status=element('p','','portal-notice');status.setAttribute('role','status');form.append(status,area);
+ form.onsubmit=async e=>{e.preventDefault();if(ok.disabled)return;ok.disabled=true;status.textContent='';
+ try{await submit()}catch(err){status.textContent=t(err.ui||messageFor(err,err.code==='duplicate_email'?'duplicate':'error'))}finally{ok.disabled=false}};
+}
+function validatePassword(p){if(p.length<8||new TextEncoder().encode(p).length>72)throw Object.assign(Error(),{ui:'weak'})}
+function openRecovery(){
+ const host=openDialog('recover'),form=element('form','','portal-fields');host.append(form);
+ const email=field(form,'email','email',$('portalEmail').value);email.autocomplete='email';
+ tasks(form,'send',async()=>{
+  const address=email.value.trim();await request('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+location.pathname),{email:address});
+  const f=element('form','','portal-fields');host.replaceChildren(element('p',t('emailed'),'portal-hint'),f);
+  const proof=field(f,'proof','text'),pw=field(f,'newPass','password');proof.dir='ltr';proof.autocomplete='one-time-code';
+  tasks(f,'set',async()=>{
+   validatePassword(pw.value);let code=proof.value.trim(),verification;
+   if(/^https?:/i.test(code)){let u;try{u=new URL(code)}catch{}if(!u||u.origin!==root||u.pathname!=='/auth/v1/verify'||u.searchParams.get('type')!=='recovery'||!u.searchParams.get('token'))throw Object.assign(Error(),{ui:'invalidLink'});
+    verification={token_hash:u.searchParams.get('token'),type:'recovery'};
+   }else{verification={type:'recovery',email:address,token:code}}
+   const s=await request('/auth/v1/verify',verification).catch(e=>{throw Object.assign(e,{ui:'invalidLink'})});
+   await request('/auth/v1/user',{password:pw.value},s.access_token,'PUT');
+   await request('/auth/v1/logout?scope=local',{},s.access_token).catch(()=>{});$('portalDialog').close();$('portalEmail').value=address;notice('savedPass');
+  },openRecovery);
+ });
+}
+function recoveryLanding(){
+ const hash=new URLSearchParams(location.hash.slice(1));if(hash.get('type')!=='recovery'||!hash.has('access_token'))return false;
+ const recovery=hash.get('access_token');history.replaceState(null,'',location.pathname+location.search);
+ const form=element('form','','portal-fields');openDialog('recover').append(form);
+ const pw=field(form,'newPass','password');tasks(form,'set',async()=>{validatePassword(pw.value);await request('/auth/v1/user',{password:pw.value},recovery,'PUT');await request('/auth/v1/logout?scope=local',{},recovery).catch(()=>{});$('portalDialog').close();notice('savedPass')});
+ return true;
+}
+async function openUsers(){
+ if(!profile?.admin)return;const host=openDialog('users'),panel=element('div');host.append(panel);
+ const add=button('add',()=>editUser(null),'portal-primary');panel.append(add);
+ const list=element('div');panel.append(list);
+ const r=await rpc('bamco_access_users');if(!panel.isConnected)return;
+ if(r.error){list.append(element('p',t('network'),'portal-notice'),button('back',openUsers));return}
+ for(const person of r.data){const row=element('article','','portal-person'),identity=element('div');identity.append(element('b',person.name));
+ const email=element('small',person.email);email.dir='ltr';identity.append(email);row.append(identity);
+ if(person.admin)row.append(element('span',t('full'),'portal-hint'));
+ else {const actions=element('div','','portal-actions');actions.append(button('edit',()=>editUser(person)),button('view',()=>userView(person)));row.append(actions)}
+ list.append(row)}
+}
+function userView(person){
+ const h=openDialog('view');h.append(element('h3',person.name));const main=groups.main.filter(k=>person.grants.includes(k));
+ const inside=main.some(k=>k==='active'||k==='history')?groups.inside.filter(k=>person.grants.includes(k)):[];
+ for(const [label,items] of [['main',main],['inside',inside]]){if(items.length){h.append(element('h4',t(label)));const ul=element('ul');for(const item of items)ul.append(element('li',t(item)));h.append(ul)}}
+ if(!main.length)h.append(element('p',t('empty')));h.append(button('back',openUsers));
+}
+function editUser(person){
+ const host=openDialog(person?'edit':'add'),form=element('form','','portal-fields');host.append(form);
+ const name=field(form,'name','text',person?.name),email=field(form,'email','email',person?.email),password=field(form,person?'optional':'password','password','',!person);
+ name.maxLength=80;email.maxLength=254;const inputs=new Map();let inside;
+ for(const [key,ids] of Object.entries(groups)){const set=element('fieldset'),wrap=element('div','','portal-checks');if(key==='inside')inside=set;set.append(element('legend',t(key)),wrap);
+ for(const id of ids){const label=element('label'),input=element('input');input.type='checkbox';input.checked=person?.grants.includes(id)||false;label.append(input,document.createTextNode(t(id)));wrap.append(label);inputs.set(id,input)}
+ form.append(set)}
+ const sync=()=>{inside.disabled=!inputs.get('active').checked&&!inputs.get('history').checked};form.onchange=sync;sync();form.append(element('p',t('accessHint'),'portal-hint'));
+ tasks(form,'save',async()=>{if(password.value)validatePassword(password.value);const grants=[...inputs].filter(([id,input])=>input.checked&&(!groups.inside.includes(id)||!inside.disabled)).map(([id])=>id);
+ await request('/functions/v1/assessment-user-admin',{id:person?.id,name:name.value.trim(),email:email.value.trim(),password:password.value,grants},await token());await openUsers()},openUsers);
+}
+let started=false;
+async function start(onReady,initialLanguage){
+ startWorkspace=onReady;applyLanguage(initialLanguage);
+ if(started)return;started=true;
+ document.addEventListener('visibilitychange',recheck);window.addEventListener('focus',recheck);setInterval(recheck,300000);
+ $('portalClose').onclick=()=>$('portalDialog').close();$('portalRecover').onclick=openRecovery;
+ $('portalReveal').onclick=()=>{const f=$('portalPassword'),show=f.type==='password';f.type=show?'text':'password';$('portalReveal').setAttribute('aria-pressed',String(show));$('portalReveal').setAttribute('aria-label',t(show?'hide':'show'))};
+ const form=$('portalLogin');form.onsubmit=async e=>{e.preventDefault();const submit=form.querySelector('[type=submit]');if(submit.disabled)return;submit.disabled=true;notice('wait');
+ try{const s=await request('/auth/v1/token?grant_type=password',{email:$('portalEmail').value.trim(),password:$('portalPassword').value});
+ remember(s);await authenticate();form.reset();$('portalPassword').type='password';$('portalReveal').setAttribute('aria-pressed','false');$('portalReveal').setAttribute('aria-label',t('show'));notice()}catch(err){notice(messageFor(err,'loginFailed'))}finally{submit.disabled=false}};
+ if(recoveryLanding())return;
+ try{session=JSON.parse(sessionStorage.getItem(key)||'null')}catch{}
+ if(session){notice('wait');try{await authenticate();notice()}catch(e){if([400,401,403].includes(e.status))lock();notice(messageFor(e,'loginFailed'))}}
+}
+window.BAMCO_PORTAL={start,can,rpc,token,applyLanguage,text:t,get user(){return profile}};
+})();
+</script>
 <script id="workspace-entry">
 (() => {
 'use strict';
@@ -238,15 +468,10 @@ const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
 const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
 let app = window.BAMCO_ASSESSMENT;
-const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
-const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
-async function requestRpc(name,args={}){
- try{
-  const response=await fetch(apiURL+name,{method:'POST',headers:{apikey:apiKey,'Content-Type':'application/json'},body:JSON.stringify(args)});
-  const data=await response.json();
-  return response.ok?{data,error:null}:{data:null,error:data};
- }catch(error){return {data:null,error}}
-}
+const portal=window.BAMCO_PORTAL;
+const can=permission=>portal.can(permission);
+const requestRpc=(name,args={})=>portal.rpc(name,args);
+const canOpenCase=()=>['setup','drive','durability','static','comprehensive','results'].some(can);
 const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
@@ -492,17 +717,19 @@ function renderWelcome() {
   title.replaceChildren(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
   for (const card of hub.querySelectorAll('.gate-card')) {
     const key = card.dataset.bootScreen || 'weighting';
+    card.hidden=!can(key);
     card.setAttribute('aria-label',tr(key));
     card.querySelector('strong').textContent = tr(key);
     card.querySelector('.gate-cta').textContent = tr(key+'Cta');
     card.removeAttribute('aria-busy');
   }
+  if(![...hub.querySelectorAll('.gate-card')].some(card=>!card.hidden)){let message=hub.querySelector('.portal-empty');if(!message){message=node('p','','portal-empty');hub.append(message)}message.textContent=portal.text('empty')}
   hub.dataset.language = language;
   hub.dataset.welcome = 'true';
 }
 hub?.addEventListener('click', event=>{
   const target = event.target.closest('[data-boot-screen]');
-  if (target) navigate(target.dataset.bootScreen);
+  if (target && can(target.dataset.bootScreen)) navigate(target.dataset.bootScreen);
 });
 
 function report(error) {
@@ -532,13 +759,15 @@ function render() {
   $('brandTitle').textContent = tr('brandTitle');
   document.querySelector('.brand-logo').alt = tr('brandAlt');
   document.title = tr('brandName')+' | '+tr('brandTitle');
+  portal.applyLanguage(language);
+  if(!portal.user)return;
   if (editor) {
     $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
     $('assessmentGpsLabel').textContent = tr('locationShareTitle');
     $('assessmentBack').textContent = tr('back');
     $('assessmentShare').textContent = tr('share');
     $('assessmentStop').textContent = tr('stop');
-    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
+    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active'||!(can('drive')||can('durability'));
     if (!current) {
       $('caseReturn').textContent=tr('back');
       $('caseRetry').textContent=tr('retry');
@@ -565,7 +794,7 @@ function render() {
     else {
       host.textContent=tr('load');
       Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js?v=subcriteria-1'),
-        loadExternal('./weighting.js?v=subcriteria-1'),loadStyles('weighting')]).then(open).catch(()=>{
+        loadExternal('./weighting.js?v=portal-access-1'),loadStyles('weighting')]).then(open).catch(()=>{
           if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render));
         });
     }
@@ -607,6 +836,7 @@ function caseURL(id) {
   return url.href;
 }
 async function navigate(next,writeURL=true) {
+  if(next!=='home'&&!can(next)){next='home';writeURL=true}
   if(writeURL && next!==listScreen()){
     const url=new URL(location.href);
     url.searchParams.delete('observer');
@@ -632,7 +862,8 @@ async function navigate(next,writeURL=true) {
     return;
   }
   if(next==='home'){
-   loadList('active');loadList('completed');
+   if(can('active'))loadList('active');
+   if(can('history'))loadList('completed');
   }
   if (!['active','history'].includes(next)) return;
   const {data,error} = await loadList(status,true);
@@ -644,7 +875,7 @@ async function navigate(next,writeURL=true) {
 }
 
 function renderRows() {
-  if (screen === 'active') {
+  if (screen === 'active' && can('setup')) {
     const createPanel = node('section','','assessment-create-panel');
     const createHeading = node('div','','assessment-create-heading');
     createHeading.append(node('span','+','assessment-create-icon'),node('h2',tr('newAssessmentTitle')));
@@ -689,13 +920,13 @@ function renderRows() {
     const actions = node('div','','assessment-row-actions');
     const open=node('a',tr('open'),'assessment-action assessment-open-action');
     open.href=caseURL(row.id);
-    actions.append(open);
-    actions.append(button('rename',()=>{
+    if(canOpenCase()) actions.append(open);
+    if(can('setup')) actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
     },'assessment-action assessment-secondary-action'));
-    actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
-    actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
+    if(can('setup')&&can('active')&&can('history')) actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
+    if(portal.user.admin) actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
     item.append(heading,top,actions);
     grid.append(item);
   }
@@ -743,9 +974,9 @@ async function openAssessment(id) {
     $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
     $('assessmentShare').disabled=false;
     $('assessmentStop').disabled=true;
-    $('assessmentGps').classList.toggle('hidden',data.status!=='active');
+    $('assessmentGps').classList.toggle('hidden',data.status!=='active'||!(can('drive')||can('durability')));
     window.BAMCO_I18N?.setLanguage(language);
-    app.open(data.snapshot,queueSave,data.status!=='active');
+    app.open(data.snapshot,queueSave,data.status!=='active',can);
     render();
     editor.classList.remove('hidden');
     entry.hidden=true;
@@ -1032,6 +1263,7 @@ window.addEventListener('beforeunload',event => {
 });
 
 window.BAMCO_CASES={
+ hasUnsaved(){return Boolean(pending||saving)},
  async saveNow(snapshot){
   if(!current||current.status!=='active'||app.isReadOnly())return false;
   const row=current;recovery=null;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
@@ -1043,11 +1275,14 @@ window.BAMCO_CASES={
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
 };
 window.BAMCO_WORKSPACE_READY=true;
+$('brandIcon').href=document.querySelector('.brand-logo').src;
+render();
+portal.start(()=>{
 if(language==='zh') loadStyles('zh').catch(()=>{});
 if (hub) {
   window.addEventListener('popstate',()=>navigate(listScreen(),false));
-  window.addEventListener('pageshow',e=>{if(e.persisted)navigate(listScreen(),false)});
-  navigate(window.BAMCO_BOOT_SCREEN || listScreen());
+  window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
+  navigate(listScreen());
 } else if (editor) {
   const query=new URLSearchParams(location.search);
   const id=query.get('id');
@@ -1057,6 +1292,7 @@ if (hub) {
   $('caseRetry').onclick=()=>openAssessment(id);
   openAssessment(id);
 }
+},language);
 })();
 
 </script>

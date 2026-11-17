@@ -4,6 +4,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM,VirtualC
  const w=dom.window,d=w.document,requests=[];
  w.structuredClone=structuredClone;
  w.fetch=(url,options)=>new Promise(resolve=>requests.push({url,body:JSON.parse(options.body),resolve}));
+ require('./portal-fixture.cjs')(w);
  w.eval(fs.readFileSync('assessment-workspace.js','utf8'));
  assert.equal(requests.length,2);assert(requests.every(r=>r.url.includes('/rest/v1/rpc/bamco_assessment')));
  assert(!d.querySelector('script[src*="unpkg.com"]'));

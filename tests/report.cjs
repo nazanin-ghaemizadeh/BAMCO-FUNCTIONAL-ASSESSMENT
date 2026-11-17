@@ -2,7 +2,7 @@ const {JSDOM,VirtualConsole}=require('jsdom'),fs=require('fs'),assert=require('a
 (async()=>{
 const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
 const w=new JSDOM(fs.readFileSync('case.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}).window,d=w.document;
-w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.structuredClone=structuredClone;w.TextEncoder=TextEncoder;w.AbortSignal=AbortSignal;
+w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.confirm=()=>true;w.structuredClone=structuredClone;w.TextEncoder=TextEncoder;w.BAMCO_PORTAL={token:async()=>'fixture'};w.AbortSignal=AbortSignal;
 w.fetch=async()=>{throw Error('offline')};
 for(const f of ['translations-en.js','translations-zh.js','planning-translations.js','dashboard-translations.js','pre-drive-checklist.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','report-charts.js','report-export.js','workbook-metadata.js','report-model.js','app.js','polish.js','day-workflow.js','report-ui.js'])w.eval(fs.readFileSync(f,'utf8'));
 assert.equal(typeof w.BAMCO_REPORT_EXPORT.build,'function');for(const file of ['report-charts.js','review-contract.js','report-export.js','report-model.js','report-ui.js'])assert([...d.querySelector("#caseAssets").content.querySelectorAll("script[src]")].some(s=>s.src.includes('/'+file+'?')),file+' must be loaded in production');

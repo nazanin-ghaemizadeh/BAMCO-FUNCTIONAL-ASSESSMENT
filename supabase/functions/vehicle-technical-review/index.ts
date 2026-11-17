@@ -48,7 +48,7 @@ function corsHeaders(origin: string | null) {
   const allowed = origin && isAllowedOrigin(origin) ? origin : ALLOWED_ORIGIN;
   return {
     "Access-Control-Allow-Origin": allowed,
-    "Access-Control-Allow-Headers": "content-type",
+    "Access-Control-Allow-Headers": "content-type, authorization, apikey",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Vary": "Origin"
   };
@@ -150,13 +150,23 @@ Deno.serve(async (req: Request) => {
   const length = Number(req.headers.get("content-length") || 0);
   if (length > 220000) return jsonResponse({ error: "payload_too_large" }, 413, origin);
 
+  let needsPortalAccess = false;
   let payload: ReturnType<typeof normalizePayload>;
-  try { const body = await req.text(); if (new TextEncoder().encode(body).length > 220000) return jsonResponse({error:"payload_too_large"},413,origin); payload = normalizePayload(JSON.parse(body)); }
+  try { const body = await req.text(); if (new TextEncoder().encode(body).length > 220000) return jsonResponse({error:"payload_too_large"},413,origin); const raw = JSON.parse(body); needsPortalAccess = raw?.version === 4 || raw?.portal === "functional"; payload = normalizePayload(raw); }
   catch (error) {
     const code = error instanceof Error ? error.message : "invalid_payload";
     return jsonResponse({ error: code === "empty_assessment" ? code : "invalid_payload" }, 400, origin);
   }
 
+  if (needsPortalAccess) {
+    const authorization = req.headers.get("Authorization");
+    if (!authorization?.startsWith("Bearer ")) return jsonResponse({error:"sign_in_required"},401,origin);
+    const r = await fetch(Deno.env.get("SUPABASE_URL")+"/rest/v1/rpc/bamco_access_profile", {
+      method:"POST", headers:{apikey:Deno.env.get("SUPABASE_ANON_KEY")!, Authorization:authorization, "Content-Type":"application/json"}, body:"{}"
+    });
+    const profile = r.ok ? await r.json() : null;
+    if (!profile || !(profile.admin || profile.grants?.includes("results"))) return jsonResponse({error:"forbidden"},403,origin);
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 90000);
   try {

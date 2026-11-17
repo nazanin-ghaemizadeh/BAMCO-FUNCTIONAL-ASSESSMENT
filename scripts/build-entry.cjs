@@ -38,6 +38,12 @@ const css = sheets.map(link => {
 }).join('\n');
 const entry = fs.readFileSync('assessment-workspace.js','utf8').replace(/<\/script/gi,'<\\/script');
 function withController(source) {
+  const portal = fs.readFileSync('portal-login.html','utf8');
+  source = source.replace(/<!--portal-markup-->[\s\S]*?<!--\/portal-markup-->/,()=> '<!--portal-markup-->\n'+portal+'<!--/portal-markup-->');
+  for(const [id,file,tag] of [['portal-styles','portal.css','style'],['portal-runtime','portal.js','script']]) {
+    const pattern=new RegExp('(<'+tag+' id="'+id+'">)[\\s\\S]*?(</'+tag+'>)');
+    source=source.replace(pattern,(_,open,close)=>open+'\n'+fs.readFileSync(file,'utf8')+close);
+  }
   return source.replace(/(<script id="workspace-entry">)[\s\S]*?(<\/script>)/, (_,open,close)=>open+'\n'+entry+close);
 }
 const landing = withController(html).replace(/(<style id="landing-critical">)[\s\S]*?(<\/style>)/, (_,open,close)=>open+'\n'+css+'\n'+close);

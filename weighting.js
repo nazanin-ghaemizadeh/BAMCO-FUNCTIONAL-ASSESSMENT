@@ -32,7 +32,8 @@ const words = {
   formsAction:['مدیریت پرسش‌نامه‌ها','Manage questionnaires','管理问卷'],
   resultsAction:['مشاهده‌ی وزن زیرشاخص‌ها','View subcriterion weights','查看子指标权重']
 };
-const storePrefix='bamco-bwm-v1:';
+const legacyPrefix='bamco-bwm-v1:';
+let storePrefix=legacyPrefix;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const token=/^[0-9a-f]{64}$/;
 const locales=['fa-IR','en-GB','zh-CN'];
@@ -498,7 +499,18 @@ async function draw(){
 }
 window.BAMCO_WEIGHTING={mount(container,options){
   host=container;service=options;language=options.language;li=['fa','en','zh'].indexOf(language);
-  try{localStorage.setItem(storePrefix+'check','1');localStorage.removeItem(storePrefix+'check')}
+  try{
+    const account=window.BAMCO_PORTAL?.user;
+    storePrefix=account?'bamco-bwm-account:'+account.id+':':legacyPrefix;
+    if(account?.admin){
+      for(const key of Object.keys(localStorage).filter(k=>k.startsWith(legacyPrefix))){
+        const target=storePrefix+key.slice(legacyPrefix.length);
+        if(localStorage.getItem(target)===null)localStorage.setItem(target,localStorage.getItem(key));
+        localStorage.removeItem(key);
+      }
+    }
+    localStorage.setItem(storePrefix+'check','1');localStorage.removeItem(storePrefix+'check')
+  }
   catch{header(tr('hub'),service.home);reportStatus(host,tr('storage'));return}
   draw();
 }};

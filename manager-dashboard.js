@@ -47,7 +47,7 @@
   notice.textContent='در حال بارگذاری داشبورد مدیریتی…';
   const target=document.createElement('iframe');frame=target;
   frame.title='داشبورد مدیریتی ارزیابی جامع خودرو';
-  frame.src='./manager-reference/view/manager.html?v=explicit-save-1';
+  frame.src='./manager-reference/view/manager.html?v=portal-auth-1';
   frame.style.cssText='width:100%;height:600px;border:0;background:transparent';
   frame.addEventListener('error',()=>failed(target));
   frame.addEventListener('load',()=>failed(target));

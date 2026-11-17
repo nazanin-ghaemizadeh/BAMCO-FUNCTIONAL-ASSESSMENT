@@ -29,7 +29,8 @@ function visit(path,url,reply,options={}){
   new w.MutationObserver(changes=>{
     for(const {target} of changes)if(target.matches('link[data-style][href]'))target.onload();
   }).observe(d.head,{subtree:true,attributes:true,attributeFilter:['href']});
-  for(const script of [...d.scripts])w.eval(script.textContent);
+  require('./portal-fixture.cjs')(w,options.grants??null);
+  for(const script of [...d.scripts])if(script.id!=='portal-runtime')w.eval(script.textContent);
   return {w,d,fetched,close:()=>w.close()};
 }
 (async()=>{

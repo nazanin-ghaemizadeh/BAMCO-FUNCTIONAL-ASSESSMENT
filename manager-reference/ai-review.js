@@ -157,7 +157,7 @@
     setStatus(fa()?'در حال تحلیل پاسخ‌های ثبت‌شده و استخراج ۵ پیشنهاد فنی…':'Analyzing answered items and generating five technical recommendations…','loading');
     translate();
     try{
-      const response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const response=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await window.parent.BAMCO_PORTAL.token()},body:JSON.stringify({...payload,portal:'functional'})});
       let data=null;try{data=await response.json()}catch(_){ }
       if(!response.ok||!data?.ok||!data?.report)throw Object.assign(new Error('request_failed'),{data,status:response.status});
       lastReport=data.report;saveReport();renderReport(lastReport);setStatus(fa()?'تحلیل فنی تکمیل شد.':'Technical review completed.','success');

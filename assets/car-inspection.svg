@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 464 332" role="img" aria-labelledby="car-inspection-title car-inspection-desc">
+  <title id="car-inspection-title">خودروی کوچک در حال ارزیابی</title>
+  <desc id="car-inspection-desc">خودروی نعنایی خندان در نمای سه‌ربع، کنار یک برگهٔ بازرسی با علامت تأیید.</desc>
+
+  <ellipse cx="226" cy="268" rx="157" ry="14" fill="#4b8d7b" opacity=".09"/>
+  <ellipse cx="231" cy="269" rx="118" ry="8" fill="#4b8d7b" opacity=".07"/>
+
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <!-- Wheels on the far side sit behind the coachwork. -->
+    <path d="M322 215c11 0 19 12 19 25s-7 24-17 25l-10-1-9-35z" fill="#497d73" stroke="#426f65" stroke-width="3"/>
+    <path d="M88 181c9-1 17 11 18 25s-5 25-14 27l-8-2-7-33z" fill="#497d73" stroke="#426f65" stroke-width="3"/>
+
+    <!-- Two-tone body and curved roofline. -->
+    <path d="M70 178q1-15 16-24l21-12 18-32q11-22 35-26c21-4 56 0 80 7q26 7 43 24l28 29 30 11q21 8 29 24l6 26q4 19-11 28c-33 17-76 24-119 23l-47-4-102-25q-26-8-28-26z" fill="#b8dfd4" stroke="#3f8473" stroke-width="4"/>
+    <path d="M92 155c35 0 78 11 112 25l27-8 35-9 45-17" fill="none" stroke="#78aa98" stroke-width="2.8"/>
+    <path d="M89 159c29 0 76 12 100 20" fill="none" stroke="#e9f7ee" stroke-width="3" opacity=".9"/>
+    <path d="M126 111q10-22 35-25c26-4 58 1 78 7q20 6 32 17c-21-6-48-10-66-10-26-8-53-12-79 11z" fill="#d7ebe2"/>
+    <path d="M159 91c20-2 45 1 64 5" fill="none" stroke="#edf7f3" stroke-width="3"/>
+
+    <!-- Side windows and front windscreen. -->
+    <path d="m103 145 17-29q7-13 20-17l-9 49z" fill="#eaf7f6" stroke="#6aab9d" stroke-width="3"/>
+    <path d="m142 101-6 49 58 17 5-59q-27-10-57-7z" fill="#edf9fa" stroke="#6aab9d" stroke-width="3"/>
+    <path d="m206 109-5 54q43-14 98-21l-25-25q-13-13-31-17z" fill="#edf9fa" stroke="#6aab9d" stroke-width="3"/>
+    <path d="M206 109q15-8 37-9" fill="none" stroke="#6aab9d" stroke-width="3"/>
+    <path d="m150 111-4 23m18-22-5 30m72-32-10 31m28-32-7 20" fill="none" stroke="#fff" stroke-width="4.5" opacity=".9"/>
+    <path d="M227 149q31-8 53-10" fill="none" stroke="#94b8a3" stroke-width="2.5"/>
+    <path d="M139 159q-4 15-3 36m-24 13 62 16" fill="none" stroke="#7db4a2" stroke-width="2.5"/>
+    <path d="m147 165 10 2" fill="none" stroke="#5e9f8e" stroke-width="4.5"/>
+    <path d="M194 162c-6-1-11-5-11-9 0-5 6-8 14-6 6 1 11 4 11 9 0 4-7 7-14 6z" fill="#9dd4c5" stroke="#5e9f8e" stroke-width="3"/>
+
+    <!-- Gently rounded front with two curious headlamps. -->
+    <path d="M207 182c16-10 73-23 108-29 20 0 42 8 50 21q10 16 10 34 0 13-12 20c-29 15-83 25-122 23q2-42-34-69z" fill="#c6e9de"/>
+    <path d="M217 180c23-10 76-21 100-25 15 1 27 4 37 9m-6 68c-20 9-55 16-92 17" fill="none" stroke="#78aa98" stroke-width="2.5"/>
+    <path d="M239 177q48-15 78-17" fill="none" stroke="#edf7f3" stroke-width="3.5"/>
+    <path d="M244 196c0-8 8-16 18-18 10-2 17 3 17 11s-8 15-17 17c-11 3-18-2-18-10z" fill="#fff9e9" stroke="#94b8a3" stroke-width="2.5"/>
+    <path d="M335 177c0-7 5-13 11-14 7-1 12 4 12 10s-5 13-12 15c-6 1-11-4-11-11z" fill="#fff9e9" stroke="#94b8a3" stroke-width="2.5"/>
+    <ellipse cx="264" cy="192" rx="4.5" ry="5" fill="#426f65"/>
+    <ellipse cx="347" cy="175" rx="4" ry="4.5" fill="#426f65"/>
+    <circle cx="265.3" cy="190.5" r="1.3" fill="#fff"/>
+    <circle cx="348" cy="173.5" r="1.15" fill="#fff"/>
+    <path d="M288 202q11 12 23-4" fill="none" stroke="#4b8575" stroke-width="3.5"/>
+    <ellipse cx="256" cy="212" rx="8" ry="4.2" fill="#edb7be" transform="rotate(-10 256 212)"/>
+    <ellipse cx="352" cy="193" rx="6" ry="3.2" fill="#edb7be" transform="rotate(-16 352 193)"/>
+    <path d="M258 230q43 0 84-15" fill="none" stroke="#5e9f8e" stroke-width="3.2"/>
+    <path d="M260 232q38 0 71-11" fill="none" stroke="#f1f8ec" stroke-width="2.5"/>
+    <path d="m74 184 7 2" fill="none" stroke="#dfba7e" stroke-width="4"/>
+
+    <!-- Near wheels are gently skewed with the side view. -->
+    <g transform="rotate(-11 100 213)">
+      <ellipse cx="100" cy="213" rx="17" ry="25" fill="#497d73" stroke="#426f65" stroke-width="3"/>
+      <ellipse cx="99" cy="213" rx="9.8" ry="16" fill="#d9c8e9" stroke="#a18bac" stroke-width="2.5"/>
+      <ellipse cx="98" cy="213" rx="3.5" ry="6.5" fill="#f5edf8"/>
+    </g>
+    <g transform="rotate(-12 210 236)">
+      <ellipse cx="210" cy="236" rx="23" ry="33" fill="#497d73" stroke="#426f65" stroke-width="3.5"/>
+      <ellipse cx="208" cy="236" rx="14" ry="22" fill="#d9c8e9" stroke="#a18bac" stroke-width="2.7"/>
+      <ellipse cx="208" cy="236" rx="6" ry="10" fill="#f5edf8" stroke="#b9a2cc" stroke-width="2"/>
+    </g>
+    <path d="M78 206c-1-16 7-29 18-29 12 0 22 13 25 28m59 23c-3-21 8-40 24-42 17-1 32 17 35 39" fill="none" stroke="#3f8473" stroke-width="4"/>
+    <path d="M183 220c0-18 10-31 21-32 12-1 22 9 28 20" fill="none" stroke="#e3f4ea" stroke-width="3"/>
+
+    <!-- A light lilac inspection clipboard. -->
+    <g transform="rotate(9 354 90)">
+      <rect x="328" y="57" width="51" height="64" rx="10" fill="#f5edf8" stroke="#a58bb8" stroke-width="3"/>
+      <rect x="341" y="52" width="25" height="10" rx="4.5" fill="#d9c8e9" stroke="#a58bb8" stroke-width="2.5"/>
+      <circle cx="353.5" cy="57" r="1.7" fill="#fff"/>
+      <path d="m337 76 3 3 5-6m-8 16 3 3 5-6" fill="none" stroke="#78aa98" stroke-width="2.8"/>
+      <path d="M351 76h16m-16 13h12" fill="none" stroke="#b9a2cc" stroke-width="2.8"/>
+      <circle cx="372" cy="111" r="12" fill="#c7e5da" stroke="#78aa98" stroke-width="2.5"/>
+      <path d="m366.5 111 4 4 7-8" fill="none" stroke="#4b8575" stroke-width="2.7"/>
+    </g>
+    <path d="M78 104v12m-6-6h12" stroke="#dfba7e" stroke-width="3.2"/>
+    <path d="M394 144v9m-4.5-4.5h9" stroke="#b5a0d1" stroke-width="3"/>
+    <path d="M290 69v7m-3.5-3.5h7" stroke="#b5a0d1" stroke-width="2.6"/>
+  </g>
+</svg>

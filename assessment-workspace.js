@@ -6,15 +6,10 @@ const hub = $('assessmentHub');
 const editor = $('assessmentEditorBar');
 const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
 let app = window.BAMCO_ASSESSMENT;
-const apiURL='https://cwpfzvcwuiawjtvsnpkq.supabase.co/rest/v1/rpc/';
-const apiKey='sb_publishable_EWHLDNy9MiO26ZqdRYvSxQ_UU9pe3GM';
-async function requestRpc(name,args={}){
- try{
-  const response=await fetch(apiURL+name,{method:'POST',headers:{apikey:apiKey,'Content-Type':'application/json'},body:JSON.stringify(args)});
-  const data=await response.json();
-  return response.ok?{data,error:null}:{data:null,error:data};
- }catch(error){return {data:null,error}}
-}
+const portal=window.BAMCO_PORTAL;
+const can=permission=>portal.can(permission);
+const requestRpc=(name,args={})=>portal.rpc(name,args);
+const canOpenCase=()=>['setup','drive','durability','static','comprehensive','results'].some(can);
 const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
@@ -260,17 +255,19 @@ function renderWelcome() {
   title.replaceChildren(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
   for (const card of hub.querySelectorAll('.gate-card')) {
     const key = card.dataset.bootScreen || 'weighting';
+    card.hidden=!can(key);
     card.setAttribute('aria-label',tr(key));
     card.querySelector('strong').textContent = tr(key);
     card.querySelector('.gate-cta').textContent = tr(key+'Cta');
     card.removeAttribute('aria-busy');
   }
+  if(![...hub.querySelectorAll('.gate-card')].some(card=>!card.hidden)){let message=hub.querySelector('.portal-empty');if(!message){message=node('p','','portal-empty');hub.append(message)}message.textContent=portal.text('empty')}
   hub.dataset.language = language;
   hub.dataset.welcome = 'true';
 }
 hub?.addEventListener('click', event=>{
   const target = event.target.closest('[data-boot-screen]');
-  if (target) navigate(target.dataset.bootScreen);
+  if (target && can(target.dataset.bootScreen)) navigate(target.dataset.bootScreen);
 });
 
 function report(error) {
@@ -300,13 +297,15 @@ function render() {
   $('brandTitle').textContent = tr('brandTitle');
   document.querySelector('.brand-logo').alt = tr('brandAlt');
   document.title = tr('brandName')+' | '+tr('brandTitle');
+  portal.applyLanguage(language);
+  if(!portal.user)return;
   if (editor) {
     $('assessmentGpsStatus').textContent = gpsStatus ? tr(gpsStatus) : '';
     $('assessmentGpsLabel').textContent = tr('locationShareTitle');
     $('assessmentBack').textContent = tr('back');
     $('assessmentShare').textContent = tr('share');
     $('assessmentStop').textContent = tr('stop');
-    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active';
+    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active'||!(can('drive')||can('durability'));
     if (!current) {
       $('caseReturn').textContent=tr('back');
       $('caseRetry').textContent=tr('retry');
@@ -333,7 +332,7 @@ function render() {
     else {
       host.textContent=tr('load');
       Promise.all([loadExternal('./weighting-catalog.js'),loadExternal('./weighting-content.js?v=subcriteria-1'),
-        loadExternal('./weighting.js?v=subcriteria-1'),loadStyles('weighting')]).then(open).catch(()=>{
+        loadExternal('./weighting.js?v=portal-access-1'),loadStyles('weighting')]).then(open).catch(()=>{
           if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render));
         });
     }
@@ -375,6 +374,7 @@ function caseURL(id) {
   return url.href;
 }
 async function navigate(next,writeURL=true) {
+  if(next!=='home'&&!can(next)){next='home';writeURL=true}
   if(writeURL && next!==listScreen()){
     const url=new URL(location.href);
     url.searchParams.delete('observer');
@@ -400,7 +400,8 @@ async function navigate(next,writeURL=true) {
     return;
   }
   if(next==='home'){
-   loadList('active');loadList('completed');
+   if(can('active'))loadList('active');
+   if(can('history'))loadList('completed');
   }
   if (!['active','history'].includes(next)) return;
   const {data,error} = await loadList(status,true);
@@ -412,7 +413,7 @@ async function navigate(next,writeURL=true) {
 }
 
 function renderRows() {
-  if (screen === 'active') {
+  if (screen === 'active' && can('setup')) {
     const createPanel = node('section','','assessment-create-panel');
     const createHeading = node('div','','assessment-create-heading');
     createHeading.append(node('span','+','assessment-create-icon'),node('h2',tr('newAssessmentTitle')));
@@ -457,13 +458,13 @@ function renderRows() {
     const actions = node('div','','assessment-row-actions');
     const open=node('a',tr('open'),'assessment-action assessment-open-action');
     open.href=caseURL(row.id);
-    actions.append(open);
-    actions.append(button('rename',()=>{
+    if(canOpenCase()) actions.append(open);
+    if(can('setup')) actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
     },'assessment-action assessment-secondary-action'));
-    actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
-    actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
+    if(can('setup')&&can('active')&&can('history')) actions.append(button(active?'finish':'reopen',()=>mutate(row,{status:active?'completed':'active'}),'assessment-action assessment-secondary-action'));
+    if(portal.user.admin) actions.append(button('remove',()=>{if(confirm(tr('confirm')))mutate(row,null)},'assessment-action assessment-delete-action'));
     item.append(heading,top,actions);
     grid.append(item);
   }
@@ -511,9 +512,9 @@ async function openAssessment(id) {
     $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
     $('assessmentShare').disabled=false;
     $('assessmentStop').disabled=true;
-    $('assessmentGps').classList.toggle('hidden',data.status!=='active');
+    $('assessmentGps').classList.toggle('hidden',data.status!=='active'||!(can('drive')||can('durability')));
     window.BAMCO_I18N?.setLanguage(language);
-    app.open(data.snapshot,queueSave,data.status!=='active');
+    app.open(data.snapshot,queueSave,data.status!=='active',can);
     render();
     editor.classList.remove('hidden');
     entry.hidden=true;
@@ -800,6 +801,7 @@ window.addEventListener('beforeunload',event => {
 });
 
 window.BAMCO_CASES={
+ hasUnsaved(){return Boolean(pending||saving)},
  async saveNow(snapshot){
   if(!current||current.status!=='active'||app.isReadOnly())return false;
   const row=current;recovery=null;pending=structuredClone(snapshot);if(syncState==='overlap')syncState='unsaved';await flush();
@@ -811,11 +813,14 @@ window.BAMCO_CASES={
  async read(id){const {data,error}=await ownerRequest('open',{id});if(error||!data)throw error||new Error('پرونده در دسترس نیست.');return data}
 };
 window.BAMCO_WORKSPACE_READY=true;
+$('brandIcon').href=document.querySelector('.brand-logo').src;
+render();
+portal.start(()=>{
 if(language==='zh') loadStyles('zh').catch(()=>{});
 if (hub) {
   window.addEventListener('popstate',()=>navigate(listScreen(),false));
-  window.addEventListener('pageshow',e=>{if(e.persisted)navigate(listScreen(),false)});
-  navigate(window.BAMCO_BOOT_SCREEN || listScreen());
+  window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
+  navigate(listScreen());
 } else if (editor) {
   const query=new URLSearchParams(location.search);
   const id=query.get('id');
@@ -825,5 +830,6 @@ if (hub) {
   $('caseRetry').onclick=()=>openAssessment(id);
   openAssessment(id);
 }
+},language);
 })();
 

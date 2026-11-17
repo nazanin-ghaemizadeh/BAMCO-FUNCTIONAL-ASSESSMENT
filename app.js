@@ -362,6 +362,16 @@ const modes={
 };
 const pages=new Map();
 let dashboardModule=null;
+let hasPermission=()=>true;
+function pageAllowed(page){
+ if(!page)return false;
+ if(page.tab==='modules')return true;
+ if(page.tab==='setup')return hasPermission('setup');
+ if(page.tab==='assessmentTypes')return hasPermission('results')||Object.keys(modes).some(mode=>hasPermission(mode==='supplementary'?'static':mode));
+ if(page.scope)return hasPermission('results');
+ const mode=page.tab.replace(/Menu$/,'');
+ return hasPermission(mode==='supplementary'?'static':mode)||(page.tab.endsWith('Menu')&&hasPermission('results'));
+}
 function definePage(tab,path,parent,title,cards=null,scope=null){
  pages.set(tab,{tab,path,parent,title,cards,scope});
 }
@@ -385,6 +395,7 @@ function renderGate(){
  if(page?.cards){
    const grid=document.createElement('div');grid.className='gate-grid';
    for(const [destination,label,icon] of page.cards){
+     if(!pageAllowed(pages.get(destination)))continue;
      const card=document.createElement('button');card.type='button';card.className='gate-card';card.dataset.gateIcon=icon;
      const scope=pages.get(destination).scope;
      if(scope)card.dataset.moduleDashboard=scope;else card.dataset.open=destination;
@@ -428,8 +439,8 @@ function restoreRoute(){
      if(day<=max){page=pathPages.get(daily[1]);section=daily[3]||'menu'}
    }
  }
- page??=pages.get('modules');
- if(!state.setupComplete&&!page.cards&&page.tab!=='setup')page=pages.get('setup');
+ if(!pageAllowed(page)){page=pages.get('modules');section='days'}
+ if(!state.setupComplete&&!page.cards&&page.tab!=='setup'){page=pages.get(hasPermission('setup')?'setup':'modules');section='days'}
  activatePage(page);
  dayScreen=section;
  if(page.tab==='drive')state.driveDay=day;
@@ -535,10 +546,10 @@ document.dispatchEvent(new Event('bamco:render'));
 }
 function changeTab(tab){
  let page=pages.get(tab);
- if(!page)return;
+ if(!pageAllowed(page))return;
  if(!state.setupComplete&&!page.cards&&tab!=='setup'){
    toast('ابتدا مشخصات خودرو را ثبت کنید.');
-   page=pages.get('setup');
+   page=pages.get(hasPermission('setup')?'setup':'modules');
  }
  activatePage(page);finishNavigation();
 }
@@ -709,7 +720,8 @@ document.addEventListener('change',e=>{const el=e.target;if(readOnly||scoreConte
 document.addEventListener('input',e=>{if(e.target.id==='questionSearch'){state.query=e.target.value;state.page=0;const field=e.target;const pos=field.selectionStart;renderQuestions();const newField=byId('questionSearch');newField.focus();newField.setSelectionRange(pos,pos)}});
 byId('importBackup').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const assessment=cloudSave;const fr=new FileReader();fr.onload=()=>{if(assessment!==cloudSave)return;try{const obj=JSON.parse(fr.result);if(!obj||!obj.records||!obj.config)throw Error('Invalid');if(!confirm('اطلاعات موجود با فایل پشتیبان جایگزین شود؟'))return;state.config=normalizeConfig(obj.config,true);state.records=obj.records;state.mileage=obj.mileage||{drive:{},durability:{}};state.missions=obj.missions||{};state.durabilitySchedule=obj.durabilitySchedule;state.checkpointAssignments=obj.checkpointAssignments||{};state.setupComplete=true;save();render();toast('بازیابی پشتیبان انجام شد.')}catch(err){toast('فایل JSON معتبر نیست.')}};fr.readAsText(file);e.target.value=''});
 window.BAMCO_ASSESSMENT={
-  open(data,onSave,locked){
+  open(data,onSave,locked,permission=()=>true){
+    hasPermission=permission;
     caseGeneration++;draft=null;cloudSave=onSave;readOnly=locked;dayScreen='days';dashboardModule=null;
     document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select').forEach(el=>el.disabled=locked);
     Object.assign(state,{
@@ -753,7 +765,7 @@ window.BAMCO_ASSESSMENT={
     }
   },
   saveNow:save,saveDraft,editSession(){return draft},hasPendingImages(){return currentPictures().size>0},trackPicture,async waitForImages(){const pictures=currentPictures();while(pictures.size)await Promise.all([...pictures])},
-  openDashboard(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Dashboard');else{dashboardModule=null;state.tab='results';dayScreen='days';render()}},
+  openDashboard(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Dashboard');else if(hasPermission('results')){dashboardModule=null;state.tab='results';dayScreen='days';render()}},
   navigateModule(mode){if(Object.hasOwn(modes,mode))changeTab(mode+'Menu')},reportMode(){return dashboardModule},
   dayContext,scoreContext,
   criterionNames(){return categories.slice()},

@@ -13,7 +13,7 @@ begin
   insert into auth.sessions(id,user_id,created_at,updated_at) values(sid,uid,now(),now());
   perform set_config('request.jwt.claims',jsonb_build_object('sub',uid,'session_id',sid,'role','authenticated')::text,true);
   if private.bamco_actor()->>'id' is distinct from uid::text then raise exception 'Profile lookup failed';end if;
-  res:=private.bamco_assessment_impl('create',jsonb_build_object('title','Portal permission fixture','snapshot',original));
+  res:=private.bamco_assessment_impl('create',jsonb_build_object('title','Portal permission fixture','assessment_type','drive','snapshot',original));
   item:=(res->>'id')::uuid;
   res:=public.bamco_assessment('open',jsonb_build_object('id',item));doc:=res->'snapshot';
   if doc->'records' ? 'durability:1:test' or doc->'config' ? 'legacy' or doc->'missions' ? 'durability:1'

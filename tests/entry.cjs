@@ -10,6 +10,10 @@ async function until(check){
 function visit(path,url,reply,options={}){
   const dom=new JSDOM(fs.readFileSync(path,'utf8'),{url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
   const w=dom.window,d=w.document,fetched=[];
+  if(!w.HTMLDialogElement.prototype.showModal){
+    w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
+    w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
+  }
   w.structuredClone=structuredClone;
   w.scrollTo=()=>{};
   w.HTMLElement.prototype.scrollIntoView=()=>{};
@@ -58,6 +62,66 @@ function visit(path,url,reply,options={}){
   assert.deepEqual(landing.fetched,[]);
   assert(!l.querySelector('#caseView'));
   landing.close();
+
+  const newRows=[];
+  const typedHome=visit('index.html','https://example.test/',({operation,args})=>{
+    if(operation==='list')return args.status==='active'?newRows:[];
+    assert.equal(operation,'create');
+    newRows.push({...row,title:args.title,assessment_type:args.assessment_type});return {id:row.id};
+  });
+  const ui=typedHome.d;
+  ui.querySelector('[data-create-test]').click();
+  const dialog=ui.querySelector('.assessment-create-panel'),form=dialog.querySelector('form');
+  assert(dialog.open);assert.equal(form.checkValidity(),false);
+  form.querySelector('input[type=text]').value='Typed fixture';assert.equal(form.checkValidity(),false);
+  form.querySelector('[value=durability]').click();form.requestSubmit();
+  await until(()=>ui.querySelector('.assessment-row-title')?.textContent==='Typed fixture');
+  assert.equal(new URL(typedHome.w.location.href).searchParams.get('type'),'durability');
+  ui.querySelector('.assessment-back-action').click();
+  assert.equal(ui.querySelectorAll('.assessment-type-card').length,4);
+  ui.querySelector('[data-type=static]').click();
+  await until(()=>ui.querySelector('.assessment-empty-state'));assert.equal(ui.querySelector('.assessment-row'),null);
+  typedHome.close();
+
+  for(const [kind,mode] of [['drive','drive'],['durability','durability'],['static','supplementary'],['comprehensive','comprehensive']]){
+    let stored={};
+    const typed=visit('case.html',url+'#types/'+(kind==='drive'?'supplementary':'drive')+'/scores',({operation,args})=>{
+      if(operation==='open')return {...row,assessment_type:kind,snapshot:stored};
+      assert.equal(operation,'save');stored=structuredClone(args.snapshot);return {revision:6};
+    });
+    const doc=typed.d;
+    await until(()=>!doc.getElementById('caseView').hidden);
+    assert.equal(typed.w.location.hash,'');
+    const gates=[...doc.querySelectorAll('#moduleLanding button')];
+    assert.deepEqual(gates.map(b=>b.dataset.open),['setup',mode]);
+    gates[1].click();assert.equal(doc.body.dataset.view,'setup');
+    assert.equal(doc.querySelectorAll('#vehicleForm > .formgrid > .field:not([hidden])').length,kind==='drive'||kind==='durability'?7:6);
+    assert.equal(doc.getElementById('driveKm').closest('.field').hidden,kind!=='drive');
+    assert.equal(doc.querySelector('.durability-planner-setup').hidden,kind!=='durability');
+    if(kind==='durability'){
+      const target=doc.getElementById('durKm');assert.equal(target.type,'range');
+      assert.deepEqual([target.min,target.max,target.step,target.value],['10000','50000','5000','35000']);
+      const update=el=>el.dispatchEvent(new typed.w.Event('input',{bubbles:true}));
+      const days=()=>doc.getElementById('durDays').value;
+      assert.equal(days(),'۸۹');assert(doc.getElementById('startCity').readOnly);
+      assert.equal(doc.getElementById('startCity').value,'تهران');
+      const shares=[...doc.querySelectorAll('[id^=share-]')];
+      assert(shares.every(el=>el.readOnly));
+      assert.deepEqual(shares.map(el=>el.value),['۲۵','۴۰','۱۵','۲','۱۸']);
+      doc.getElementById('twoDiff').value='yes';doc.getElementById('twoDiff').dispatchEvent(new typed.w.Event('change',{bubbles:true}));
+      assert.deepEqual(shares.map(el=>el.value),['۲۵','۴۰','۱۵','۲','۱۸']);
+      for(const value of ['10000','50000','35000']){target.value=value;update(target);assert.equal(target.value,value)}
+      const cap=doc.getElementById('cap-urban');cap.value='150';update(cap);assert.notEqual(days(),'۸۹');
+      cap.value='300';update(cap);assert.equal(days(),'۸۹');
+    }
+    doc.getElementById('vehicleForm').requestSubmit();
+    await until(()=>doc.body.dataset.view===mode);
+    assert(stored.setupComplete);
+    if(kind==='durability'){assert.equal(stored.durabilitySchedule.length,89);assert.equal(stored.durabilitySchedule.at(-1).cum,35000)}
+    else assert.equal(stored.durabilitySchedule,undefined);
+    assert.equal(doc.getElementById('backModulesBtn').dataset.open,'modules');
+    typed.close();
+  }
 
   const session=visit('case.html',url,reply,{failOnce:'data.js'});
   const {w,d,fetched}=session;

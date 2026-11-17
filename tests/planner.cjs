@@ -9,6 +9,26 @@ for(const target of [1,101,5000,45000,200000])for(const twoDiff of [false,true])
  if(!twoDiff)assert(!p.schedule.some(d=>d.routeId==='offroad'));
 }
 assert.throws(()=>planner.calculate({target:0}));assert.throws(()=>planner.calculate({target:5000,shares:{urban:50}}));
+for(const target of [10000,15000,20000,25000,30000,35000,40000,45000,50000]){
+ const plan=planner.calculate({target,fixed:true,twoDiff:false});
+ assert.deepEqual(plan.rows.map(r=>r.weight),[25,40,15,2,18]);
+ assert.equal(plan.schedule.at(-1).cum,target);
+ for(const row of plan.rows)for(const cycle of [1,2,3,4]){
+  const legs=plan.schedule.filter(day=>day.cycle===cycle&&day.routeId===row.id);
+  assert(legs.every(day=>day.km>0&&day.km<=row.cap));
+  assert.equal(legs.reduce((sum,day)=>sum+day.km,0),row.km/4);
+ }
+ if(target===35000){
+  assert.deepEqual(plan.rows.map(r=>[r.km,r.days,r.lastKm]),[[8750,32,87.5],[14000,21,700],[5250,12,312.5],[700,4,175],[6300,20,175]]);
+  const mileage={};
+  for(const day of plan.schedule.slice(0,9)){
+   mileage[day.day]=day.km;
+   const after=planner.replan({plan:plan.schedule,fromDay:day.day+1,mileage,rows:plan.rows});
+   assert.equal(after.length,89);assert.equal(after.at(-1).cum,35000);
+  }
+ }
+}
+for(const target of [5000,11000,55000])assert.throws(()=>planner.calculate({target,fixed:true}));
 const p=planner.calculate({target:45000,twoDiff:true});
 const original=structuredClone(p.schedule),mileage={1:p.schedule[0].km,2:p.schedule[1].km};
 const next=planner.replan({plan:p.schedule,fromDay:3,replacement:{...p.schedule[2],km:50,origin:'قم',destination:'کاشان'},mileage,rows:p.rows});

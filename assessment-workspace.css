@@ -56,12 +56,33 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 #assessmentHub .assessment-list-page-title {text-align:center}
 #assessmentHub .assessment-page-toolbar {display:flex;justify-content:flex-start;margin:0 0 -2.75rem;position:relative;z-index:2}
 #assessmentHub .assessment-back-action {min-width:0;width:auto;padding-inline:1.15rem;background:#fff}
-#assessmentHub .assessment-create-panel {display:grid;grid-template-columns:minmax(12rem,.75fr) minmax(20rem,1.25fr);align-items:center;gap:clamp(18px,4vw,55px);margin:1.35rem 0 2rem;padding:24px 28px;border:1px solid #d8e8df;border-radius:20px;background:linear-gradient(120deg,#f4faf6,#fff);box-shadow:0 12px 35px #274c3c0a;text-align:start}
-#assessmentHub .assessment-create-heading {display:flex;align-items:center;gap:13px;color:#234d3f}
-#assessmentHub .assessment-create-heading h2 {margin:0;font-size:24px;text-align:start}
-#assessmentHub .assessment-create-icon {display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;background:#dff1e7;color:#26765b;font:28px/1 Arial,sans-serif;text-align:center}
-#assessmentHub .assessment-create-form {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin:0}
-#assessmentHub .assessment-create-form input {width:100%;min-height:48px;border:1px solid #cfe1d7;border-radius:12px;background:#fff;padding-inline:16px}
+#assessmentHub .assessment-new-launch {display:inline-flex;align-items:center;gap:.6rem;margin:0 auto .5rem;padding:.55rem 1.3rem;border:1px solid #206c57;border-radius:14px;background:#226c54;color:white}
+.assessment-new-launch span {font:24px/1 sans-serif}
+#assessmentHub .assessment-create-panel {width:min(34rem,calc(100vw - 28px));max-height:90dvh;overflow:auto;margin:auto;padding:26px;border:1px solid #bdd5c9;border-radius:22px;background:#fbfdfb;color:#254b40;text-align:start;box-shadow:0 24px 78px #18382e40}
+.assessment-create-panel::backdrop {background:#1f3938a3}
+.assessment-create-panel h2 {margin:0 0 15px}
+.assessment-create-form {display:grid;gap:15px}
+.assessment-create-form label {text-align:start}
+.assessment-create-form input[type=text] {width:100%;min-height:46px;margin-top:6px;border:1px solid #c3dbcd;border-radius:11px;background:#fff;padding-inline:12px}
+.assessment-type-picker {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;margin:0;padding:0}
+.assessment-type-picker legend {padding:0;margin-bottom:7px}
+.assessment-type-picker label {display:flex;align-items:center;gap:6px;padding:9px;border:1px solid #d6e5dc;border-radius:11px;background:white;cursor:pointer}
+.assessment-type-picker label:has(:checked){border-color:#499276;background:#e8f4ed}
+.assessment-type-picker input {accent-color:#257456;flex:0 0 auto}
+.assessment-type-picker svg {width:26px;height:26px;flex:none}
+.assessment-create-form [role=status]:empty {display:none}
+.assessment-create-actions {display:flex;gap:8px}
+.assessment-type-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:52rem;margin:2.8rem auto 1.5rem}
+#assessmentHub .assessment-type-card {width:100%;min-height:155px;display:grid;justify-items:center;align-content:center;gap:8px;background:#f7fbf8;border:1px solid #c9e0d4;border-radius:20px;color:#264f41}
+#assessmentHub .assessment-type-card:hover {border-color:#66a48e}
+#assessmentHub .assessment-type-card:nth-child(2){background:#faf6fc;border-color:#ded3e8}
+#assessmentHub .assessment-type-card:nth-child(3){background:#fcf8f0;border-color:#e9dcc5}
+#assessmentHub .assessment-type-card:nth-child(4){background:#f2f7fa;border-color:#cbdde7}
+.assessment-type-card svg {width:64px;height:64px}
+.assessment-type-card strong {font-size:22px}
+.assessment-legacy {margin:1.5rem auto;text-align:start;max-width:52rem}
+.assessment-legacy summary {cursor:pointer;color:#456657}
+@media(max-width:480px){.assessment-type-grid{gap:9px}.assessment-type-card strong{font-size:17px}.assessment-type-picker label{flex-wrap:wrap}}
 #assessmentHub .assessment-create-action {min-width:9rem;background:#226c54;color:#fff;border-color:#226c54}
 #assessmentHub .assessment-create-action:hover:not(:disabled) {background:#195840;border-color:#195840;color:#fff}
 #assessmentHub .assessment-list-section {margin-top:1.2rem;text-align:start}
@@ -95,7 +116,6 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 #assessmentEditorBar .assessment-action[hidden] {display:none}
 #assessmentHub .gate-card {grid-template-rows:minmax(0,1fr) minmax(2.4rem,auto) minmax(2.25rem,auto)}
 @media (max-width:800px) {
-  #assessmentHub .assessment-create-panel {grid-template-columns:1fr;gap:16px}
   #assessmentHub .assessment-card-grid {grid-template-columns:1fr}
   #assessmentHub .gate-grid.three {grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,46rem)}
 }
@@ -111,7 +131,6 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
   #assessmentHub.assessment-list-page .gate-title {margin-top:6px}
   #assessmentHub .assessment-create-panel {padding:18px 15px;border-radius:16px}
   #assessmentHub .assessment-create-form {grid-template-columns:1fr}
-  #assessmentHub .assessment-create-action {width:100%}
   #assessmentHub .assessment-list-heading {align-items:flex-start}
   #assessmentHub .assessment-list-heading h2 {font-size:21px}
   #assessmentHub .assessment-row {min-height:0;padding:16px}
@@ -205,7 +224,19 @@ html body button,html body button strong {font-weight:400!important}
 #durabilityPreview {margin-top:20px;min-width:0}
 .planner-summary {display:flex;flex-wrap:wrap;gap:12px 28px;margin-bottom:14px;color:#226c54}
 #durDays {background:#edf7f1;color:#226c54}
-#vehicleForm #setupInfo {display:block!important}
+#vehicleForm #setupInfo:not([hidden]) {display:block!important}
+#vehicleForm [hidden] {display:none!important}
+#vehicleForm[data-type=drive] .drive-distance-field,#vehicleForm[data-type=durability] .durability-target-field {grid-column:1/-1;background:#f2f8f4;border:1px solid #caddcf;border-radius:16px;padding:14px 20px}
+.drive-distance-field .distance-icon {height:40px;width:40px;display:none}
+#vehicleForm[data-type=drive] .drive-distance-field {display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center}
+#vehicleForm[data-type=drive] .distance-icon {display:block}
+#vehicleForm[data-type=drive] #driveKm {width:6rem;text-align:center}
+#vehicleForm[data-type=durability] .durability-target-field {display:grid;grid-template-columns:1fr auto;gap:5px}
+#vehicleForm input[type=range] {grid-column:1/-1;grid-row:2;direction:ltr;accent-color:#267758;width:100%;padding:0;min-height:32px}
+#durTargetValue {font-weight:bold;color:#24634e;grid-row:1;grid-column:2}
+#durTargetLimits {display:flex;justify-content:space-between;direction:ltr;grid-column:1/-1;color:#5c7468}
+#durabilityCaps input[readonly] {background:#f0f4f1;color:#526b60}
+
 
 /* Centered durability inputs, summary cards, and a lighter calculation table. */
 .durability-planner-setup {padding:24px;border:1px solid #dce9e3;border-radius:22px;background:linear-gradient(140deg,#f5faf7,#fff);margin-top:28px}

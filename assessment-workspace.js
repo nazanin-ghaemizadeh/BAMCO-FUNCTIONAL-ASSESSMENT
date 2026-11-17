@@ -9,7 +9,10 @@ let app = window.BAMCO_ASSESSMENT;
 const portal=window.BAMCO_PORTAL;
 const can=permission=>portal.can(permission);
 const requestRpc=(name,args={})=>portal.rpc(name,args);
-const canOpenCase=()=>['setup','drive','durability','static','comprehensive','results'].some(can);
+const types={drive:'steering-brakes',durability:'wheels',static:'body',comprehensive:'final'};
+const canCreate=()=>can('active')&&can('setup');
+const canTrack=type=>(!type||type==='drive'||type==='durability')&&(type?can(type):can('drive')||can('durability'));
+const canOpenCase=type=>can('setup')||can('results')||(type?can(type):Object.keys(types).some(can));
 const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
@@ -90,7 +93,7 @@ const labels = {
   evaluator:['ارزیاب','Evaluator','评估员'],
   observer:['نظارت بر موقعیت مکانی','Location Monitoring','位置监控'],
   back:['بازگشت','Back','返回'],
-  create:['ارزیابی جدید','New assessment','新建评估'],
+  create:['ایجاد آزمون','Create test','创建试验'],
   name:['عنوان ارزیابی','Assessment title','评估名称'],
   open:['باز کردن','Open','打开'],
   rename:['ویرایش نام','Rename','重命名'],
@@ -144,10 +147,10 @@ const interfaceText = [
   ['label[for="power"]','قوای محرکه','Powertrain','动力总成'],
   ['label[for="gear"]','گیربکس','Transmission','变速箱'],
   ['label[for="driveType"]','سیستم محرک','Drivetrain','驱动形式'],
-  ['label[for="driveKm"]','هدف قابلیت رانندگی (کیلومتر)','Drivability distance target (km)','驾驶性能目标里程（公里）'],
+  ['label[for="driveKm"]','قابلیت رانندگی (کیلومتر)','Drivability distance (km)','驾驶性能目标里程（公里）'],
   ['label[for="durKm"]','هدف پیمایش دوام (کیلومتر)','Durability distance target (km)','耐久目标里程（公里）'],
   ['label[for="durDays"]','تعداد روزهای دوام (محاسبه خودکار)','Durability days (calculated)','耐久天数（自动计算）'],
-  ['#vehicleForm button[type="submit"]','تأیید و ورود به ارزیابی ←','Confirm and open assessment →','确认并进入评估 →'],
+  ['#vehicleForm button[type="submit"]','ذخیره مشخصات','Save specifications','保存车辆信息'],
   ['#vehicleForm .toolbar .tiny','مقادیر و نمره‌ها در دیتابیس این ارزیابی ذخیره می‌شوند.','Values and scores are stored with this assessment.','数值及评分保存在本评估的数据库中。'],
   ['#workPanel .sidebar h3','شاخص‌های ارزیابی','Assessment criteria','评估指标']
 ];
@@ -188,7 +191,13 @@ labels.locationRequest=['در حال دریافت اجازه موقعیت…','R
 labels.created=['ایجاد','Created','创建时间'];
 labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
-labels.newAssessmentTitle=['ایجاد ارزیابی جدید','Create a new assessment','创建新评估'];
+labels.newAssessmentTitle=['تعریف آزمون جدید','Define a new test','新建试验'];
+labels.chooseType=['نوع آزمون','Test type','试验类型'];
+labels.drive=['قابلیت رانندگی','Drivability','驾驶性能'];
+labels.durability=['آزمون دوام','Durability testing','耐久试验'];
+labels.static=['بررسی استاتیک','Static inspection','静态检查'];
+labels.comprehensive=['ارزیابی جامع','Comprehensive assessment','综合评估'];
+labels.oldCases=['پرونده‌های قبلی بدون نوع مشخص','Previous cases without an assigned type','未指定类型的旧档案'];
 labels.activeListTitle=['ارزیابی‌های در حال اجرا','Assessments in progress','进行中的评估'];
 labels.historyListTitle=['ارزیابی‌های خاتمه‌یافته','Completed assessments','已完成的评估'];
 labels.activeStatus=['در حال ارزیابی','In progress','进行中'];
@@ -196,6 +205,7 @@ labels.completedStatus=['خاتمه‌یافته','Completed','已完成'];
 labels.assessmentCount=['ارزیابی','assessment','项评估'];
 
 let gpsStatus = '';
+let category = null;
 let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
 let map, markers, poll, watch = null, heartbeat = null, locationSession = '', gpsGeneration = 0, gpsWrite = Promise.resolve(), refreshing = false, mapFitted = false;
 
@@ -253,6 +263,8 @@ function renderWelcome() {
   if (hub.dataset.language === language && hub.dataset.welcome === 'true') return;
   const title = hub.querySelector('h1');
   title.replaceChildren(tr('welcomeBefore'),node('span',tr('welcomeAccent')),tr('welcomeAfter'));
+  const add=hub.querySelector('[data-create-test]');
+  add.hidden=!canCreate();add.querySelector('strong').textContent=tr('newAssessmentTitle');
   for (const card of hub.querySelectorAll('.gate-card')) {
     const key = card.dataset.bootScreen || 'weighting';
     card.hidden=!can(key);
@@ -266,6 +278,7 @@ function renderWelcome() {
   hub.dataset.welcome = 'true';
 }
 hub?.addEventListener('click', event=>{
+  if(event.target.closest('[data-create-test]')&&canCreate()){openCreate();return}
   const target = event.target.closest('[data-boot-screen]');
   if (target && can(target.dataset.bootScreen)) navigate(target.dataset.bootScreen);
 });
@@ -305,7 +318,7 @@ function render() {
     $('assessmentBack').textContent = tr('back');
     $('assessmentShare').textContent = tr('share');
     $('assessmentStop').textContent = tr('stop');
-    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active'||!(can('drive')||can('durability'));
+    for(const id of ['assessmentShare','assessmentStop'])$(id).hidden=!current||current.status!=='active'||!canTrack(current?.assessment_type);
     if (!current) {
       $('caseReturn').textContent=tr('back');
       $('caseRetry').textContent=tr('retry');
@@ -339,7 +352,7 @@ function render() {
     return;
   }
   delete hub.dataset.welcome;
-  const title = node('h1',tr(screen),'gate-title welcome-title');
+  const title = node('h1',tr(category||screen),'gate-title welcome-title');
   const divider = node('div','','welcome-divider');
   divider.setAttribute('aria-hidden','true');
   divider.append(node('i'),node('i'),node('i'));
@@ -351,12 +364,22 @@ function render() {
   }
   if (screen !== 'home') {
     const toolbar = node('div','','assessment-page-toolbar');
-    const backButton = button('back',()=>navigate('home'),'assessment-action assessment-back-action');
+    const backButton = button('back',()=>navigate(category?'active':'home'),'assessment-action assessment-back-action');
     backButton.setAttribute('aria-label',tr('back'));
     toolbar.append(backButton);
     divider.after(toolbar);
   }
-  if (screen === 'active' || screen === 'history') renderRows();
+  if(screen==='active'&&!category){
+    renderCategories();
+    const legacy=rows.filter(row=>!row.assessment_type);
+    if(legacy.length){
+      const details=node('details','','assessment-legacy');
+      details.append(node('summary',tr('oldCases')+' ('+legacy.length.toLocaleString(locale())+')'));
+      renderRows(legacy,details,'oldCases');hub.append(details);
+    }
+  }else if(screen==='active'||screen==='history'){
+    renderRows(category?rows.filter(row=>row.assessment_type===category):rows,hub,screen==='active'?'activeListTitle':'historyListTitle');
+  }
   if (screen === 'observer') {
     renderMap();
   }
@@ -371,13 +394,20 @@ function caseURL(id) {
   const url=new URL('./case.html',location.href);
   url.searchParams.set('id',id);
   if(screen==='history')url.searchParams.set('from','history');
+  if(category)url.searchParams.set('type',category);
   return url.href;
 }
-async function navigate(next,writeURL=true) {
+function urlCategory(){
+ const type=new URLSearchParams(location.search).get('type');
+ return Object.hasOwn(types,type)?type:null;
+}
+async function navigate(next,writeURL=true,type=null) {
   if(next!=='home'&&!can(next)){next='home';writeURL=true}
-  if(writeURL && next!==listScreen()){
+  const nextType=next==='active'&&Object.hasOwn(types,type)?type:null;
+  if(writeURL && (next!==listScreen()||nextType!==urlCategory())){
     const url=new URL(location.href);
     url.searchParams.delete('observer');
+    if(nextType)url.searchParams.set('type',nextType);else url.searchParams.delete('type');
     url.hash='';
     if(next==='home')url.searchParams.delete('view');else url.searchParams.set('view',next);
     history.pushState(null,'',url);
@@ -385,7 +415,7 @@ async function navigate(next,writeURL=true) {
   clearInterval(poll);
   poll = null;
   const generation = ++syncGeneration;
-  screen = next;
+  screen = next;category=nextType;
   const status=next==='history'?'completed':'active';
   rows = ['active','history'].includes(next)?listCache.get(status)?.rows||[]:[];
   notice = '';
@@ -412,40 +442,68 @@ async function navigate(next,writeURL=true) {
   render();
 }
 
-function renderRows() {
-  if (screen === 'active' && can('setup')) {
-    const createPanel = node('section','','assessment-create-panel');
-    const createHeading = node('div','','assessment-create-heading');
-    createHeading.append(node('span','+','assessment-create-icon'),node('h2',tr('newAssessmentTitle')));
-    const form = node('form','','assessment-create-form');
-    const title = field('text','name');
-    title.maxLength = 120;
-    const createButton = node('button',tr('create'),'assessment-action assessment-create-action');
-    form.append(title,createButton);
-    form.onsubmit = async event => {
-      event.preventDefault();
-      await create(title.value,{},createButton);
-    };
-    createPanel.append(createHeading,form);
-    hub.append(createPanel);
+function typeIcon(key){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg'),use=document.createElementNS(ns,'use');
+  svg.setAttribute('viewBox','0 0 48 48');svg.setAttribute('aria-hidden','true');
+  use.setAttribute('href','./checklist-icons.svg#'+types[key]);svg.append(use);return svg;
+}
+function renderCategories(){
+  const grid=node('div','','assessment-type-grid');
+  for(const type of Object.keys(types)){
+    const card=node('button','','assessment-type-card');card.type='button';card.dataset.type=type;
+    const count=rows.filter(row=>row.assessment_type===type).length;
+    card.append(typeIcon(type),node('strong',tr(type)),node('span',count.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count'));
+    card.onclick=()=>navigate('active',true,type);grid.append(card);
   }
-
+  hub.append(grid);
+}
+function openCreate(){
+  if(!canCreate()||hub.querySelector('dialog[open]'))return;
+  const dialog=node('dialog','','assessment-create-panel'),form=node('form','','assessment-create-form');
+  const heading=node('h2',tr('newAssessmentTitle'));heading.id='createTestTitle';
+  dialog.setAttribute('aria-labelledby',heading.id);
+  const title=field('text','name');title.maxLength=120;
+  const label=node('label',tr('name'));label.append(title);
+  const choices=node('fieldset','','assessment-type-picker');choices.append(node('legend',tr('chooseType')));
+  for(const type of Object.keys(types)){
+    const option=node('label'),radio=node('input');radio.type='radio';radio.name='assessmentType';radio.value=type;radio.required=true;
+    option.append(radio,typeIcon(type),node('span',tr(type)));choices.append(option);
+  }
+  const actions=node('div','','assessment-create-actions'),submit=node('button',tr('create'),'assessment-action assessment-create-action');
+  submit.type='submit';
+  const status=node('p');status.setAttribute('role','status');
+  actions.append(submit,button('back',()=>dialog.close()));form.append(label,choices,status,actions);
+  dialog.append(heading,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+  form.onsubmit=async event=>{
+    event.preventDefault();const type=form.elements.assessmentType.value,name=title.value.trim();
+    if(!Object.hasOwn(types,type)||!name||submit.disabled)return;
+    submit.disabled=true;status.textContent=tr('saving');
+    const {data,error}=await ownerRequest('create',{title:name,assessment_type:type});
+    if(!dialog.isConnected||!dialog.open)return;
+    submit.disabled=false;
+    if(error||!data){status.textContent=tr('error');return}
+    dialog.close();await navigate('active',true,type);
+  };
+  dialog.showModal();title.focus();
+}
+function renderRows(visibleRows,host,headingKey){
   const list = node('section','','assessment-list-section');
   const listHeading = node('div','','assessment-list-heading');
   listHeading.append(
-    node('h2',tr(screen === 'active' ? 'activeListTitle' : 'historyListTitle')),
-    node('span',rows.length.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count')
+    node('h2',tr(headingKey)),
+    node('span',visibleRows.length.toLocaleString(locale())+' '+tr('assessmentCount'),'assessment-count')
   );
   list.append(listHeading);
   const grid = node('div','','assessment-card-grid');
-  if (rows.length === 1) grid.classList.add('is-single');
+  if (visibleRows.length === 1) grid.classList.add('is-single');
   list.append(grid);
-  if (!rows.length && !notice) {
+  if (!visibleRows.length && !notice) {
     const empty = node('div','','assessment-empty-state');
     empty.append(node('span','✓','assessment-empty-icon'),node('p',tr('empty')));
     grid.append(empty);
   }
-  for (const row of rows) {
+  for (const row of visibleRows) {
     const item = node('article','','surface assessment-row');
     const top = node('div','','assessment-row-top');
     const active = row.status === 'active';
@@ -458,7 +516,7 @@ function renderRows() {
     const actions = node('div','','assessment-row-actions');
     const open=node('a',tr('open'),'assessment-action assessment-open-action');
     open.href=caseURL(row.id);
-    if(canOpenCase()) actions.append(open);
+    if(canOpenCase(row.assessment_type)) actions.append(open);
     if(can('setup')) actions.append(button('rename',()=>{
       const title = prompt(tr('name'),row.title)?.trim();
       if (title && title.length <= 120 && title !== row.title) mutate(row,{title});
@@ -468,19 +526,7 @@ function renderRows() {
     item.append(heading,top,actions);
     grid.append(item);
   }
-  hub.append(list);
-}
-
-async function create(title,snapshot,control) {
-  title = title.trim();
-  if (!title || title.length > 120 || control.disabled) return;
-  control.disabled = true;
-  const generation = syncGeneration;
-  const {data,error} = await ownerRequest('create',{title,snapshot});
-  control.disabled = false;
-  if (generation !== syncGeneration) return;
-  if (error || !data) {report(error || 'Create failed');return}
-  location.assign(caseURL(data.id));
+  host.append(list);
 }
 
 async function mutate(row,values) {
@@ -488,7 +534,7 @@ async function mutate(row,values) {
   const {data,error} = await ownerRequest(values ? 'edit' : 'delete',{id:row.id,revision:row.revision,...values});
   if (generation !== syncGeneration) return;
   if (error || !data) {report(error || tr('conflict'));return}
-  await navigate(screen);
+  await navigate(screen,true,category);
 }
 
 async function openAssessment(id) {
@@ -512,9 +558,9 @@ async function openAssessment(id) {
     $('assessmentName').classList.toggle('assessment-name-latin',!/[\u0600-\u06ff]/.test(data.title));
     $('assessmentShare').disabled=false;
     $('assessmentStop').disabled=true;
-    $('assessmentGps').classList.toggle('hidden',data.status!=='active'||!(can('drive')||can('durability')));
+    $('assessmentGps').classList.toggle('hidden',data.status!=='active'||!canTrack(current?.assessment_type));
     window.BAMCO_I18N?.setLanguage(language);
-    app.open(data.snapshot,queueSave,data.status!=='active',can);
+    app.open(data.snapshot,queueSave,data.status!=='active',can,data.assessment_type);
     render();
     editor.classList.remove('hidden');
     entry.hidden=true;
@@ -629,6 +675,7 @@ if(editor) $('assessmentBack').onclick = async () => {
   const next = current.status === 'active' ? 'active' : 'history';
   pending = null;
   const listURL=new URL('./?view='+next,location.href);
+  if(next==='active'&&row.assessment_type)listURL.searchParams.set('type',row.assessment_type);
   const source=document.referrer?new URL(document.referrer):null;
   if(!history.state?.from&&source?.origin===listURL.origin&&source.pathname===listURL.pathname&&source.searchParams.get('view')===next&&history.length>1)history.back();
   else location.replace(listURL.href);
@@ -818,14 +865,14 @@ render();
 portal.start(()=>{
 if(language==='zh') loadStyles('zh').catch(()=>{});
 if (hub) {
-  window.addEventListener('popstate',()=>navigate(listScreen(),false));
+  window.addEventListener('popstate',()=>navigate(listScreen(),false,urlCategory()));
   window.addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
-  navigate(listScreen());
+  navigate(listScreen(),true,urlCategory());
 } else if (editor) {
   const query=new URLSearchParams(location.search);
   const id=query.get('id');
   $('brandIcon').href=document.querySelector('.brand-logo').src;
-  $('caseReturn').href='./?view='+(query.get('from')==='history'?'history':'active');
+  $('caseReturn').href=query.get('from')==='history'?'./?view=history':'./?view=active'+(urlCategory()?'&type='+urlCategory():'');
   window.addEventListener('pageshow',event=>{if(event.persisted)location.reload()});
   $('caseRetry').onclick=()=>openAssessment(id);
   openAssessment(id);

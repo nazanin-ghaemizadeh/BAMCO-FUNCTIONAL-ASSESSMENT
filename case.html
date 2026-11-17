@@ -74,7 +74,7 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
     <div class="portal-form-side">
       <h2 data-pt="signIn">ورود به سامانه</h2>
       <form id="portalLogin">
-        <label for="portalEmail" data-pt="email">نام کاربری یا ایمیل</label>
+        <label for="portalEmail" data-pt="username">نام کاربری</label>
         <input id="portalEmail" type="text" autocapitalize="none" spellcheck="false" dir="ltr" autocomplete="username" required maxlength="254">
         <label for="portalPassword" data-pt="password">رمز عبور</label>
         <div class="portal-password"><input id="portalPassword" type="password" dir="ltr" autocomplete="current-password" required><button type="button" id="portalReveal" aria-label="نمایش رمز عبور" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div>
@@ -212,7 +212,7 @@ const key='bamco-functional.auth.v1';
 const $=id=>document.getElementById(id);
 const words={
  motto1:['کیفیت از','Quality starts with','品质源于'],motto2:['ارزیابی دقیق','precise assessment','精准评估'],motto3:['آغاز می‌شود.','.','。'],
- signIn:['ورود به سامانه','Sign in','登录系统'],email:['نام کاربری یا ایمیل','Username or email','用户名或邮箱'],password:['رمز عبور','Password','密码'],
+ signIn:['ورود به سامانه','Sign in','登录系统'],username:['نام کاربری','Username','用户名'],email:['نام کاربری یا ایمیل','Username or email','用户名或邮箱'],password:['رمز عبور','Password','密码'],
  show:['نمایش رمز عبور','Show password','显示密码'],hide:['پنهان کردن رمز عبور','Hide password','隐藏密码'],close:['بستن','Close','关闭'],
  ownPassword:['تغییر رمز من','Change my password','修改我的密码'],currentPassword:['رمز عبور فعلی','Current password','当前密码'],
  newPass:['رمز عبور جدید','New password','新密码'],set:['ذخیره رمز عبور','Save password','保存密码'],
@@ -363,7 +363,12 @@ async function openUsers(){
  const r=await rpc('bamco_access_users');if(!panel.isConnected)return;
  if(r.error){list.append(element('p',t('network'),'portal-notice'),button('back',openUsers));return}
  for(const person of r.data){const row=element('article','','portal-person'),identity=element('div');identity.append(element('b',person.name));
- const email=element('small',person.username||person.email);email.dir='ltr';identity.append(email);row.append(identity);
+ const identifierLine=element('small');
+ const identifier=element('bdi',person.username||person.email);
+ identifier.dir='ltr';
+ identifierLine.append(identifier);
+ identity.append(identifierLine);
+ row.append(identity);
  if(person.admin){
    row.append(element('span',t('full'),'portal-hint'));
    if(person.id===profile.id)row.append(button('ownPassword',changeOwnPassword));

@@ -36,6 +36,7 @@ const words={
  remember:['این دستگاه را به خاطر بسپار','Remember this device','记住此设备'],
  needLink:['برای ورود با این نام کاربری، لینک اختصاصی خود را از مدیر بگیرید و باز کنید.','Open your private sign-in link from the administrator.','请打开管理员提供的专属登录链接。'],
  managedWeak:['رمز باید حداقل ۶ نویسه و حداکثر ۷۲ بایت باشد.','Use at least 6 characters and at most 72 bytes.','密码至少六个字符，最多七十二字节。'],
+ resume:['در حال باز کردن سامانه…','Opening the workspace…','正在打开工作区…'],
  wait:['در حال اتصال…','Connecting…','正在连接…'],car:['خودروی خندان در حال ارزیابی','A smiling car being inspected','正在接受检查的微笑汽车']
 };
 const staffDomain='staff.bamco.invalid';
@@ -76,7 +77,7 @@ async function request(path,body,token,method='POST'){
  if(!response.ok){const e=new Error('Request failed');e.status=response.status;e.code=data?.error||data?.code;throw e}
  return data;
 }
-function lock(){remember(null);profile=null;$('workspaceMain').hidden=true;$('portalGate').hidden=false;$('portalTools').hidden=true;if($('portalDialog').open)$('portalDialog').close()}
+function lock(){remember(null);profile=null;$('portalSessionState').hidden=true;$('workspaceMain').hidden=true;$('portalGate').hidden=false;$('portalTools').hidden=true;if($('portalDialog').open)$('portalDialog').close()}
 async function token(){
  if(!session)throw Error('No session');
  if(Date.now()+60000<session.until)return session.access_token;
@@ -92,7 +93,7 @@ function applyLanguage(value){
 async function authenticate(){
  const p=await request('/rest/v1/rpc/bamco_access_profile',{},await token());
  if(!p||!Array.isArray(p.grants)){lock();throw Object.assign(Error('No portal access'),{accessDenied:true})}
- profile=p;$('portalGate').hidden=true;$('workspaceMain').hidden=false;toolsBar();startWorkspace();
+ profile=p;$('portalSessionState').hidden=true;$('portalGate').hidden=true;$('workspaceMain').hidden=false;toolsBar();startWorkspace();
 }
 function messageFor(e,fallback){if(e.status===429)return 'limited';if(e.accessDenied)return 'forbidden';if(!e.status)return 'network';return fallback}
 let checking=false;
@@ -299,9 +300,20 @@ async function start(onReady,initialLanguage){
  remember(s);await authenticate();
  if(invitation&&profile.username===invitation.username&&$('portalRemember').checked){try{localStorage.setItem(linkSlot(invitation.username),invitation.key)}catch{}}
  invitation=null;$('portalTrust').hidden=true;form.reset();$('portalPassword').type='password';$('portalReveal').setAttribute('aria-pressed','false');$('portalReveal').setAttribute('aria-label',t('show'));notice()}catch(err){notice(err.ui||messageFor(err,'loginFailed'))}finally{submit.disabled=false}};
- if(recoveryLanding())return;
+ if(recoveryLanding()){$('portalGate').hidden=false;return}
  try{session=JSON.parse(sessionStorage.getItem(key)||'null')}catch{}
- if(session){notice('wait');try{await authenticate();notice()}catch(e){if([400,401,403].includes(e.status))lock();notice(messageFor(e,'loginFailed'))}}
+ if(!session?.access_token||!session?.refresh_token){lock();return}
+ const state=$('portalSessionState'),status=state.querySelector('[role=status]'),retry=$('portalSessionRetry');
+ async function resume(){
+  retry.hidden=true;
+  status.dataset.pt='resume';status.textContent=t('resume');state.hidden=false;
+  try{await authenticate()}catch(e){
+   if(e.accessDenied||[400,401,403].includes(e.status)){lock();notice(messageFor(e,'loginFailed'));return}
+   status.dataset.pt=messageFor(e,'network');status.textContent=t(status.dataset.pt);retry.hidden=false;
+  }
+ }
+ retry.onclick=resume;
+ await resume();
 }
 window.BAMCO_PORTAL={start,can,rpc,token,applyLanguage,text:t,get user(){return profile}};
 })();

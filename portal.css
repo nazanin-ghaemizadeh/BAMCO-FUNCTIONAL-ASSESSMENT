@@ -1,3 +1,5 @@
+#portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
+#portalSessionState p {margin:0 0 12px;text-align:center}
 #portalGate {width:min(100%,960px);margin:0 auto;text-align:center;padding:clamp(10px,4.8dvh,46px) 0 26px}
 html body #portalMotto {color:#25443b;text-align:center!important;font-size:clamp(22px,min(3.4vw,5dvh),48px);margin:0;line-height:1.4}
 #portalMotto em {color:#2b8b79;font-style:normal}

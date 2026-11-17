@@ -117,7 +117,7 @@ const labels = {
   leave:['با وجود تغییرات ذخیره‌نشده خارج می‌شوید؟','Leave with unsaved changes?','仍要离开并放弃未保存的更改？'],
   share:['اشتراک موقعیت مکانی','Share location','共享位置'],
   stop:['توقف موقعیت مکانی','Stop sharing','停止共享'],
-  gpsWait:['در انتظار موقعیت تازه از ارزیاب…','Waiting for a fresh location from the evaluator…','等待评估员发送最新位置…'],
+  gpsWait:['در حال حاضر هیچ پرونده‌ای موقعیت مکانی خود را به اشتراک نگذاشته است.','No cases are currently sharing a location.','目前没有共享位置的档案。'],
   gpsError:['GPS در دسترس نیست. مجوز موقعیت و اتصال را بررسی کنید.','GPS is unavailable. Check location permissions and your connection.','定位不可用。请检查定位权限和网络。'],
   position:['آخرین موقعیت','Latest location','最新位置'],
   backup:['دریافت نسخه پشتیبان','Download backup','下载备份'],
@@ -189,7 +189,11 @@ const languageButtons = [...$('assessmentLanguages').querySelectorAll('[data-lan
 labels.locationShareTitle=['اشتراک موقعیت مکانی ارزیاب','Evaluator location sharing','评估员位置共享'];
 labels.locationRequest=['در حال دریافت اجازه موقعیت…','Requesting location permission…','正在请求位置权限…'];
 labels.created=['ایجاد','Created','创建时间'];
-labels.liveCount=['خودرو با موقعیت فعال','vehicle with an active location','辆车正在共享位置'];
+labels.liveCount=['پرونده با موقعیت فعال','active locations','个活跃位置'];
+labels.locationInterval=['به‌روزرسانی هر ۱۰ ثانیه','Updates every 10 seconds','每 10 秒更新'];
+labels.locationStale=['به‌روزرسانی انجام نشد. نقشه‌ها آخرین موقعیت دریافتی را نشان می‌دهند.','Update failed. Maps show the last received locations.','更新失败，地图显示上次收到的位置。'];
+labels.accuracy=['دقت','Accuracy','精度'];
+labels.metres=['متر','m','米'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
 labels.newAssessmentTitle=['تعریف آزمون جدید','Define a new test','新建试验'];
 labels.chooseType=['نوع آزمون','Test type','试验类型'];
@@ -207,7 +211,8 @@ labels.assessmentCount=['ارزیابی','assessment','项评估'];
 let gpsStatus = '';
 let category = null;
 let screen = 'home', rows = [], current, notice = '', pending = null, saving, syncState = '', syncGeneration = 0;
-let map, markers, poll, watch = null, heartbeat = null, locationSession = '', gpsGeneration = 0, gpsWrite = Promise.resolve(), refreshing = false, mapFitted = false;
+let locationView = null;
+let watch = null, heartbeat = null, locationSession = '', gpsGeneration = 0, gpsWrite = Promise.resolve();
 
 function randomKey() {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
@@ -331,7 +336,7 @@ function render() {
     return;
   }
 
-  if (map) {map.remove();map = null}
+  closeLocationView();
   hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
   if (screen === 'home') { renderWelcome(); return }
   if (screen === 'weighting') {
@@ -381,7 +386,7 @@ function render() {
     renderRows(category?rows.filter(row=>row.assessment_type===category):rows,hub,screen==='active'?'activeListTitle':'historyListTitle');
   }
   if (screen === 'observer') {
-    renderMap();
+    openLocationView();
   }
 }
 
@@ -412,8 +417,6 @@ async function navigate(next,writeURL=true,type=null) {
     if(next==='home')url.searchParams.delete('view');else url.searchParams.set('view',next);
     history.pushState(null,'',url);
   }
-  clearInterval(poll);
-  poll = null;
   const generation = ++syncGeneration;
   screen = next;category=nextType;
   const status=next==='history'?'completed':'active';
@@ -421,14 +424,6 @@ async function navigate(next,writeURL=true,type=null) {
   notice = '';
   if (['active','history'].includes(next)&&!listCache.has(status)) notice = 'load';
   render();
-  if (next === 'observer') {
-    try{await Promise.all([loadStyles('map'),window.L?Promise.resolve():loadExternal('./vendor/leaflet-1.9.4.js')])}catch(error){if(generation===syncGeneration)report(error);return}
-    if(generation!==syncGeneration)return;
-    render();
-    await refreshMap();
-    if (generation === syncGeneration) poll = setInterval(refreshMap,5000);
-    return;
-  }
   if(next==='home'){
    if(can('active'))loadList('active');
    if(can('history'))loadList('completed');
@@ -783,49 +778,111 @@ async function stopGps() {
 }
 if(editor) $('assessmentStop').onclick = stopGps;
 
-function renderMap() {
-  const panel = node('div');
-  panel.id = 'assessmentMap';
-  const status = node('p',tr('gpsWait'));
-  status.id = 'assessmentMapStatus';
-  status.setAttribute('role','status');
-  hub.append(panel,status);
-  if (!window.L) return;
-  map = L.map(panel).setView([32,53],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,
-    attribution:'© OpenStreetMap'
-  }).addTo(map);
-  markers = L.featureGroup().addTo(map);
-  mapFitted = false;
-  setTimeout(()=>map?.invalidateSize(),0);
+function closeLocationView() {
+  if (!locationView) return;
+  clearInterval(locationView.timer);
+  for (const card of locationView.cards.values()) card.dispose();
+  locationView = null;
 }
 
-async function refreshMap() {
-  if (!map || refreshing) return;
-  const generation = syncGeneration;
-  refreshing = true;
-  const result = await requestRpc('bamco_live_locations');
-  const data = Array.isArray(result.data) ? result.data : [];
-  refreshing = false;
-  if (generation !== syncGeneration || !map) return;
-  markers.clearLayers();
-  $('assessmentMapStatus').textContent = result.error ? tr('error') :
-    data.length ? data.length.toLocaleString(locale())+' '+tr('liveCount') : tr('gpsWait');
-  if (result.error) return;
-  for (const point of data) {
-    const popup = node('div','','assessment-map-popup');
-    popup.append(node('strong',point.title));
-    popup.append(node('span',formatDate(point.recorded_at)));
-    if (Number.isFinite(Number(point.accuracy_m))) {
-      const accuracyLabel = language === 'fa' ? 'دقت: ' : language === 'zh' ? '精度：' : 'Accuracy: ';
-      popup.append(node('span',accuracyLabel+Math.round(Number(point.accuracy_m)).toLocaleString(locale())+(language==='zh'?' 米':' m')));
+function openLocationView() {
+  const grid = node('div','','location-grid');
+  const summary = node('div','','location-summary');
+  const status = node('span',tr('load'));
+  status.setAttribute('role','status');
+  summary.append(status,node('span',tr('locationInterval'),'location-interval'));
+  hub.append(summary,grid);
+  const view = {grid,status,cards:new Map(),busy:false,timer:null};
+  locationView = view;
+  view.timer = setInterval(()=>refreshLocations(view),10000);
+  refreshLocations(view);
+}
+
+function addLocationCard(view,point,coords) {
+  const figure = node('figure','','location-card');
+  const panel = node('div','','location-map');
+  const caption = node('figcaption');
+  const title = node('strong');
+  title.dir = 'auto';
+  title.id = 'location-title-'+point.assessment_id;
+  panel.setAttribute('role','region');
+  panel.setAttribute('aria-labelledby',title.id);
+  const time = node('time');
+  caption.append(title,time);
+  figure.append(panel,caption);
+  view.grid.append(figure);
+
+  const map = L.map(panel,{scrollWheelZoom:false}).setView(coords,15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+  const icon = L.divIcon({className:'location-pin',iconSize:[22,22],iconAnchor:[11,11]});
+  const marker = L.marker(coords,{icon}).addTo(map);
+  const resize = window.ResizeObserver && new ResizeObserver(()=>map.invalidateSize({animate:false}));
+  resize?.observe(panel);
+  const card = {figure,title,time,map,marker,dispose(){
+    resize?.disconnect();
+    map.remove();
+    figure.remove();
+  }};
+  view.cards.set(point.assessment_id,card);
+  return card;
+}
+
+function updateLocationCards(view,points) {
+  const active = new Set();
+  for (const point of points) {
+    if (!point.assessment_id || !Number.isFinite(point.latitude) || !Number.isFinite(point.longitude)) continue;
+    const id = point.assessment_id;
+    active.add(id);
+    const coords = [point.latitude,point.longitude];
+    const card = view.cards.get(id) || addLocationCard(view,point,coords);
+    if (!card.marker.getLatLng().equals(coords)) {
+      card.marker.setLatLng(coords);
+      if (!card.map.getBounds().contains(coords)) card.map.panTo(coords,{animate:false});
     }
-    L.marker([point.latitude,point.longitude]).bindPopup(popup).addTo(markers);
+    card.title.textContent = point.title;
+    card.marker.getElement().setAttribute('aria-label',point.title);
+    card.time.dateTime = point.recorded_at || '';
+    const updated = formatDate(point.recorded_at);
+    card.time.textContent = updated ? tr('position')+' · '+updated : '';
+    const popup = node('div','','assessment-map-popup');
+    popup.dir = document.documentElement.dir;
+    popup.append(node('strong',point.title),node('span',updated));
+    if (Number.isFinite(point.accuracy_m)) {
+      popup.append(node('span',tr('accuracy')+' · '+Math.round(point.accuracy_m).toLocaleString(locale())+' '+tr('metres')));
+    }
+    if (card.marker.getPopup()) card.marker.setPopupContent(popup);
+    else card.marker.bindPopup(popup);
   }
-  if (!mapFitted && data.length) {
-    map.fitBounds(markers.getBounds(),{maxZoom:15,padding:[28,28]});
-    mapFitted = true;
+  for (const [id,card] of view.cards) {
+    if (active.has(id)) continue;
+    card.dispose();
+    view.cards.delete(id);
+  }
+  view.status.textContent = active.size ? active.size.toLocaleString(locale())+' '+tr('liveCount') : tr('gpsWait');
+}
+
+async function refreshLocations(view) {
+  if (view.busy || locationView !== view) return;
+  view.busy = true;
+  try {
+    const [result] = await Promise.all([
+      requestRpc('bamco_live_locations'),
+      loadStyles('map'),
+      window.L ? Promise.resolve() : loadExternal('./vendor/leaflet-1.9.4.js')
+    ]);
+    if (locationView !== view) return;
+    if (result.error) {
+      if ([401,403].includes(result.error.status)) updateLocationCards(view,[]);
+      throw result.error;
+    }
+    if (!Array.isArray(result.data)) throw Error('Invalid location response');
+    updateLocationCards(view,result.data);
+  } catch {
+    if (locationView === view) view.status.textContent = tr(view.cards.size ? 'locationStale' : 'error');
+  } finally {
+    view.busy = false;
   }
 }
 
@@ -842,7 +899,6 @@ for (const control of languageButtons) control.onclick = async () => {
   language = next;
   try {localStorage.setItem('bamco-assessment-language',language)} catch {}
   render();
-  if (screen === 'observer') refreshMap();
 };
 window.addEventListener('beforeunload',event => {
   if (pending || saving || watch !== null) {event.preventDefault();event.returnValue = ''}

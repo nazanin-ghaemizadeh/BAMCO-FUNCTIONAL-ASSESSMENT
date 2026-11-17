@@ -39,7 +39,7 @@ async function visit(admin,staffLink=false){
   throw Error('Unexpected endpoint '+path);
  };
  for(const script of d.scripts)w.eval(script.textContent);
- assert.deepEqual(calls,[]);assert(d.querySelector('#workspaceMain').hidden);
+ assert.deepEqual(calls,[]);assert(d.querySelector('#workspaceMain').hidden);assert(!d.querySelector('#portalGate').hidden);
  assert.equal(d.querySelector('#portalGate').textContent.includes('بازیابی'),false);
  if(staffLink){assert.equal(w.location.hash,'');assert.equal(d.querySelector('#portalEmail').value,staffName);d.querySelector('#portalRemember').checked=true}
  else {
@@ -97,4 +97,30 @@ async function visit(admin,staffLink=false){
  }
  w.close();
 }
-(async()=>{await visit(false);await visit(true);await visit(false,true);console.log('PASS production login, invalid credentials, scoped home, one-click staff editing, explicit saving and credential retry.')})().catch(e=>{console.error(e);process.exit(1)});
+async function testRestore(page,kind){
+ const w=new JSDOM(fs.readFileSync(page,'utf8'),{url:'https://example.test/'+page,runScripts:'outside-only'}).window;
+ const d=w.document, gate=d.getElementById('portalGate'),workspace=d.getElementById('workspaceMain'),state=d.getElementById('portalSessionState');
+ assert(gate.hidden && workspace.hidden,'Neither screen should paint before session selection');
+ w.sessionStorage.setItem('bamco-functional.auth.v1',JSON.stringify({access_token:'fixture',refresh_token:'fixture-refresh',until:Date.now()+3600000}));
+ let respond,opened=0;
+ w.fetch=()=>new Promise(r=>respond=(data,status=200)=>r({ok:status===200,status,json:async()=>data}));
+ w.eval(d.getElementById('portal-runtime').textContent);
+ const boot=w.BAMCO_PORTAL.start(()=>opened++,'fa');
+ await until(()=>respond);
+ assert(gate.hidden && workspace.hidden && !state.hidden,'Wait for the profile without painting either form or protected content');
+ const user={id:'fixture',admin:false,grants:['active']};
+ if(kind==='rejected'){
+  respond({},401);await boot;
+  assert(!gate.hidden && workspace.hidden && state.hidden);assert.equal(opened,0);
+ }else{
+  if(kind==='retry'){
+   respond({},503);await boot;
+   assert(gate.hidden && workspace.hidden && !state.hidden);
+   respond=null;d.getElementById('portalSessionRetry').click();await until(()=>respond);
+  }
+  respond(user);await boot;await until(()=>opened===1);
+  assert(gate.hidden && !workspace.hidden && state.hidden);
+ }
+ w.close();
+}
+(async()=>{for(const page of ['index.html','case.html'])for(const kind of ['valid','retry','rejected'])await testRestore(page,kind);await visit(false);await visit(true);await visit(false,true);console.log('PASS production login, invalid credentials, scoped home, one-click staff editing, explicit saving and credential retry.')})().catch(e=>{console.error(e);process.exit(1)});

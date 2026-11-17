@@ -176,7 +176,7 @@ body[data-view=home] .brand-logo.original-brand-logo { height: 56px; }}
 html[lang="fa"] body, html[lang="fa"] .leaflet-container, html[lang="fa"] button, html[lang="fa"] input, html[lang="fa"] select, html[lang="fa"] textarea { font-family: var(--assessment-fa); }
 html[lang="en"] body, html[lang="en"] button, html[lang="en"] input, html[lang="en"] select, html[lang="en"] textarea { font-family: Times New Roman, Times, serif; }
 html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea { font-family: Assessment Latin, Ma Shan Zheng, KaiTi, STKaiti, serif; }
-#assessmentHub { width: min(100%, 60rem); min-width: 0px; text-align: center; }
+#assessmentHub { width: 100%; min-width: 0px; text-align: center; }
 #assessmentHub .gate-grid { width: min(100%, 46rem); grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: clamp(14px, 3vw, 26px); margin: 1rem auto; }
 body[data-view="home"] #assessmentHub .gate-card { height: clamp(220px, 35vh, 300px); }
 body[data-view="home"] #assessmentHub .gate-card strong { text-align: center; }
@@ -196,6 +196,8 @@ html[lang="zh"] .app-header .brand b { font-family: Assessment Latin, Ma Shan Zh
 #assessmentLanguages svg { display: block; width: 22px; height: 15px; border-radius: 2px; overflow: hidden; }
 #assessmentHub .assessment-new-launch { display: inline-flex; align-items: center; gap: 0.6rem; margin: 0px auto 0.5rem; padding: 0.55rem 1.3rem; border: 1px solid rgb(32, 108, 87); border-radius: 14px; background: rgb(34, 108, 84); color: white; }
 .assessment-new-launch span { font: 24px / 1 sans-serif; }
+#assessmentHub .gate-grid.four { --card-gap: clamp(14px,3vw,26px); --card-width: min(calc((100% - 3 * var(--card-gap)) / 4),calc((60rem - var(--card-gap)) / 2)); width: 100%; max-width: none; gap: var(--card-gap); grid-template-columns: repeat(var(--card-columns,2),var(--card-width)); justify-content: center; }
+@media (max-width: 800px){#assessmentHub .gate-grid.four { --card-width: min(20rem,calc((100% - var(--card-gap)) / 2)); }}
 #assessmentHub .gate-card { grid-template-rows: minmax(0px, 1fr) minmax(2.4rem, auto) minmax(2.25rem, auto); }
 html body button, html body button strong { font-weight: 400 !important; }
 html[dir=ltr] body { direction: ltr; text-align: left; }
@@ -203,10 +205,9 @@ html[dir=ltr] body :is(h1, h2, h3, h4, p, label, dt, dd, li, caption, summary, b
 html[dir=ltr] body :is(.welcome-title, #pageTitle, #assessmentName, .assessment-row-title, .assessment-day-card, .assessment-day-card strong, .assessment-day-card small, .assessment-day-tile, .assessment-day-tile span, .assessment-day-tile strong, .assessment-day-tile small, .score, .score strong, .score small) { text-align: center !important; }
 html[lang=zh] .gate-card strong { font-size: 26px; }
 html[lang=en] body { font-family: Times New Roman, Times, serif; }
-#assessmentHub .gate-grid.four { width: min(100%, 60rem); grid-template-columns: repeat(2, minmax(0px, 1fr)); }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=stacked-maps-2" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2" media="print" onload="this.media='all'"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=card-row-3" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -1152,7 +1153,7 @@ function typeIcon(key){
   use.setAttribute('href','./assets/assessment-modules.svg#'+key);svg.append(use);return svg;
 }
 function renderCategories(){
-  const grid=node('div','','gate-grid assessment-type-grid');
+  const grid=node('div','','gate-grid four assessment-type-grid');
   for(const type of types){
     const card=node('button','','gate-card assessment-type-card');card.type='button';card.dataset.type=type;
     const count=rows.filter(row=>row.assessment_type===type).length;

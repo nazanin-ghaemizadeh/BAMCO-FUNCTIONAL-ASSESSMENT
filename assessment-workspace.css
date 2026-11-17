@@ -18,8 +18,8 @@ html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="
 
 #assessmentHub [role=status], #assessmentSync, #assessmentGpsStatus {overflow-wrap:anywhere}
 body[data-view="home"] #backupBtn {display:none}
-#assessmentHub {width:min(100%,60rem);min-width:0;text-align:center}
-#assessmentHub.assessment-list-page {width:100%;max-width:none;position:relative;padding-top:.25rem}
+#assessmentHub {width:100%;min-width:0;text-align:center}
+#assessmentHub.assessment-list-page {max-width:none;position:relative;padding-top:.25rem}
 #assessmentHub .gate-grid {
   width:min(100%,46rem);
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -82,13 +82,19 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 .assessment-type-picker svg {width:40px;height:32px;flex:none}
 .assessment-create-form [role=status]:empty {display:none}
 .assessment-create-actions {display:flex;gap:8px}
-#assessmentHub .gate-grid.assessment-type-grid {width:min(100%,54rem);grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,22px)}
-body[data-view="home"] #assessmentHub .assessment-type-card {height:clamp(190px,25vh,230px);min-height:0;grid-template-rows:minmax(0,1fr) auto auto;gap:6px;padding:14px 20px}
-body[data-view="home"] #assessmentHub .assessment-type-card strong {font-size:clamp(20px,2vw,27px)}
+#assessmentHub .gate-grid.four {
+  --card-gap:clamp(14px,3vw,26px);
+  --card-width:min(calc((100% - 3 * var(--card-gap)) / 4),calc((60rem - var(--card-gap)) / 2));
+  width:100%;max-width:none;gap:var(--card-gap);
+  grid-template-columns:repeat(var(--card-columns,2),var(--card-width));
+  justify-content:center;
+}
+#assessmentHub .assessment-type-grid {--card-columns:4}
 #assessmentHub .assessment-type-card .gate-cta {font-variant-numeric:tabular-nums}
-@media(max-width:480px){
-  body[data-view="home"] #assessmentHub .assessment-type-card {height:175px;padding:10px}
-  body[data-view="home"] #assessmentHub .assessment-type-card strong {font-size:19px}
+@media(max-width:800px){
+  #assessmentHub .gate-grid.four {--card-width:min(20rem,calc((100% - var(--card-gap)) / 2))}
+  #assessmentHub .gate-grid.assessment-type-grid {justify-content:start;overflow-x:auto;scroll-snap-type:x proximity;padding-block:10px}
+  #assessmentHub .assessment-type-card {scroll-snap-align:start;min-width:0}
 }
 .assessment-legacy {margin:1.5rem auto;text-align:start;max-width:52rem}
 .assessment-legacy summary {cursor:pointer;color:#456657}
@@ -408,7 +414,6 @@ body[data-view="comprehensiveDashboard"] #assessmentPageActions>:not(#managerPag
 #comprehensiveDashboard{width:100%;min-width:0}
 
 
-#assessmentHub .gate-grid.four{width:min(100%,60rem);grid-template-columns:repeat(2,minmax(0,1fr))}
 
 
 #assessmentHub .assessment-open-action {display:grid;place-items:center;text-decoration:none}

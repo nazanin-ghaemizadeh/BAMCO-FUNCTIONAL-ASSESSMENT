@@ -444,7 +444,7 @@ function typeIcon(key){
   use.setAttribute('href','./assets/assessment-modules.svg#'+key);svg.append(use);return svg;
 }
 function renderCategories(){
-  const grid=node('div','','gate-grid assessment-type-grid');
+  const grid=node('div','','gate-grid four assessment-type-grid');
   for(const type of types){
     const card=node('button','','gate-card assessment-type-card');card.type='button';card.dataset.type=type;
     const count=rows.filter(row=>row.assessment_type===type).length;

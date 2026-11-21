@@ -91,12 +91,15 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 #assessmentHub .assessment-type-card .gate-cta {font-variant-numeric:tabular-nums}
 @media(max-width:800px){
   #assessmentHub .gate-grid.four {--card-width:min(20rem,calc((100% - var(--card-gap)) / 2))}
-  #assessmentHub .gate-grid.assessment-type-grid {justify-content:start;overflow-x:auto;scroll-snap-type:x proximity;padding-block:10px}
-  #assessmentHub .assessment-type-card {scroll-snap-align:start;min-width:0}
+  #assessmentHub .gate-grid.assessment-type-grid {grid-template-columns:repeat(2,minmax(0,1fr));padding-block:10px}
+  #assessmentHub .assessment-type-card {min-width:0;width:100%}
 }
 .assessment-legacy {margin:1.5rem auto;text-align:start;max-width:52rem}
 .assessment-legacy summary {cursor:pointer;color:#456657}
-@media(max-width:480px){.assessment-type-picker label{flex-wrap:wrap}}
+@media(max-width:480px){
+  .assessment-type-picker label{flex-wrap:wrap}
+  #assessmentHub .gate-grid.assessment-type-grid {grid-template-columns:minmax(0,1fr)}
+}
 #assessmentHub .assessment-create-action {min-width:9rem;background:#226c54;color:#fff;border-color:#226c54}
 #assessmentHub .assessment-create-action:hover:not(:disabled) {background:#195840;border-color:#195840;color:#fff}
 #assessmentHub .assessment-list-section {margin-top:1.2rem;text-align:start}

@@ -372,8 +372,11 @@ function weightChart(g,weights,onSelect){
   const names=items(g),ranked=weights.map((weight,index)=>({weight,index})).sort((a,b)=>b.weight-a.weight);
   const chart=el('div',null,'bw-pie-layout'),figure=el('div',null,'bw-pie-figure');
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
-  svg.setAttribute('viewBox','0 0 240 240');svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('viewBox','0 0 240 258');svg.setAttribute('aria-hidden','true');
   const defs=document.createElementNS(ns,'defs');svg.append(defs);
+  const depth=document.createElementNS(ns,'g'),surface=document.createElementNS(ns,'g'),numbers=document.createElementNS(ns,'g');
+  depth.setAttribute('class','bw-pie-depth');surface.setAttribute('class','bw-pie-surface');
+  svg.append(depth,surface,numbers);
   const center=el('div',null,'bw-pie-center'),centerValue=el('strong'),centerNumber=el('span');
   center.append(centerValue,centerNumber);figure.append(svg,center);
   const legend=el('ol',null,'bw-pie-legend'),buttons=[],sectors=[];
@@ -386,7 +389,7 @@ function weightChart(g,weights,onSelect){
   }
   const total=weights.reduce((sum,w)=>sum+w,0);let angle=-Math.PI/2;
   const point=(radius,a)=>[120+radius*Math.cos(a),120+radius*Math.sin(a)].join(' ');
-  for(const {weight,index} of ranked){
+  for(const [position,{weight,index}] of ranked.entries()){
     const span=2*Math.PI*weight/total,end=angle+Math.min(span,2*Math.PI-1e-7),large=span>Math.PI?1:0;
     const color=sectorColors[index],sector=document.createElementNS(ns,'path');
     const path='M'+point(114,angle)+' A114 114 0 '+large+' 1 '+point(114,end)
@@ -394,18 +397,26 @@ function weightChart(g,weights,onSelect){
     const gradient=document.createElementNS(ns,'linearGradient');
     gradient.id='bw-sector-'+g+'-'+index;
     gradient.setAttribute('x2','85%');gradient.setAttribute('y2','100%');
-    for(const [offset,shade] of [['0%',color],['100%','color-mix(in srgb,'+color+' 76%,white)']]){
+    for(const [offset,shade] of [['0%','color-mix(in srgb,'+color+' 58%,white)'],['38%',color],['100%','color-mix(in srgb,'+color+' 80%,#183c38)']]){
       const stop=document.createElementNS(ns,'stop');stop.setAttribute('offset',offset);
       stop.setAttribute('stop-color',shade);gradient.append(stop);
     }
     defs.append(gradient);
     sector.setAttribute('d',path);sector.setAttribute('fill','url(#'+gradient.id+')');
-    sectors[index]=sector;svg.append(sector);
+    sector.id='bw-sector-face-'+g+'-'+index;
+    for(let layer=10;layer>=1;layer--){
+      const side=document.createElementNS(ns,'use');
+      side.setAttribute('href','#'+sector.id);side.setAttribute('transform','translate(0 '+layer+')');
+      side.style.filter='brightness('+(.64+layer*.018)+')';
+      depth.append(side);
+    }
+    sectors[index]=sector;surface.append(sector);
     const tip=document.createElementNS(ns,'title');tip.textContent=names[index]+' · '+pct(weight);sector.append(tip);
-    if(span>0.21){
-      const [x,y]=point(92,angle+span/2).split(' ');
+    {
+      const radius=span<0.18?(position%2?101:79):91;
+      const [x,y]=point(radius,angle+span/2).split(' ');
       const id=document.createElementNS(ns,'text');id.setAttribute('x',x);id.setAttribute('y',y);
-      id.textContent=num(index+1);svg.append(id);
+      id.textContent=num(index+1);numbers.append(id);
     }
     angle=end;
     sector.onclick=()=>select(index);

@@ -47,7 +47,7 @@ const {JSDOM} = require('jsdom');
   const byText=(sel,t)=>[...d.querySelectorAll(sel)].find(b=>b.textContent===t);
   const wait=()=>new Promise(resolve=>setTimeout(resolve,0));
   mount();assert.equal(d.querySelectorAll('.bw-tile').length,2);
-  d.querySelector('.bw-tile').click();await wait();byText('button','ایجاد پرسش‌نامه').click();
+  d.querySelector('.bw-tile').click();await wait();d.querySelector('.assessment-page-toolbar .bw-new-form').click();
   assert(d.querySelector('.bw-guide[open]'));
   const name=d.querySelector('.bw-fields input');name.value='QA';name.dispatchEvent(new w.Event('input'));
   d.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true}));await wait();
@@ -58,6 +58,15 @@ const {JSDOM} = require('jsdom');
     const n=expectedSizes[g-1];
     d.querySelectorAll('.bw-group-tile')[g-1].click();await wait();
     assert.equal(d.querySelectorAll('input[name=best]').length,n);
+    const definitions=[...d.querySelectorAll('.bw-definitions tbody tr')];
+    assert.equal(definitions.length,n);
+    definitions.forEach((row,i)=>{
+      const item=catalog[g-1].items[i];
+      const translations=catalog[g-1].definitions[item[0]];
+      assert.equal(translations.length,3);
+      assert(translations.every(description=>description.trim().length>10));
+      assert.deepEqual([...row.cells].slice(1).map(cell=>cell.textContent),[item[0],translations[0]]);
+    });
     assert(!/\b(?:C|SC)\d/.test(d.querySelector('main').textContent));
     if(g===1){
       const observed=[...d.querySelectorAll('input[name=best]')].map(r=>r.parentNode.textContent);

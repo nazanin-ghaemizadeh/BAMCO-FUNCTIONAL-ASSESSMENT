@@ -108,6 +108,21 @@ function emptyState(section,message){
   const box=el('div',null,'bw-empty'),art=icon(section,'0 0 160 128');
   box.append(art);reportStatus(box,tr(message),'bw-empty-copy');host.append(box);
 }
+function groupProgress(completed) {
+  const total = groupCount();
+  const label = text(
+    num(completed)+' از '+num(total)+' گروه تکمیل شده',
+    num(completed)+' of '+num(total)+' groups completed',
+    '已完成 '+num(completed)+' / '+num(total)+' 组'
+  );
+  const progress = el('progress');
+  progress.max = total;
+  progress.value = completed;
+  progress.setAttribute('aria-label', label);
+  const block = el('div', null, 'bw-group-progress');
+  block.append(el('span', label), progress);
+  return block;
+}
 function guide(expanded=false) {
   const copy=window.BAMCO_WEIGHTING_COPY;
   const details=el('details',null,'surface bw-card bw-guide');details.open=expanded;
@@ -142,10 +157,8 @@ function overview() {
   host.append(grid);
 }
 async function listForms(v) {
-  header(tr('forms'),()=>go(''));
-  const create=el('section',null,'assessment-create-panel'),heading=el('div',null,'assessment-create-heading');
-  heading.append(el('span','+','assessment-create-icon'),el('h2',text('پرسش‌نامه‌ی جدید','New questionnaire','新问卷')));
-  create.append(heading,action(tr('create'),()=>go('new'),'assessment-action assessment-create-action'));host.append(create);
+  const create = action(text('ایجاد پرسش‌نامه جدید','Create new questionnaire','创建新问卷'), () => go('new'), 'assessment-action assessment-create-action bw-new-form');
+  header(tr('forms'),()=>go(''),[create]);
   const keys=Object.fromEntries(known('edit'));
   const wait=reportStatus(host,tr('load'));
   const rows=Object.keys(keys).length?await rpc('list_subcriteria',{keys}):[];
@@ -156,14 +169,16 @@ async function listForms(v) {
   listHeading.append(el('h2',text('پرسش‌نامه‌ها','Questionnaires','问卷列表')),el('span',num(rows.length),'assessment-count'));
   const grid=el('div',null,'assessment-card-grid'+(rows.length===1?' is-single':''));
   for(const row of rows){
-    const item=el('article',null,'surface assessment-row'),title=el('div',null,'assessment-row-heading');
-    title.append(el('bdi',row.name,'assessment-row-title'));
-    const meta=el('div',null,'assessment-row-top');
-    meta.append(el('span',tr(row.completed===groupCount()?'done':'draft'),'assessment-status '+(row.completed===groupCount()?'is-completed':'is-active')),
-      el('span',num(row.completed)+' / '+num(groupCount())+' · '+tr('groupCount'),'assessment-count'));
+    const item=el('article',null,'surface assessment-row bw-form-card');
+    const title=el('div',null,'bw-form-heading');
+    const name=el('h3',null,'bw-form-name');
+    name.append(el('bdi',row.name));
+    const complete=row.completed===groupCount();
+    title.append(stamp('person'),name,el('span',tr(complete?'done':'draft'),'assessment-status '+(complete?'is-completed':'is-active')));
     const actions=el('div',null,'assessment-row-actions bw-row-actions');
     const open=action(text('باز کردن','Open','打开'),()=>go('e/'+row.id),'assessment-action assessment-open-action');
-    const edit=action(tr('profile'),()=>go('e/'+row.id+'/profile'),'assessment-action assessment-secondary-action');
+    const edit=action(text('ویرایش','Edit','编辑'),()=>go('e/'+row.id+'/profile'),'assessment-action assessment-secondary-action');
+    edit.title=tr('profile');
     const remove=action(text('حذف','Delete','删除'),async()=>{
       if(!window.confirm(text('پرسش‌نامه‌ی «'+row.name+'» و پاسخ‌های آن حذف شوند؟','Delete the questionnaire and answers for “'+row.name+'”?','删除“'+row.name+'”的问卷及答卷？')))return;
       remove.disabled=true;
@@ -175,7 +190,7 @@ async function listForms(v) {
         if(v===version&&host.isConnected){item.querySelector('[role=alert]')?.remove();errorBox(item,e,()=>draw())}
       }finally{remove.disabled=false}
     },'assessment-action assessment-delete-action');
-    actions.append(open,edit,remove);item.append(title,meta,actions);grid.append(item);
+    actions.append(open,edit,remove);item.append(title,groupProgress(row.completed),actions);grid.append(item);
   }
   list.append(listHeading,grid);host.append(list);
 }
@@ -231,7 +246,7 @@ function dossier(rec) {
   const id=rec.id;header(rec.profile.name,()=>go('forms'),[action(tr('profile'),()=>go('e/'+id+'/profile'))]);
   const count=window.BAMCO_WEIGHTING_CATALOG.filter((_,i)=>rec.weights[i+1]).length;
   const section=el('section',null,'assessment-list-section'),heading=el('div',null,'assessment-list-heading');
-  heading.append(el('h2',tr('subgroup')),el('span',num(count)+' / '+num(groupCount())+' · '+tr('groupCount'),'assessment-count'));
+  heading.append(el('h2',tr('subgroup')),groupProgress(count));
   const grid=el('div',null,'gate-grid three bw-groups');
   for(let g=1;g<=groupCount();g++){
     const card=action('',()=>go('e/'+rec.id+'/g/'+g),'gate-card bw-group-tile');
@@ -262,8 +277,15 @@ function groupForm(rec,g) {
     host.append(saved);
   }
   const form=el('div');host.append(form);
-  const head=el('section',null,'surface bw-card');head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),
-    table([tr('number'),tr('criterion')],names.map((name,i)=>[num(i+1),name])));form.append(head);
+  const group=window.BAMCO_WEIGHTING_CATALOG[g-1];
+  const introduction=table(
+    [tr('number'),text('زیرشاخص','Subcriterion','子指标'),text('تعریف','Definition','定义')],
+    group.items.map((item,i)=>[num(i+1),names[i],group.definitions[item[0]][li]])
+  );
+  introduction.classList.add('bw-definitions');
+  const head=el('section',null,'surface bw-card');
+  head.append(el('h2',tr(81)),el('h3',tr('group')+' · '+groupTitle(g)),el('p',tr(84)),introduction);
+  form.append(head);
   const stage=el('section',null,'surface bw-card');const stageTitle=el('h2',tr(87));stageTitle.prepend(stamp('balance'));stage.append(stageTitle);form.append(stage);
   const choices=el('div',null,'bw-choices');stage.append(choices);
   const comparisons=el('div');form.append(comparisons);

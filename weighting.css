@@ -171,7 +171,44 @@ html[dir] #assessmentHub .weighting-workspace :is(h2,h3,summary,dt,dd,li,label,l
   #assessmentHub .weighting-workspace :is(button,summary) {transition: none}
 }
 
-#assessmentHub .bw-row-actions {grid-template-columns: repeat(2,minmax(0,1fr))}
+.weighting-workspace .bw-new-form {margin-inline-start:auto}
+#assessmentHub .weighting-workspace .assessment-card-grid .bw-form-card {
+  gap:18px; min-height:0; padding:clamp(16px,2vw,25px); border-radius:20px;
+  background:linear-gradient(120deg,#fff 55%,#f6fbf8);
+}
+.bw-form-heading {display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center}
+.weighting-workspace .bw-form-name {margin:0; font-family:inherit; font-size:clamp(21px,2vw,26px); line-height:1.5; color:#254d3e; overflow-wrap:anywhere}
+.weighting-workspace .bw-form-name bdi {font-family:inherit}
+html[lang=fa] #assessmentHub .bw-form-card {font-family:'Assessment Latin','B Nazanin',BNazanin,'Daily Mileage Nazanin',serif}
+.bw-group-progress {display:grid; gap:5px; min-width:0; width:min(100%,19rem); color:#426650; font-size:17px; line-height:1.5; text-align:start}
+.bw-group-progress progress {display:block; appearance:none; width:100%; height:8px; border:0; border-radius:99px; background:#e5eee9; color:#398269; overflow:hidden}
+.bw-group-progress progress::-webkit-progress-bar {background:#e5eee9; border-radius:99px}
+.bw-group-progress progress::-webkit-progress-value {background:#398269; border-radius:99px}
+.bw-group-progress progress::-moz-progress-bar {background:#398269; border-radius:99px}
+.weighting-workspace .assessment-list-heading>.bw-group-progress {width:min(48%,16rem)}
+#assessmentHub .bw-form-card .bw-row-actions {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; align-self:flex-start;
+  width:min(100%,27rem); margin-top:auto;
+}
+#assessmentHub .bw-form-card .bw-row-actions>.assessment-action {grid-column:auto; min-height:44px; font-family:inherit; font-size:17px}
+@media(min-width:850px){
+  #assessmentHub .weighting-workspace .assessment-card-grid.is-single .bw-form-card {
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,27rem); align-items:center;
+  }
+  .assessment-card-grid.is-single .bw-form-heading {grid-column:1/-1; padding-bottom:14px; border-bottom:1px solid #e5eee9}
+}
+.bw-definitions table {table-layout:fixed}
+.bw-definitions th:first-child {width:3.6rem}
+.bw-definitions th:nth-child(2) {width:32%}
+html[dir] #assessmentHub .bw-definitions :is(th,td):not(:first-child) {text-align:start!important; overflow-wrap:anywhere}
+.bw-definitions td:nth-child(2) {font-weight:700; color:#315744}
+@media(max-width:540px){
+  .bw-form-heading {gap:8px}
+  .bw-form-heading .bw-stamp {width:30px; height:30px; border-radius:10px}
+  .bw-definitions th:first-child {width:2.5rem}
+  .bw-definitions th:nth-child(2) {width:33%}
+  html[dir] #assessmentHub .bw-definitions :is(th,td) {padding:9px 5px; vertical-align:top}
+}
 #assessmentHub .bw-group-tile .bw-stamp {width: 72px; height: 72px; border-radius: 22px}
 body[data-view=home] #landing #assessmentHub .bw-group-tile .bw-stamp svg {width: 42px; height: 42px}
 body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: clamp(17px,1.7vw,24px); overflow-wrap: anywhere}

@@ -271,12 +271,6 @@ function groupForm(rec,g) {
   },'assessment-action assessment-create-action');
   header(groupTitle(g),()=>go(parent),[save]);
   const status=el('div');host.append(status,guide());
-  if(rec.analyses?.[g]){
-    const saved=el('details',null,'surface bw-card bw-guide');
-    const heading=el('summary',tr('savedAnalysis'));heading.prepend(stamp('chart','violet'));
-    saved.append(heading,individualGroup(g,rec.weights[g],rec.analyses[g]));
-    host.append(saved);
-  }
   const form=el('div');host.append(form);
   const group=window.BAMCO_WEIGHTING_CATALOG[g-1];
   const introduction=table(
@@ -343,32 +337,11 @@ function groupForm(rec,g) {
   const endSave=action(tr('save'),()=>save.click(),'assessment-action assessment-create-action');
   const foot=el('div',null,'assessment-page-toolbar');foot.append(endSave);form.append(foot);
 }
-const decimal=(number,digits)=>new Intl.NumberFormat(locales[li],{
-  minimumFractionDigits:digits,maximumFractionDigits:digits,useGrouping:false
-}).format(number);
-function consistencyCards(analysis){
-  const cards=el('div',null,'bw-metrics');
-  for(const [model,symbol,deviation,ratio] of [
-    ['linearModel','ε',analysis.epsilon,analysis.linearCR],['nonlinearModel','ξ',analysis.xi,analysis.nonlinearCR]
-  ]){
-    const state=deviation<=1e-8?'perfect':ratio<=0.30?'acceptable':'revisit';
-    const card=el('section',null,'bw-metric');card.dataset.state=state;
-    const title=el('h3',tr(model)),badge=el('span',tr(state),'bw-verdict');
-    badge.prepend(icon(state==='revisit'?'alert':'check'));
-    const head=el('div',null,'bw-metric-head');head.append(title,badge);
-    const values=el('dl');
-    for(const [label,value] of [['CR',decimal(ratio,4)],['CI',decimal(analysis.ci,4)],[tr('deviation')+' ('+symbol+')',decimal(deviation,6)]]){
-      const pair=el('div');pair.append(el('dt',label),el('dd',value));values.append(pair);
-    }
-    card.append(head,values);cards.append(card);
-  }
-  return cards;
-}
 const sectorColors=['#388478','#a17bc1','#e3aa60','#678fc3','#d48399','#53979b',
   '#a9ae65','#af8190','#5979a2','#d19470','#7f88b6','#78a183',
   '#bf7977','#648fba','#b6a35a','#82749c','#55998c','#bd8f64',
   '#9f7795','#729aaf','#8a9c6a','#aa8270'];
-function weightChart(g,weights,onSelect){
+function weightChart(g,weights){
   const names=items(g),ranked=weights.map((weight,index)=>({weight,index})).sort((a,b)=>b.weight-a.weight);
   const chart=el('div',null,'bw-pie-layout'),figure=el('div',null,'bw-pie-figure');
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
@@ -388,7 +361,6 @@ function weightChart(g,weights,onSelect){
     });
     centerValue.textContent=pct(weights[i]);centerNumber.textContent=text('زیرشاخص','Subcriterion','子指标')+' '+num(i+1);
     figure.style.setProperty('--slice-color',sectorColors[i]);
-    onSelect?.(i);
   }
   const total=weights.reduce((sum,w)=>sum+w,0);let angle=-Math.PI/2;
   const point=(radius,a)=>[120+radius*Math.cos(a),120+radius*Math.sin(a)].join(' ');
@@ -436,26 +408,6 @@ function weightChart(g,weights,onSelect){
   chart.append(figure,center,legend);
   select(ranked[0].index);
   return chart;
-}
-function individualGroup(g,weights,analysis){
-  const names=items(g),content=el('div',null,'bw-group-report');
-  const detail=el('section',null,'bw-selection'),label=el('h3'),exact=el('span',null,'bw-exact');
-  detail.setAttribute('aria-live','polite');detail.append(label,exact);
-  const ranges=el('dl',null,'bw-bounds');
-  if(analysis)detail.append(ranges);
-  const chart=weightChart(g,weights,i=>{
-    label.textContent=names[i];exact.textContent=tr('point')+' · '+decimal(weights[i],6);
-    if(!analysis)return;
-    const [lo,hi]=analysis.intervals[i];
-    ranges.replaceChildren();
-    for(const [k,value] of [['lower',lo],['upper',hi],['center',(lo+hi)/2],['halfWidth',(hi-lo)/2]]){
-      const pair=el('div');pair.append(el('dt',tr(k)),el('dd',decimal(value,4)));ranges.append(pair);
-    }
-  });
-  if(analysis)ranges.before(el('h4',tr('intervalResults')));
-  content.append(chart,detail);
-  if(analysis)content.append(consistencyCards(analysis));
-  return content;
 }
 function respondentChart(record,groupSelect){
   const report=el('section',null,'surface bw-card bw-results-chart');

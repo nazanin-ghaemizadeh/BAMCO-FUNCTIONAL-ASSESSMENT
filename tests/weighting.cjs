@@ -92,7 +92,10 @@ const {JSDOM} = require('jsdom');
   // Previously saved main weights must never enter the report.
   sets.get(id).weights[0]=[];
   nav('e/'+id+'/g/0');await wait();assert.equal(w.location.hash,'#e/'+id);
-  nav('e/'+id+'/g/5');await wait();assert(d.querySelector('.bw-pie-legend'));
+  nav('e/'+id+'/g/5');await wait();
+  assert(!d.querySelector('.bw-pie-legend,.bw-selection,.bw-metrics'));
+  assert(!d.querySelector('main').textContent.includes('نتیجه‌ی آخرین پاسخ‌های ذخیره‌شده'));
+  assert(d.querySelector('input[name=best][value="0"]').checked);
   nav('results');await wait();
   assert.equal(d.querySelectorAll('select').length,2);
   assert.deepEqual([...d.querySelectorAll('.bw-result-filters label:last-child option')].map(o=>o.textContent),['QA']);

@@ -422,3 +422,13 @@ body[data-view="comprehensiveDashboard"] #assessmentPageActions>:not(#managerPag
 .case-entry h1 {margin:0}
 .case-entry p {margin:10px 0 18px}
 .case-entry a {display:inline-block}
+
+#assessmentHub .gate-grid.six {width:min(100%,72rem);grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:1.5rem auto}
+#assessmentHub .gate-create-plus {position:absolute;inset-inline-end:12%;bottom:12%;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#26765c;color:white;font-family:Arial,sans-serif;font-size:28px;border:3px solid #fff}
+#assessmentHub [data-create-test] .gate-illustration {position:relative}
+.comprehensive-filters {display:flex;align-items:end;flex-wrap:wrap;gap:14px;padding:16px;margin-bottom:18px;border-radius:16px;border:1px solid #d4e4db;background:#f0f7f3}
+.comprehensive-filters label {display:grid;gap:6px;flex:1 1 220px;min-width:0;font-size:1rem}
+.comprehensive-filters select {width:100%;min-height:44px;border:1px solid #bfd7ca;border-radius:10px;background:#fff;padding:8px 12px;color:#254b3e}
+.comprehensive-filters button {min-height:44px}
+@media(max-width:850px){#assessmentHub .gate-grid.six {grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media(max-width:520px){#assessmentHub .gate-grid.six {grid-template-columns:minmax(0,1fr);max-width:22rem}}

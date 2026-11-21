@@ -7,7 +7,7 @@ const num=v=>v===null||v===undefined||v===''?NaN:Number(String(v).replace(/[۰-�
 const valid=v=>Number.isFinite(num(v))&&num(v)>=1&&num(v)<=10;
 const mean=a=>a.length?a.reduce((s,n)=>s+n,0)/a.length:null;
 const criteria=workbook.criteria.map(c=>({...c,name:canonical(c.name)}));
-const categoryId=t=>workbook.tests[t.sourceId]?.categoryId||criteria.find(c=>c.name===canonical(t.cat))?.id||'custom';
+const categoryId=t=>criteria.find(c=>c.name===canonical(t.cat))?.id||workbook.tests[t.sourceId]?.categoryId||'custom';
 function applicable(t,c){return Object.entries({cls:c.vclass,body:c.body==='Station Wagon'?'Station':c.body,power:c.power,gear:c.gear,drive:c.driveType}).every(([k,value])=>{const rule=t.vehicle?.[k];if(Array.isArray(rule))return rule.includes(value);return !rule||rule==='All'||(rule!=='None'&&String(rule).split(/\s*[/|]\s*/).includes(String(value)))})}
 function routeKind(p){if(p?.routeId)return p.routeId;const s=canonical(p?.type||p?.route);if(/برون.?شهری|آزادراه|بزرگراه/.test(s))return 'rural';if(/گرمسیری/.test(s))return 'hot';if(/کوهستان|دیزین/.test(s))return 'mountain';if(/خاکی|خارج.?جاده|آفرود/.test(s))return 'offroad';return /شهری/.test(s)?'urban':'unknown'}
 function activeRoutes(snapshot){try{return window.BAMCO_DURABILITY_PLANNER.calculate({target:num(snapshot.config?.durKm)||5000,twoDiff:snapshot.config?.twoDiff,caps:snapshot.config?.routeCaps,shares:snapshot.config?.routeShares}).rows.filter(r=>r.km>0).map(r=>r.id)}catch{return [...new Set((snapshot.durabilitySchedule||[]).map(routeKind))].filter(x=>x!=='unknown')}}
@@ -19,7 +19,7 @@ function build(snapshot={},filter={}){
  const included=tab=>!filter.mode||filter.mode==='all'||filter.mode===tab;
  function ensure(tab,test){const key=tab+':'+test.id;if(!units.has(key))units.set(key,{key,tab,test,categoryId:categoryId(test),entries:[],expected:new Set(),avg:null});return units.get(key)}
  function expect(unit,key){unit.expected.add(key);expected.add(key)}
- for(const test of [...DB.tests,...staticTests.map(t=>({...t,scope:['supplementary']}))])if(applicable(test,config))for(const tab of test.scope||[])if(included(tab)){
+ for(const test of [...DB.tests,...staticTests.map(t=>({...t,scope:['supplementary']}))])if(test.active!==false&&applicable(test,config))for(const tab of test.scope||[])if(included(tab)){
   const unit=ensure(tab,test);
   if(tab==='drive')for(const day of test.days||[])expect(unit,'drive:'+day+':'+test.id);
   if(tab==='supplementary')expect(unit,'supplementary:general:'+test.id);

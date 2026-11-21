@@ -7,7 +7,7 @@ const editor = $('assessmentEditorBar');
 const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
 let app = window.BAMCO_ASSESSMENT;
 const portal=window.BAMCO_PORTAL;
-const can=permission=>portal.can(permission);
+const can=permission=>permission==='questions'?Boolean(portal.user):portal.can(permission);
 const requestRpc=(name,args={})=>portal.rpc(name,args);
 const types=['drive','durability','static','comprehensive'];
 const canCreate=()=>can('active')&&can('setup');
@@ -57,7 +57,10 @@ function loadEditor() {
       return link;
     });
     const initialize = async () => {
-      for (const source of scripts) await loadExternal(source.getAttribute('src'));
+      for (const source of scripts) {
+        if (source.getAttribute('src').startsWith('./app.js')) await window.BAMCO_QUESTION_BANK.load();
+        await loadExternal(source.getAttribute('src'));
+      }
       if (!window.BAMCO_ASSESSMENT) throw new Error('Editor unavailable');
     };
     editorLoad = Promise.all([initialize(),loadStyles('case'),loadStyles('map')])
@@ -88,6 +91,9 @@ const labels = {
   observerCta:['مشاهده موقعیت خودرو','View vehicle location','查看车辆位置'],
   weighting:['وزن‌دهی','Weighting','权重设置'],
   weightingCta:['وزن‌دهی زیرشاخص‌ها','Subcriterion weights','子指标权重'],
+  questions:['بانک سؤالات','Question bank','题库'],
+  questionsCta:['مشاهده، ویرایش و زمان‌بندی آزمون‌ها','View, edit and schedule tests','查看、编辑和安排测试'],
+  newAssessmentCta:['ایجاد پرونده و انتخاب نوع ارزیابی','Create a case and choose assessment type','创建档案并选择评估类型'],
   active:['ارزیابی‌های فعال','Active assessments','进行中的评估'],
   history:['تاریخچه ارزیابی‌ها','Assessment history','评估历史'],
   evaluator:['ارزیاب','Evaluator','评估员'],
@@ -271,6 +277,12 @@ function renderWelcome() {
   const add=hub.querySelector('[data-create-test]');
   add.hidden=!canCreate();add.querySelector('strong').textContent=tr('newAssessmentTitle');
   for (const card of hub.querySelectorAll('.gate-card')) {
+    if(card.hasAttribute('data-create-test')) {
+      card.hidden=!canCreate();
+      card.querySelector('strong').textContent=tr('newAssessmentTitle');
+      card.querySelector('.gate-cta').textContent=tr('newAssessmentCta');
+      continue;
+    }
     const key = card.dataset.bootScreen || 'weighting';
     card.hidden=!can(key);
     card.setAttribute('aria-label',tr(key));
@@ -339,6 +351,26 @@ function render() {
   closeLocationView();
   hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
   if (screen === 'home') { renderWelcome(); return }
+  if (screen === 'questions') {
+    delete hub.dataset.welcome;
+    const host = node('section','','question-bank');
+    hub.replaceChildren(host);
+    const open = () => {
+      if(host.isConnected) window.BAMCO_QUESTION_BANK.mount(host,{language,home:()=>navigate('home')});
+    };
+    host.textContent=tr('load');
+    Promise.all([
+      loadStyles('questions'),
+      (async()=>{
+        if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
+        if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=1');
+      })()
+    ]).then(open).catch(()=>{
+      if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));
+    });
+    return;
+  }
   if (screen === 'weighting') {
     delete hub.dataset.welcome;
     const host = node('section','','weighting-workspace');
@@ -393,7 +425,7 @@ function render() {
 function listScreen() {
   const query=new URLSearchParams(location.search);
   const value=query.has('observer')?'observer':query.get('view');
-  return ['active','history','observer','weighting'].includes(value)?value:'home';
+  return ['active','history','observer','weighting','questions'].includes(value)?value:'home';
 }
 function caseURL(id) {
   const url=new URL('./case.html',location.href);

@@ -177,15 +177,25 @@
         category.append(element('span', test.cat), element('span', test.sub));
         titles.append(category, element('h2', test.name));
         heading.append(titles, element('span', text(test.active === false ? 'inactive' : 'active'), 'qb-badge ' + (test.active === false ? 'inactive' : '')));
-        card.append(heading, element('code', test.id + (test.sourceId ? ' · ' + test.sourceId : '')));
+        card.append(heading);
         const placements = element('div', '', 'qb-placement');
         for (const key of ['comprehensive', ...test.scope]) placements.append(element('span', text(key), 'qb-chip qb-chip-' + key));
         card.append(placements);
         if (test.scope.includes('drive')) card.append(element('p', text('days') + ' — ' + test.days.map(number).join('، '), 'qb-day-summary'));
-        const details = element('details'); details.append(element('summary', text('profile')));
-        details.append(element('p', test.profile), element('p', text('measure') + ' — ' + test.measure),
-          element('p', text('loads') + ' — ' + (loads(test).join(' / ') || text('unspecified'))),
-          element('p', text('roads') + ' — ' + (roads(test).map(text).join(' / ') || text('unspecified'))));
+        const details = element('details', '', 'qb-test-details'); details.open = true;
+        details.append(element('summary', text('profile')));
+        const content = element('div', '', 'qb-detail-content');
+        content.append(element('p', test.profile, 'qb-procedure'));
+        const measurement = element('section', '', 'qb-measure');
+        measurement.append(element('h3', text('measure')), element('p', test.measure));
+        const conditions = element('dl', '', 'qb-conditions');
+        for (const [key, values] of [['loads', loads(test)], ['roads', roads(test).map(text)]]) {
+          const condition = element('div', '', 'qb-condition qb-condition-' + key);
+          const value = element('dd');
+          for (const name of values.length ? values : [text('unspecified')]) value.append(element('span', name));
+          condition.append(element('dt', text(key)), value); conditions.append(condition);
+        }
+        content.append(measurement, conditions); details.append(content);
         card.append(details);
         if (canEdit()) {
           const actions = element('div', '', 'qb-actions');
@@ -277,7 +287,8 @@
       fields.append(element('p', text('durabilityHint'), 'qb-help'));
       const loadOptions = [...new Set([...originals.flatMap(loads), ...database.tests.flatMap(loads)])];
       choices('loads', 'loadConditions', loadOptions.map(value => [value,value]), loads(test));
-      const vehicles = element('details'); vehicles.append(element('summary', text('vehicles')));
+      const vehicles = element('details', '', 'qb-vehicle-details'); vehicles.open = true;
+      vehicles.append(element('summary', text('vehicles')));
       for (const [key, values] of Object.entries(vehicleValues)) {
         choices(key === 'drive' ? 'vehicleDrive' : key, 'vehicle-' + key, values.map(value => [value,value]), test.vehicle[key], vehicles);
       }

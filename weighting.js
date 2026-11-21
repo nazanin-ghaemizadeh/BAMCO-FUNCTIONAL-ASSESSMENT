@@ -162,7 +162,7 @@ async function listForms(v) {
   header(tr('forms'),()=>go(''),[create]);
   const keys=Object.fromEntries(known('edit'));
   const wait=reportStatus(host,tr('load'));
-  const rows=Object.keys(keys).length?await rpc('list_subcriteria',{keys}):[];
+  const rows=await rpc('list_subcriteria',{keys});
   if(v!==version||!host.isConnected)return;
   wait.remove();
   if(!rows.length){emptyState('forms','empty');return}

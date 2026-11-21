@@ -23,14 +23,14 @@ const {JSDOM} = require('jsdom');
       panels.set(args.panel,args.manager);
       sets.set(args.id,{id:args.id,panel:args.panel,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{},analyses:{}});
     }
-    if(operation==='list_subcriteria')return {data:[...sets.values()].filter(r=>args.keys[r.id]===r.key).map(r=>({...r,name:r.profile.name,revision:'v1',completed:catalog.filter((_,i)=>r.weights[i+1]).length}))};
+    if(operation==='list_subcriteria')return {data:[...sets.values()].filter(r=>!r.is_example && (w.BAMCO_PORTAL?.user?.admin || args.keys[r.id]===r.key)).map(r=>({...r,name:r.profile.name,revision:'v1',completed:catalog.filter((_,i)=>r.weights[i+1]).length}))};
     if(operation==='respondent_results'){
       return {data:[...sets.values()].filter(r=>!r.is_example && (Object.keys(r.weights).some(g=>g!=='0')) &&
         (args.keys[r.id]===r.key || args.managers[r.panel]===panels.get(r.panel) && panels.has(r.panel)))
         .map(r=>({id:r.id,name:r.profile.name,weights:Object.fromEntries(Object.entries(r.weights).filter(([g])=>g!=='0'))}))};
     }
     const rec=sets.get(args.id);
-    assert(rec&&args.key===rec.key);
+    assert(rec&&(w.BAMCO_PORTAL?.user?.admin || args.key===rec.key));
     if(operation==='delete'){assert.equal(args.revision,'v1');sets.delete(args.id);return {data:{id:args.id}}}
     if(operation==='save_subcriteria'){
       assert(args.group>0&&args.group<=15);
@@ -131,5 +131,17 @@ const {JSDOM} = require('jsdom');
   nav('sample');await wait();
   assert.equal(w.location.hash,'#results');
   assert(!d.querySelector('main').textContent.includes('نمونه'));
+  // A manager on a fresh browser must see and open responses saved elsewhere.
+  const remoteId=w.crypto.randomUUID();
+  sets.set(remoteId,{...other,id:remoteId,forms:{11:{best:0,worst:1,bo:[1,3],ow:[3,1]}},analyses:{}});
+  w.localStorage.clear();
+  w.BAMCO_PORTAL={user:{id:'manager-account',admin:true}};
+  nav('forms');await wait();
+  assert.equal(d.querySelector('progress').value,1);
+  byText('button','باز کردن').click();await wait();
+  assert.equal(w.location.hash,'#e/'+remoteId);
+  assert.equal(d.querySelector('progress').value,1);
+  d.querySelectorAll('.bw-group-tile')[10].click();await wait();
+  assert(d.querySelector('input[name=best][value="0"]').checked);
   w.close();console.log('PASS questionnaire creation, 15 subcriterion groups, drafts, exact saves, pie selections and deletion.');
 })().catch(e=>{console.error(e);process.exitCode=1});

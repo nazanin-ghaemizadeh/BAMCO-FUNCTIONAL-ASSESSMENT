@@ -372,17 +372,20 @@ function weightChart(g,weights,onSelect){
   const names=items(g),ranked=weights.map((weight,index)=>({weight,index})).sort((a,b)=>b.weight-a.weight);
   const chart=el('div',null,'bw-pie-layout'),figure=el('div',null,'bw-pie-figure');
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
-  svg.setAttribute('viewBox','0 0 240 258');svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('viewBox','-18 -18 276 294');svg.setAttribute('aria-hidden','true');
   const defs=document.createElementNS(ns,'defs');svg.append(defs);
   const depth=document.createElementNS(ns,'g'),surface=document.createElementNS(ns,'g'),numbers=document.createElementNS(ns,'g');
   depth.setAttribute('class','bw-pie-depth');surface.setAttribute('class','bw-pie-surface');
   svg.append(depth,surface,numbers);
   const center=el('div',null,'bw-pie-center'),centerValue=el('strong'),centerNumber=el('span');
-  center.append(centerValue,centerNumber);figure.append(svg,center);
-  const legend=el('ol',null,'bw-pie-legend'),buttons=[],sectors=[];
+  center.append(centerValue,centerNumber);figure.append(svg);
+  const legend=el('ol',null,'bw-pie-legend'),buttons=[],sectors=[],sliceParts=[];
   function select(i){
     buttons.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));
     sectors.forEach((p,j)=>p.classList.toggle('is-selected',j===i));
+    sliceParts.forEach(({elements,dx,dy},j)=>{
+      for(const part of elements)part.style.transform=j===i?'translate('+dx+'px,'+dy+'px)':'translate(0,0)';
+    });
     centerValue.textContent=pct(weights[i]);centerNumber.textContent=text('زیرشاخص','Subcriterion','子指标')+' '+num(i+1);
     figure.style.setProperty('--slice-color',sectorColors[i]);
     onSelect?.(i);
@@ -392,8 +395,7 @@ function weightChart(g,weights,onSelect){
   for(const [position,{weight,index}] of ranked.entries()){
     const span=2*Math.PI*weight/total,end=angle+Math.min(span,2*Math.PI-1e-7),large=span>Math.PI?1:0;
     const color=sectorColors[index],sector=document.createElementNS(ns,'path');
-    const path='M'+point(114,angle)+' A114 114 0 '+large+' 1 '+point(114,end)
-      +' L'+point(66,end)+' A66 66 0 '+large+' 0 '+point(66,angle)+' Z';
+    const path='M120 120 L'+point(114,angle)+' A114 114 0 '+large+' 1 '+point(114,end)+' Z';
     const gradient=document.createElementNS(ns,'linearGradient');
     gradient.id='bw-sector-'+g+'-'+index;
     gradient.setAttribute('x2','85%');gradient.setAttribute('y2','100%');
@@ -404,19 +406,26 @@ function weightChart(g,weights,onSelect){
     defs.append(gradient);
     sector.setAttribute('d',path);sector.setAttribute('fill','url(#'+gradient.id+')');
     sector.id='bw-sector-face-'+g+'-'+index;
+    const sideGroup=document.createElementNS(ns,'g');
+    sideGroup.setAttribute('class','bw-slice-motion');depth.append(sideGroup);
+    const faceGroup=document.createElementNS(ns,'g');
+    faceGroup.setAttribute('class','bw-slice-motion');surface.append(faceGroup);
+    const numberGroup=document.createElementNS(ns,'g');
+    numberGroup.setAttribute('class','bw-slice-motion');numbers.append(numberGroup);
+    sliceParts[index]={elements:[sideGroup,faceGroup,numberGroup],dx:12*Math.cos(angle+span/2),dy:12*Math.sin(angle+span/2)};
     for(let layer=10;layer>=1;layer--){
       const side=document.createElementNS(ns,'use');
       side.setAttribute('href','#'+sector.id);side.setAttribute('transform','translate(0 '+layer+')');
       side.style.filter='brightness('+(.64+layer*.018)+')';
-      depth.append(side);
+      sideGroup.append(side);
     }
-    sectors[index]=sector;surface.append(sector);
+    sectors[index]=sector;faceGroup.append(sector);
     const tip=document.createElementNS(ns,'title');tip.textContent=names[index]+' · '+pct(weight);sector.append(tip);
     {
       const radius=span<0.18?(position%2?101:79):91;
       const [x,y]=point(radius,angle+span/2).split(' ');
       const id=document.createElementNS(ns,'text');id.setAttribute('x',x);id.setAttribute('y',y);
-      id.textContent=num(index+1);numbers.append(id);
+      id.textContent=num(index+1);numberGroup.append(id);
     }
     angle=end;
     sector.onclick=()=>select(index);
@@ -424,7 +433,7 @@ function weightChart(g,weights,onSelect){
     const number=el('span',num(index+1),'bw-slice-number');number.style.setProperty('--slice-color',color);
     b.append(number,el('span',names[index]),el('bdi',pct(weight)));buttons[index]=b;row.append(b);legend.append(row);
   }
-  chart.append(figure,legend);
+  chart.append(figure,center,legend);
   select(ranked[0].index);
   return chart;
 }
@@ -448,48 +457,34 @@ function individualGroup(g,weights,analysis){
   if(analysis)content.append(consistencyCards(analysis));
   return content;
 }
-function respondentChart(record){
-  const layout=el('div',null,'bw-results-layout');
-  const sidebar=el('nav',null,'bw-results-sidebar');
-  const title=text('شاخص‌های ارزیابی','Assessment criteria','评估指标');
-  sidebar.setAttribute('aria-label',title);
-  const options=el('div',null,'bw-criterion-options');
-  sidebar.append(el('h2',title),options);
+function respondentChart(record,groupSelect){
   const report=el('section',null,'surface bw-card bw-results-chart');
-  const heading=el('h2'),body=el('div');
-  heading.id='bw-selected-criterion';
-  report.setAttribute('aria-labelledby',heading.id);
-  report.append(heading,body);
-  const buttons=[];
-  function choose(g){
-    selectedGroup=g;
-    buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i+1===g)));
-    heading.replaceChildren(stamp(groupIcons[g],tones[(g-1)%tones.length]),document.createTextNode(groupTitle(g)));
-    body.replaceChildren();
-    if(record.weights[g])body.append(weightChart(g,record.weights[g]));
-    else reportStatus(body,text('وزن زیرشاخص‌های این گروه هنوز ثبت نشده است.','Weights have not been recorded for this group yet.','该组尚未记录权重。'),'bw-unscored');
+  report.setAttribute('aria-label',tr('results'));
+  function choose(){
+    selectedGroup=Number(groupSelect.value);
+    report.replaceChildren();
+    if(record.weights[selectedGroup])report.append(weightChart(selectedGroup,record.weights[selectedGroup]));
+    else reportStatus(report,text('وزن زیرشاخص‌های این گروه هنوز ثبت نشده است.','Weights have not been recorded for this group yet.','该组尚未记录权重。'),'bw-unscored');
   }
-  for(let g=1;g<=groupCount();g++){
-    const button=action('',()=>choose(g),'bw-criterion');
-    const count=el('span',num(items(g).length),'bw-criterion-count');
-    count.setAttribute('aria-hidden','true');
-    button.dataset.scored=String(Boolean(record.weights[g]));
-    button.append(el('span',groupTitle(g)),count);
-    buttons.push(button);options.append(button);
-  }
-  layout.append(sidebar,report);
-  choose(selectedGroup || Number(Object.keys(record.weights)[0]));
-  return layout;
+  groupSelect.value=String(selectedGroup || Number(Object.keys(record.weights)[0]));
+  groupSelect.onchange=choose;
+  choose();
+  return report;
 }
 async function results(v){
-  const toolbar=header(tr('results'),()=>go(''));
+  header(tr('results'),()=>go(''));
   const wait=reportStatus(host,tr('load'));
   const managers=Object.fromEntries(known('panel').filter(([,p])=>p.ready&&p.manager).map(([id,p])=>[id,p.manager]));
   const rows=await rpc('respondent_results',{managers,keys:Object.fromEntries(known('edit'))});
   if(v!==version||!host.isConnected)return;
   wait.remove();
   if(!rows.length){emptyState('results','noResults');return}
-  const filters=el('div',null,'bw-respondent-filter');
+  const filters=el('div',null,'surface bw-result-filters');
+  const groupLabel=el('label',tr('criterion'),'bw-filter'),groupSelect=el('select');
+  for(let g=1;g<=groupCount();g++){
+    const option=el('option',groupTitle(g));option.value=g;groupSelect.append(option);
+  }
+  groupLabel.append(groupSelect);filters.append(groupLabel);
   const label=el('label',tr('respondent'),'bw-filter'),select=el('select');
   for(const row of rows){
     const option=el('option',row.name);
@@ -500,9 +495,10 @@ async function results(v){
   select.onchange=()=>{
     if(selectedResult!==select.value)selectedGroup=null;
     selectedResult=select.value;
-    content.replaceChildren(respondentChart(rows.find(row=>row.id===selectedResult)));
+    content.replaceChildren(respondentChart(rows.find(row=>row.id===selectedResult),groupSelect));
+    groupSelect._refreshDropdown?.();
   };
-  label.append(select);filters.append(label);toolbar.append(filters);host.append(content);
+  label.append(select);filters.append(label);host.append(filters,content);
   select.onchange();
   window.BAMCO_DROPDOWNS?.(filters);
 }

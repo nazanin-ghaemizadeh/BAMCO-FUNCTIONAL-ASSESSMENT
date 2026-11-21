@@ -250,32 +250,11 @@ body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: c
   body[data-view=home] #landing #assessmentHub .bw-group-tile {height: auto; min-height: 165px; padding: 12px}
 }
 
-.bw-results-layout {
-  display: grid; grid-template-columns: clamp(210px,21%,280px) minmax(0,1fr);
-  align-items: start; gap: clamp(12px,1.8vw,24px);
-}
-.bw-results-sidebar {
-  min-width: 0; padding: 14px; border: 1px solid #d4e4db; border-radius: 17px;
-  background: #f7fbf8; color: #264e40;
-}
-#assessmentHub .bw-results-sidebar h2 {margin: 0 5px 8px; padding: 5px 0 12px; border-bottom: 1px solid #dae8df; font-size: 20px}
-.bw-criterion-options {display: grid; gap: 2px}
-#assessmentHub .bw-criterion {
-  display: flex; align-items: center; justify-content: space-between; width: 100%;
-  gap: 8px; min-height: 41px; padding: 6px 10px; border: 0; border-bottom: 1px solid #dce9e0;
-  border-inline-start: 3px solid transparent; border-radius: 9px; background: transparent;
-  color: #415c50; font: inherit; line-height: 1.45; text-align: start; box-shadow: none; cursor: pointer;
-}
-#assessmentHub .bw-criterion span:first-child {text-align: start !important}
-#assessmentHub .bw-criterion:hover {background: #edf5ef; transform: none}
-#assessmentHub .bw-criterion[aria-pressed=true] {border-inline-start-color: #28806b; background: #e5f3ea; color: #174e40; font-weight: 700}
-.bw-criterion-count {flex: none; min-width: 25px; border-radius: 20px; background: #e6efe9; color: #526d60; font-size: .86em; text-align: center}
-.bw-criterion[data-scored=true] .bw-criterion-count {background: #cbe9da; color: #215d4a}
 #assessmentHub .bw-results-chart {margin: 0; padding: clamp(15px,2vw,30px); border: 1px solid #d4e4db; border-radius: 18px; background: #fff}
 #assessmentHub .bw-results-chart h2 {margin: 0; padding-bottom: 14px; border-bottom: 1px solid #e2ece6}
-.bw-results-chart .bw-pie-layout {grid-template-columns: minmax(0,1fr); justify-items: center; gap: 28px; margin: 22px 0 4px}
+.bw-results-chart .bw-pie-layout {grid-template-columns: minmax(0,1fr); justify-items: center; gap: 18px; margin: 4px 0}
 .bw-results-chart .bw-pie-figure {
-  isolation: isolate; inline-size: min(100%,390px); max-width: none; aspect-ratio: 240 / 258;
+  isolation: isolate; inline-size: min(100%,390px); max-width: none; aspect-ratio: 276 / 294;
   border: 0; padding: 0; background: transparent; box-shadow: none;
 }
 .bw-results-chart .bw-pie-figure::before {
@@ -283,11 +262,12 @@ body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: c
   border-radius: 50%; background: #24483e2b; filter: blur(14px);
 }
 .bw-results-chart .bw-pie-center {
-  inset: 25.6% 27.5% 32.5%; border-radius: 50%; border: 1px solid #e2ebe5;
-  background: radial-gradient(circle at 35% 25%,#fff 25%,#f2f7f4 80%);
-  box-shadow: inset 0 5px 12px #254c4015,0 1px 0 #fff;
+  position: static; display: flex; flex-direction: row; gap: 10px; pointer-events: none;
+  padding: 6px 16px; border-radius: 20px; background: #f0f7f3; color: #204d43;
 }
-.bw-results-chart .bw-pie-center strong {color: #204d43; font-size: clamp(30px,4vw,46px)}
+.bw-results-chart .bw-pie-center strong {font-size: 24px}
+.bw-slice-motion {transition: transform .25s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion:reduce) {.bw-slice-motion {transition: none}}
 .bw-results-chart .bw-pie-figure path {stroke: #ffffffd9; stroke-width: .8}
 .bw-results-chart .bw-pie-depth {pointer-events: none}
 .bw-results-chart .bw-pie-depth use {stroke-width: 0}
@@ -300,24 +280,15 @@ body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: c
 }
 #assessmentHub .bw-results-chart .bw-slice-key:is(:hover,[aria-pressed=true]) {border-color: #a8cbb9; background: #edf6f0}
 .bw-results-chart .bw-unscored {margin: 18px 0 0; padding: 18px; color: #486157; background: #f5f9f6; border-radius: 12px}
-#assessmentHub .bw-respondent-filter {width: min(100%,26rem); margin-inline-start: auto}
+
+#assessmentHub .bw-result-filters {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px;
+  padding: 14px 20px; margin: 0 0 18px; border: 1px solid #d4e4db; border-radius: 16px;
+  background: linear-gradient(120deg,#f7fbf8,#fff);
+}
+#assessmentHub .bw-result-filters .bw-filter {display: flex; align-items: center; gap: 12px; padding: 0; margin: 0; min-width: 0}
 .bw-results-chart .bw-slice-key {height: 100%}
-@media (min-width:701px) {
-  .bw-results-chart {position: sticky; top: 12px}
-}
-@media (max-width:520px) {
-  #assessmentHub .bw-respondent-filter {width: 100%}
-}
-@media (max-width:1000px) {
-  .bw-results-chart .bw-pie-layout {grid-template-columns: minmax(0,1fr)}
-  .bw-results-chart .bw-pie-figure {inline-size: min(100%,360px)}
-}
 @media (max-width:700px) {
-  .bw-results-layout {grid-template-columns: minmax(0,1fr)}
-  .bw-results-sidebar {padding: 10px}
-  #assessmentHub .bw-results-sidebar h2 {padding-bottom: 7px}
-  .bw-criterion-options {display: flex; overflow-x: auto; gap: 6px; padding: 3px; scrollbar-width: thin}
-  #assessmentHub .bw-criterion {width: auto; flex: none; max-width: 82%; border: 1px solid #dce9e0; min-height: 42px}
-  #assessmentHub .bw-criterion[aria-pressed=true] {border-color: #8cbda6}
-  .bw-results-chart .bw-pie-layout {margin-top: 16px}
+  #assessmentHub .bw-result-filters {grid-template-columns: minmax(0,1fr); gap: 12px; padding: 14px}
+  .bw-results-chart .bw-pie-figure {inline-size: min(100%,340px)}
 }

@@ -222,6 +222,19 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare a jsonb:=private.bamco_actor();
 begin
   if not coalesce(a->>'admin'='true' or (a->'grants') ? 'weighting',false) then raise insufficient_privilege;end if;
+  if operation='respondent_results' then
+    return (
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'id',s.id,'name',s.profile->>'name','weights',s.weights-'0'
+      ) order by s.profile->>'name',s.respondent),'[]'::jsonb)
+      from private.bamco_weighting_sets s
+      where not s.is_example and (s.weights-'0') <> '{}'::jsonb
+        and (a->>'admin'='true'
+          or s.edit_hash=sha256(convert_to(args->'keys'->>(s.id::text),'UTF8'))
+          or exists (select 1 from private.bamco_weighting_panels p
+            where p.id=s.panel_id and p.manager_hash=sha256(convert_to(args->'managers'->>(p.id::text),'UTF8'))))
+    );
+  end if;
   if operation in ('list_subcriteria','results_subcriteria','save_subcriteria','delete') then return private.bamco_weighting_subcriteria(operation,args);end if;
   return private.bamco_weighting_impl(operation,args);
 end;

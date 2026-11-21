@@ -21,12 +21,13 @@ const {JSDOM} = require('jsdom');
   async function requestRpc(_, {operation,args}) {
     if (operation==='create') {
       panels.set(args.panel,args.manager);
-      sets.set(args.id,{id:args.id,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{},analyses:{}});
+      sets.set(args.id,{id:args.id,panel:args.panel,key:args.key,respondent:sets.size+1,profile:structuredClone(args.profile),forms:{},weights:{},analyses:{}});
     }
     if(operation==='list_subcriteria')return {data:[...sets.values()].filter(r=>args.keys[r.id]===r.key).map(r=>({...r,name:r.profile.name,revision:'v1',completed:catalog.filter((_,i)=>r.weights[i+1]).length}))};
-    if(operation==='results_subcriteria'){
-      assert.equal(panels.get(args.panel),args.manager);
-      return {data:[...sets.values()].filter(r=>catalog.every((_,i)=>r.weights[i+1])).map(r=>({...r,name:r.profile.name}))};
+    if(operation==='respondent_results'){
+      return {data:[...sets.values()].filter(r=>!r.is_example && (Object.keys(r.weights).some(g=>g!=='0')) &&
+        (args.keys[r.id]===r.key || args.managers[r.panel]===panels.get(r.panel) && panels.has(r.panel)))
+        .map(r=>({id:r.id,name:r.profile.name,weights:Object.fromEntries(Object.entries(r.weights).filter(([g])=>g!=='0'))}))};
     }
     const rec=sets.get(args.id);
     assert(rec&&args.key===rec.key);
@@ -93,53 +94,42 @@ const {JSDOM} = require('jsdom');
   nav('e/'+id+'/g/0');await wait();assert.equal(w.location.hash,'#e/'+id);
   nav('e/'+id+'/g/5');await wait();assert(d.querySelector('.bw-pie-legend'));
   nav('results');await wait();
-  assert.equal(d.querySelectorAll('.bw-group-select option').length,15);
-  assert.equal(d.querySelectorAll('table').length,0);
-  const sel=d.querySelector('.bw-filter:last-of-type select');sel.value='1';sel.dispatchEvent(new w.Event('change'));
-  const group=d.querySelector('.bw-group-select select');
+  assert.equal(d.querySelectorAll('select').length,1);
+  assert.deepEqual([...d.querySelectorAll('option')].map(o=>o.textContent),['QA']);
+  assert.equal(d.querySelectorAll('.bw-criterion').length,15);
+  assert(!d.querySelector('.bw-metrics,.bw-selection,.bw-bounds,table'));
+  assert(!d.querySelector('main').textContent.includes('آزمایشی'));
   for(let i=1;i<=15;i++){
-    group.value=String(i);group.dispatchEvent(new w.Event('change'));
+    const button=d.querySelectorAll('.bw-criterion')[i-1]; button.click();
+    assert.equal(button.getAttribute('aria-pressed'),'true');
+    assert.equal(d.querySelector('.bw-results-chart h2').textContent,catalog[i-1].title[0]);
     assert.equal(d.querySelectorAll('.bw-pie-figure path').length,expectedSizes[i-1]);
     const keys=d.querySelectorAll('.bw-slice-key');
     assert.equal(keys.length,expectedSizes[i-1]);keys[1].click();
     assert.equal(keys[1].getAttribute('aria-pressed'),'true');
-    assert.equal(d.querySelector('.bw-selection h3').textContent,catalog[i-1].items[1][0]);
-    assert.equal(d.querySelectorAll('.bw-bounds dd').length,4);
+    assert.equal(d.querySelector('.bw-pie-center strong').textContent,keys[1].querySelector('bdi').textContent);
   }
-  assert(d.querySelector('main').textContent.includes('مدل غیرخطی'));
-  sets.get(id).is_example=true;
+  const other={...sets.get(id),id:'second',profile:{name:'QA 2'},weights:{11:[0.75,0.25]}};
+  sets.set(other.id,other);
+  sets.set('example',{...other,id:'example',is_example:true});
+  sets.set('empty',{...other,id:'empty',weights:{0:[1]}});
   nav('results');await wait();
-  assert(!d.querySelector('.bw-filter option[value="all"]'));
-  assert(d.querySelector('.bw-pie-figure'));
-  const other=structuredClone(sets.get(id));other.respondent=2;other.is_example=false;other.weights[11]=[0.75,0.25];
-  sets.set('another-respondent',other);
-  nav('results');await wait();
-  const aggregate=d.querySelector('.bw-filter:last-of-type select');
-  assert(aggregate.querySelector('option[value="all"]').textContent.includes('(۱)'));
-  aggregate.value='all';aggregate.dispatchEvent(new w.Event('change'));
-  const combinedGroup=d.querySelector('.bw-group-select select');
-  combinedGroup.value='11';combinedGroup.dispatchEvent(new w.Event('change'));
-  assert.equal(d.querySelector('.bw-slice-key bdi').textContent,'۷۵٪');
-  sets.delete('another-respondent');
+  const sel=d.querySelector('select');
+  assert.deepEqual([...sel.options].map(o=>o.textContent),['QA','QA 2']);
+  sel.value=other.id;sel.dispatchEvent(new w.Event('change'));
+  assert.equal(d.querySelector('.bw-results-chart h2').textContent,catalog[10].title[0]);
+  assert.deepEqual([...d.querySelectorAll('.bw-slice-key bdi')].map(x=>x.textContent),['۷۵٪','۲۵٪']);
+  d.querySelector('.bw-criterion').click();
+  assert(d.querySelector('.bw-unscored')); assert(!d.querySelector('.bw-pie-figure'));
+  d.querySelectorAll('.bw-criterion')[10].click(); assert(d.querySelector('.bw-pie-figure'));
+  for(const key of ['second','empty','example'])sets.delete(key);
   nav('forms');await wait();assert(!/پیوند|دعوت‌نامه/.test(d.querySelector('main').textContent));
   w.confirm=()=>false;byText('button','حذف').click();await wait();assert.equal(sets.size,1);
   w.confirm=()=>true;byText('button','حذف').click();await wait();assert.equal(sets.size,0);
   assert.equal(d.querySelector('.assessment-row'),null);
   nav('results');await wait();assert.equal(d.querySelector('.bw-pie-figure'),null);
-  const sample=JSON.parse(fs.readFileSync('assets/weighting-sample.json','utf8'));
-  const sampleGroups=Array.from({length:15},(_,i)=>String(i+1));
-  assert.deepEqual(Object.keys(sample.weights),sampleGroups);
-  assert.deepEqual(Object.keys(sample.analyses),sampleGroups);
-  for(const g of sampleGroups){
-    assert.equal(sample.weights[g].length,expectedSizes[g-1]);
-    assert.equal(sample.analyses[g].intervals.length,expectedSizes[g-1]);
-    assert(Math.abs(sample.weights[g].reduce((a,b)=>a+b,0)-1)<1e-9);
-  }
-  w.fetch=async url=>{assert.equal(url,'./assets/weighting-sample.json');return {ok:true,json:async()=>sample}};
-  byText('button','مشاهده‌ی نمونه‌ی آزمایشی').click();await wait();
-  assert.equal(w.location.hash,'#sample');
-  const sampleGroup=d.querySelector('.bw-group-select select');sampleGroup.value='11';sampleGroup.dispatchEvent(new w.Event('change'));
-  assert.deepEqual([...d.querySelectorAll('.bw-slice-key bdi')].map(n=>n.textContent),['۷۵٪','۲۵٪']);
-  byText('button','بازگشت').click();await wait();assert.equal(w.location.hash,'#results');
+  nav('sample');await wait();
+  assert.equal(w.location.hash,'#results');
+  assert(!d.querySelector('main').textContent.includes('نمونه'));
   w.close();console.log('PASS questionnaire creation, 15 subcriterion groups, drafts, exact saves, pie selections and deletion.');
 })().catch(e=>{console.error(e);process.exitCode=1});

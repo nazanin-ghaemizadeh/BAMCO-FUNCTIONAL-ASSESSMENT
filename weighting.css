@@ -123,7 +123,6 @@ html[dir] #assessmentHub .weighting-workspace :is(h2,h3,summary,dt,dd,li,label,l
   text-align: start !important; text-justify: auto !important;
 }
 .weighting-workspace h2:has(.bw-stamp) {display: flex; align-items: center; gap: 10px}
-.bw-filters {border: 1px solid #dce7e1; background: #fff; border-radius: 16px}
 .bw-guide summary {font-weight: 700}
 .bw-guide .bw-stamp {width: 32px; height: 32px; border-radius: 11px}
 .bw-choices fieldset:first-child {background: #f2f8f4; border-color: #d1e4d8}
@@ -137,15 +136,13 @@ html[dir] #assessmentHub .weighting-workspace :is(h2,h3,summary,dt,dd,li,label,l
 .bw-ratings label:hover input:not(:disabled) + span {background: var(--pale); border-color: var(--ink)}
 .bw-ratings input:checked + span, .bw-ratings label:hover input:checked + span {background: var(--ink); color: white; border-color: var(--ink); box-shadow: 0 2px 0 #0002}
 
-.bw-filters {display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 10px 18px; margin: 0 0 13px}
-.bw-filters:empty {display: none}
 .bw-empty {
   display: grid; justify-items: center; gap: 10px; padding: 26px 18px;
   border: 1px dashed #c4d9cd; border-radius: 22px; background: linear-gradient(130deg,#f2f7f2,#f9f5fc);
 }
 .bw-empty svg {width: 110px; height: 88px}
 .bw-empty p {margin: 0; color: #3d5c4e}
-#assessmentHub .bw-filters .bw-filter {
+#assessmentHub .bw-respondent-filter .bw-filter {
   display: flex; flex: 1 1 270px; align-items: center; gap: 10px; width: auto; margin: 0;
   padding: 0; border: 0; box-shadow: none; background: none; color: #455e52; font-size: 16px; white-space: nowrap;
 }
@@ -213,9 +210,6 @@ html[dir] #assessmentHub .bw-definitions :is(th,td):not(:first-child) {text-alig
 body[data-view=home] #landing #assessmentHub .bw-group-tile .bw-stamp svg {width: 42px; height: 42px}
 body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: clamp(17px,1.7vw,24px); overflow-wrap: anywhere}
 #assessmentHub .bw-tiles :is(.gate-cta,strong),#assessmentHub .bw-groups :is(.gate-cta,strong) {text-align: center !important}
-.bw-group-select {display: flex; align-items: center; flex-wrap: wrap; gap: 12px; font-weight: 700; font-size: 20px}
-.bw-group-select select {max-width: 32rem; flex: 1 1 180px}
-.bw-report-note {color: #49665b; font-size: 17px}
 .bw-pie-layout {display: grid; grid-template-columns: minmax(220px,.75fr) minmax(0,1.4fr); align-items: center; gap: clamp(15px,4vw,60px); margin: 18px 0}
 .bw-pie-figure {position: relative; inline-size: min(100%,330px); justify-self: center; aspect-ratio: 1}
 .bw-pie-figure svg {display: block; width: 100%; height: 100%; overflow: visible}
@@ -254,4 +248,63 @@ body[data-view=home] #landing #assessmentHub .bw-group-tile strong {font-size: c
   #assessmentHub .bw-group-tile .bw-stamp {width: 48px; height: 48px; border-radius: 15px}
   body[data-view=home] #landing #assessmentHub .bw-group-tile .bw-stamp svg {width: 28px; height: 28px}
   body[data-view=home] #landing #assessmentHub .bw-group-tile {height: auto; min-height: 165px; padding: 12px}
+}
+
+.bw-results-layout {
+  display: grid; grid-template-columns: clamp(210px,21%,280px) minmax(0,1fr);
+  align-items: start; gap: clamp(12px,1.8vw,24px);
+}
+.bw-results-sidebar {
+  min-width: 0; padding: 14px; border: 1px solid #d4e4db; border-radius: 17px;
+  background: #f7fbf8; color: #264e40;
+}
+#assessmentHub .bw-results-sidebar h2 {margin: 0 5px 8px; padding: 5px 0 12px; border-bottom: 1px solid #dae8df; font-size: 20px}
+.bw-criterion-options {display: grid; gap: 2px}
+#assessmentHub .bw-criterion {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  gap: 8px; min-height: 41px; padding: 6px 10px; border: 0; border-bottom: 1px solid #dce9e0;
+  border-inline-start: 3px solid transparent; border-radius: 9px; background: transparent;
+  color: #415c50; font: inherit; line-height: 1.45; text-align: start; box-shadow: none; cursor: pointer;
+}
+#assessmentHub .bw-criterion span:first-child {text-align: start !important}
+#assessmentHub .bw-criterion:hover {background: #edf5ef; transform: none}
+#assessmentHub .bw-criterion[aria-pressed=true] {border-inline-start-color: #28806b; background: #e5f3ea; color: #174e40; font-weight: 700}
+.bw-criterion-count {flex: none; min-width: 25px; border-radius: 20px; background: #e6efe9; color: #526d60; font-size: .86em; text-align: center}
+.bw-criterion[data-scored=true] .bw-criterion-count {background: #cbe9da; color: #215d4a}
+#assessmentHub .bw-results-chart {margin: 0; padding: clamp(15px,2vw,30px); border: 1px solid #d4e4db; border-radius: 18px; background: #fff}
+#assessmentHub .bw-results-chart h2 {margin: 0; padding-bottom: 14px; border-bottom: 1px solid #e2ece6}
+.bw-results-chart .bw-pie-layout {grid-template-columns: minmax(190px,.85fr) minmax(0,1.2fr); gap: clamp(15px,2vw,32px); margin: 24px 0 4px}
+.bw-results-chart .bw-pie-figure {
+  isolation: isolate; padding: 4px; border-radius: 50%; border: 1px solid #e1eae4;
+  background: radial-gradient(circle,#fff 34%,#f3f7f4 64%,#fff 71%);
+  box-shadow: 0 9px 22px -14px #39584760;
+}
+.bw-results-chart .bw-pie-center {inset: 26%; border-radius: 50%; border: 1px solid #e0e8e3; background: linear-gradient(145deg,#fff 40%,color-mix(in srgb,var(--slice-color) 12%,white)); box-shadow: 0 3px 12px #264e400d}
+.bw-results-chart .bw-pie-center strong {color: #204d43}
+.bw-results-chart .bw-pie-figure path {stroke-width: 1.7}
+.bw-results-chart .bw-pie-figure path.is-selected {stroke: #fff; filter: brightness(1.08); transform: scale(1.025); transform-origin: 50% 50%}
+.bw-results-chart .bw-pie-legend {grid-template-columns: repeat(auto-fit,minmax(min(100%,14rem),1fr)); gap: 6px}
+#assessmentHub .bw-results-chart .bw-slice-key {border: 1px solid #e5ece8; background: #fcfdfc; min-height: 46px}
+#assessmentHub .bw-results-chart .bw-slice-key:is(:hover,[aria-pressed=true]) {border-color: #a8cbb9; background: #edf6f0}
+.bw-results-chart .bw-unscored {margin: 18px 0 0; padding: 18px; color: #486157; background: #f5f9f6; border-radius: 12px}
+#assessmentHub .bw-respondent-filter {width: min(100%,26rem); margin-inline-start: auto}
+.bw-results-chart .bw-slice-key {height: 100%}
+@media (min-width:701px) {
+  .bw-results-chart {position: sticky; top: 12px}
+}
+@media (max-width:520px) {
+  #assessmentHub .bw-respondent-filter {width: 100%}
+}
+@media (max-width:1000px) {
+  .bw-results-chart .bw-pie-layout {grid-template-columns: minmax(0,1fr)}
+  .bw-results-chart .bw-pie-figure {max-width: 250px}
+}
+@media (max-width:700px) {
+  .bw-results-layout {grid-template-columns: minmax(0,1fr)}
+  .bw-results-sidebar {padding: 10px}
+  #assessmentHub .bw-results-sidebar h2 {padding-bottom: 7px}
+  .bw-criterion-options {display: flex; overflow-x: auto; gap: 6px; padding: 3px; scrollbar-width: thin}
+  #assessmentHub .bw-criterion {width: auto; flex: none; max-width: 82%; border: 1px solid #dce9e0; min-height: 42px}
+  #assessmentHub .bw-criterion[aria-pressed=true] {border-color: #8cbda6}
+  .bw-results-chart .bw-pie-layout {margin-top: 16px}
 }

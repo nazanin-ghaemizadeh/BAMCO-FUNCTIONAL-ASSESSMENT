@@ -10,7 +10,7 @@ const words = {
   denied:['این پرسش‌نامه در دسترس نیست.','This questionnaire is unavailable.','此问卷不可用。'],
   storage:['برای ثبت پرسش‌نامه، ذخیره‌سازی مرورگر را فعال کنید.','Enable browser storage to save questionnaires.','请启用浏览器存储以保存问卷。'],
   empty:['هنوز پرسش‌نامه‌ای در این مرورگر ایجاد یا باز نشده است.','No questionnaires have been created or opened in this browser.','此浏览器尚未创建或打开问卷。'],
-  noResults:['پس از تکمیل ۱۵ گروه زیرشاخص، نتیجه‌ی ارزیاب اینجا نمایش داده می‌شود.','Results appear after the evaluator completes all 15 subcriterion groups.','完成全部15个子指标组后，可在此查看结果。'],
+  noResults:['هنوز وزنی برای نمایش ثبت نشده است.','No weights have been recorded yet.','暂无已记录的权重。'],
   subgroup:['زیرشاخص‌ها','Subcriteria','子指标'],
   group:['گروه شاخص','Criterion group','指标组'], criterion:['شاخص','Criterion','指标'],
   number:['ردیف','No.','序号'], value:['مقدار','Value','数值'], meaning:['مفهوم','Meaning','含义'],
@@ -37,7 +37,7 @@ let storePrefix=legacyPrefix;
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const token=/^[0-9a-f]{64}$/;
 const locales=['fa-IR','en-GB','zh-CN'];
-let host, service, language, li, activeRoute, version=0, editing, editingBase, pendingNew, selectedResult, selectedScope, selectedGroup=1;
+let host, service, language, li, activeRoute, version=0, editing, editingBase, pendingNew, selectedResult, selectedGroup;
 const clone = x => JSON.parse(JSON.stringify(x));
 const tr = k => (words[k] || window.BAMCO_WEIGHTING_COPY[k])[li];
 const num = n => Number(n).toLocaleString(locales[li]);
@@ -102,6 +102,7 @@ function header(title,back,controls=[]) {
   const toolbar=el('div',null,'assessment-page-toolbar');
   toolbar.append(action(tr('back'),back,'assessment-action assessment-back-action'),...controls);
   host.replaceChildren(heading,divider,toolbar);
+  return toolbar;
 }
 function reportStatus(parent,msg,style='bw-status') {const p=el('p',msg,style);p.setAttribute('role','status');parent.append(p);return p}
 function emptyState(section,message){
@@ -367,39 +368,38 @@ const sectorColors=['#388478','#a17bc1','#e3aa60','#678fc3','#d48399','#53979b',
   '#a9ae65','#af8190','#5979a2','#d19470','#7f88b6','#78a183',
   '#bf7977','#648fba','#b6a35a','#82749c','#55998c','#bd8f64',
   '#9f7795','#729aaf','#8a9c6a','#aa8270'];
-function individualGroup(g,weights,analysis){
+function weightChart(g,weights,onSelect){
   const names=items(g),ranked=weights.map((weight,index)=>({weight,index})).sort((a,b)=>b.weight-a.weight);
-  const content=el('div',null,'bw-group-report');
   const chart=el('div',null,'bw-pie-layout'),figure=el('div',null,'bw-pie-figure');
   const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');
   svg.setAttribute('viewBox','0 0 240 240');svg.setAttribute('aria-hidden','true');
+  const defs=document.createElementNS(ns,'defs');svg.append(defs);
   const center=el('div',null,'bw-pie-center'),centerValue=el('strong'),centerNumber=el('span');
   center.append(centerValue,centerNumber);figure.append(svg,center);
   const legend=el('ol',null,'bw-pie-legend'),buttons=[],sectors=[];
-  const detail=el('section',null,'bw-selection'),label=el('h3'),exact=el('span',null,'bw-exact');
-  detail.setAttribute('aria-live','polite');detail.append(label,exact);
-  const ranges=el('dl',null,'bw-bounds');
-  if(analysis)detail.append(ranges);
   function select(i){
     buttons.forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)));
     sectors.forEach((p,j)=>p.classList.toggle('is-selected',j===i));
     centerValue.textContent=pct(weights[i]);centerNumber.textContent=text('زیرشاخص','Subcriterion','子指标')+' '+num(i+1);
-    label.textContent=names[i];exact.textContent=tr('point')+' · '+decimal(weights[i],6);
-    if(!analysis)return;
-    const [lo,hi]=analysis.intervals[i];
-    ranges.replaceChildren();
-    for(const [k,value] of [['lower',lo],['upper',hi],['center',(lo+hi)/2],['halfWidth',(hi-lo)/2]]){
-      const pair=el('div');pair.append(el('dt',tr(k)),el('dd',decimal(value,4)));ranges.append(pair);
-    }
+    figure.style.setProperty('--slice-color',sectorColors[i]);
+    onSelect?.(i);
   }
   const total=weights.reduce((sum,w)=>sum+w,0);let angle=-Math.PI/2;
   const point=(radius,a)=>[120+radius*Math.cos(a),120+radius*Math.sin(a)].join(' ');
   for(const {weight,index} of ranked){
-    const span=2*Math.PI*weight/total,end=angle+span,large=span>Math.PI?1:0;
+    const span=2*Math.PI*weight/total,end=angle+Math.min(span,2*Math.PI-1e-7),large=span>Math.PI?1:0;
     const color=sectorColors[index],sector=document.createElementNS(ns,'path');
     const path='M'+point(114,angle)+' A114 114 0 '+large+' 1 '+point(114,end)
       +' L'+point(66,end)+' A66 66 0 '+large+' 0 '+point(66,angle)+' Z';
-    sector.setAttribute('d',path);sector.setAttribute('fill',color);
+    const gradient=document.createElementNS(ns,'linearGradient');
+    gradient.id='bw-sector-'+g+'-'+index;
+    gradient.setAttribute('x2','85%');gradient.setAttribute('y2','100%');
+    for(const [offset,shade] of [['0%',color],['100%','color-mix(in srgb,'+color+' 76%,white)']]){
+      const stop=document.createElementNS(ns,'stop');stop.setAttribute('offset',offset);
+      stop.setAttribute('stop-color',shade);gradient.append(stop);
+    }
+    defs.append(gradient);
+    sector.setAttribute('d',path);sector.setAttribute('fill','url(#'+gradient.id+')');
     sectors[index]=sector;svg.append(sector);
     const tip=document.createElementNS(ns,'title');tip.textContent=names[index]+' · '+pct(weight);sector.append(tip);
     if(span>0.21){
@@ -413,82 +413,87 @@ function individualGroup(g,weights,analysis){
     const number=el('span',num(index+1),'bw-slice-number');number.style.setProperty('--slice-color',color);
     b.append(number,el('span',names[index]),el('bdi',pct(weight)));buttons[index]=b;row.append(b);legend.append(row);
   }
-  chart.append(figure,legend);content.append(chart);
-  if(analysis){const interval=el('h4',tr('intervalResults'));ranges.before(interval)}
-  content.append(detail);
+  chart.append(figure,legend);
+  select(ranked[0].index);
+  return chart;
+}
+function individualGroup(g,weights,analysis){
+  const names=items(g),content=el('div',null,'bw-group-report');
+  const detail=el('section',null,'bw-selection'),label=el('h3'),exact=el('span',null,'bw-exact');
+  detail.setAttribute('aria-live','polite');detail.append(label,exact);
+  const ranges=el('dl',null,'bw-bounds');
+  if(analysis)detail.append(ranges);
+  const chart=weightChart(g,weights,i=>{
+    label.textContent=names[i];exact.textContent=tr('point')+' · '+decimal(weights[i],6);
+    if(!analysis)return;
+    const [lo,hi]=analysis.intervals[i];
+    ranges.replaceChildren();
+    for(const [k,value] of [['lower',lo],['upper',hi],['center',(lo+hi)/2],['halfWidth',(hi-lo)/2]]){
+      const pair=el('div');pair.append(el('dt',tr(k)),el('dd',decimal(value,4)));ranges.append(pair);
+    }
+  });
+  if(analysis)ranges.before(el('h4',tr('intervalResults')));
+  content.append(chart,detail);
   if(analysis)content.append(consistencyCards(analysis));
-  select(ranked[0].index);return content;
+  return content;
 }
-function showWeights(rows,combined){
-  const box=el('section',null,'surface bw-card'),picker=el('label',tr('group'),'bw-group-select');
-  const select=el('select');
+function respondentChart(record){
+  const layout=el('div',null,'bw-results-layout');
+  const sidebar=el('nav',null,'bw-results-sidebar');
+  const title=text('شاخص‌های ارزیابی','Assessment criteria','评估指标');
+  sidebar.setAttribute('aria-label',title);
+  const options=el('div',null,'bw-criterion-options');
+  sidebar.append(el('h2',title),options);
+  const report=el('section',null,'surface bw-card bw-results-chart');
+  const heading=el('h2'),body=el('div');
+  heading.id='bw-selected-criterion';
+  report.setAttribute('aria-labelledby',heading.id);
+  report.append(heading,body);
+  const buttons=[];
+  function choose(g){
+    selectedGroup=g;
+    buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i+1===g)));
+    heading.replaceChildren(stamp(groupIcons[g],tones[(g-1)%tones.length]),document.createTextNode(groupTitle(g)));
+    body.replaceChildren();
+    if(record.weights[g])body.append(weightChart(g,record.weights[g]));
+    else reportStatus(body,text('وزن زیرشاخص‌های این گروه هنوز ثبت نشده است.','Weights have not been recorded for this group yet.','该组尚未记录权重。'),'bw-unscored');
+  }
   for(let g=1;g<=groupCount();g++){
-    const option=el('option',groupTitle(g));option.value=g;select.append(option);
+    const button=action('',()=>choose(g),'bw-criterion');
+    const count=el('span',num(items(g).length),'bw-criterion-count');
+    count.setAttribute('aria-hidden','true');
+    button.dataset.scored=String(Boolean(record.weights[g]));
+    button.append(el('span',groupTitle(g)),count);
+    buttons.push(button);options.append(button);
   }
-  select.value=String(selectedGroup);
-  picker.append(select);
-  const note=el('p',combined
-    ?text('سهم هر زیرشاخص، میانگین وزن آن در همین گروه بین ارزیابان دارای پرسش‌نامه‌ی کامل است.','Each share is the average within this group across completed questionnaires.','各占比为完成问卷的评估员在本组内权重的平均值。')
-    :text('هر برش سهم یک زیرشاخص از وزن همین گروه را نشان می‌دهد.','Each slice shows a subcriterion’s share within this group.','每个扇区表示该子指标在本组内的权重。'),'bw-report-note');
-  const report=el('div');box.append(picker,note,report);
-  select.onchange=()=>{
-    selectedGroup=Number(select.value);
-    const g=selectedGroup;
-    const weights=items(g).map((_,j)=>rows.reduce((sum,r)=>sum+Number(r.weights[g][j]),0)/rows.length);
-    report.replaceChildren(individualGroup(g,weights,combined?null:rows[0].analyses?.[g]));
-  };
-  select.onchange();return box;
-}
-async function sampleResults(v){
-  const back=()=>go('results');
-  header(text('نتایج نمونه‌ی آزمایشی','Sample questionnaire results','示例问卷结果'),back);
-  const wait=reportStatus(host,tr('load'));
-  try{
-    const response=await fetch(window.BAMCO_RELEASE?.asset('./assets/weighting-sample.json')||'./assets/weighting-sample.json');
-    if(!response.ok)throw new Error('Sample unavailable');
-    const sample=await response.json();
-    if(v!==version||!host.isConnected)return;
-    wait.remove();host.append(showWeights([sample],false));
-  }catch(e){
-    if(v===version&&host.isConnected){wait.remove();errorBox(host,e,()=>draw())}
-  }
+  layout.append(sidebar,report);
+  choose(selectedGroup || Number(Object.keys(record.weights)[0]));
+  return layout;
 }
 async function results(v){
-  const sample=action(text('مشاهده‌ی نمونه‌ی آزمایشی','View sample results','查看示例结果'),()=>go('sample'),'assessment-action assessment-secondary-action');
-  header(tr('results'),()=>go(''),[sample]);
-  let rows;
-  const current=panel();
-  const panels=known('panel').map(([,p])=>p).filter(p=>p.manager&&p.ready);
-  const scopes=panels.map((p,i)=>({value:p.panel,label:tr('department')+' '+num(i+1)}));
-  if(known('edit').length)scopes.push({value:'mine',label:text('پرسش‌نامه‌های من','My questionnaires','我的问卷')});
-  if(!scopes.some(s=>s.value===selectedScope))selectedScope=current?.manager&&current.ready?current.panel:scopes[0]?.value;
-  const p=panels.find(p=>p.panel===selectedScope);
-  const filters=el('div',null,'bw-filters');host.append(filters);
-  if(scopes.length>1){
-    const label=el('label',tr('department'),'surface bw-filter'),sel=el('select');
-    for(const s of scopes){const o=el('option',s.label);o.value=s.value;sel.append(o)}
-    sel.value=selectedScope;sel.onchange=()=>{selectedScope=sel.value;selectedResult=null;draw()};label.append(sel);filters.append(label);
-  }
+  const toolbar=header(tr('results'),()=>go(''));
   const wait=reportStatus(host,tr('load'));
-  if(p?.manager&&p.ready)rows=await rpc('results_subcriteria',{panel:p.panel,manager:p.manager});
-  else{
-    const keys=Object.fromEntries(known('edit'));
-    const list=Object.keys(keys).length?await rpc('list_subcriteria',{keys}):[];
-    const mine=await Promise.all(list.filter(r=>r.completed===groupCount()).map(r=>rpc('open',auth(r.id))));
-    rows=mine.map(r=>({name:r.profile.name,respondent:r.respondent,weights:r.weights,analyses:r.analyses}));
-  }
-  if(v!==version||!host.isConnected)return;wait.remove();
+  const managers=Object.fromEntries(known('panel').filter(([,p])=>p.ready&&p.manager).map(([id,p])=>[id,p.manager]));
+  const rows=await rpc('respondent_results',{managers,keys:Object.fromEntries(known('edit'))});
+  if(v!==version||!host.isConnected)return;
+  wait.remove();
   if(!rows.length){emptyState('results','noResults');return}
-  const label=el('label',tr('analysis'),'surface bw-filter'),select=el('select');
-  function option(value,name){const o=el('option',name);o.value=value;select.append(o)}
-  const studyRows=rows.filter(r=>!r.is_example);
-  if(p?.manager&&p.ready&&studyRows.length)option('all',tr('all')+' ('+num(studyRows.length)+')');
-  for(const r of rows)option(String(r.respondent),r.name+' · '+tr('respondent')+' '+num(r.respondent));
-  if([...select.options].some(o=>o.value===selectedResult))select.value=selectedResult;
-  label.append(select);filters.append(label);const content=el('div');host.append(content);
-  select.onchange=()=>{selectedResult=select.value;const all=selectedResult==='all';
-    content.replaceChildren(showWeights(all?studyRows:rows.filter(r=>String(r.respondent)===selectedResult),all))};
+  const filters=el('div',null,'bw-respondent-filter');
+  const label=el('label',tr('respondent'),'bw-filter'),select=el('select');
+  for(const row of rows){
+    const option=el('option',row.name);
+    option.value=row.id;select.append(option);
+  }
+  if(rows.some(row=>row.id===selectedResult))select.value=selectedResult;
+  const content=el('div');
+  select.onchange=()=>{
+    if(selectedResult!==select.value)selectedGroup=null;
+    selectedResult=select.value;
+    content.replaceChildren(respondentChart(rows.find(row=>row.id===selectedResult)));
+  };
+  label.append(select);filters.append(label);toolbar.append(filters);host.append(content);
   select.onchange();
+  window.BAMCO_DROPDOWNS?.(filters);
 }
 function consume(route) {
   const [kind,id,key,manager]=route.split('/');
@@ -503,12 +508,12 @@ async function draw(){
   const v=++version;
   try{
     const route=consume(location.hash.slice(1));
-    if(route!==activeRoute){editing=null;pendingNew=null;selectedResult=null;selectedScope=null;activeRoute=route}
+    if(route!==activeRoute){editing=null;pendingNew=null;selectedResult=null;selectedGroup=null;activeRoute=route}
     if(!route)return overview();
     if(route==='forms')return await listForms(v);
     if(route==='new')return profileUI(null);
     if(route==='results')return await results(v);
-    if(route==='sample')return await sampleResults(v);
+    if(route==='sample')return go('results',true);
     const [kind,id,section,index]=route.split('/');
     if(kind!=='e'||!uuid.test(id))return go('',true);
     header(tr('forms'),()=>go('forms'));reportStatus(host,tr('load'));
@@ -517,7 +522,7 @@ async function draw(){
     else if(section==='g'&&/^(?:[1-9]|1[0-5])$/.test(index))groupForm(rec,+index);
     else if(section==='sub'||section==='g')return go('e/'+id,true);
     else dossier(rec);
-  }catch(e){if(v===version&&host.isConnected){header(tr('forms'),()=>go(''));errorBox(host,e,()=>{editing=null;draw()})}}
+  }catch(e){if(v===version&&host.isConnected){header(tr(activeRoute==='results'?'results':'forms'),()=>go(''));errorBox(host,e,()=>{editing=null;draw()})}}
 }
 window.BAMCO_WEIGHTING={mount(container,options){
   host=container;service=options;language=options.language;li=['fa','en','zh'].indexOf(language);

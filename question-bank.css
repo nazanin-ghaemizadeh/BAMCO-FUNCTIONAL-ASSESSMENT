@@ -1,4 +1,4 @@
-.question-bank {max-width:1200px;min-width:0;margin:auto;text-align:start;color:#254c3e}
+.question-bank {width:100%;max-width:none;min-width:0;margin:auto;text-align:start;color:#254c3e}
 .qb-header .welcome-divider {margin:14px auto 22px}
 body[data-view=home] #landing #assessmentHub .qb-header .gate-title {margin:26px 0 0;text-align:center;font-size:clamp(25px,3vw,34px);line-height:1.5}
 .qb-header [data-qb-action=create] {margin-inline-start:auto}

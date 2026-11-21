@@ -177,11 +177,11 @@ html[lang="fa"] body, html[lang="fa"] .leaflet-container, html[lang="fa"] button
 html[lang="en"] body, html[lang="en"] button, html[lang="en"] input, html[lang="en"] select, html[lang="en"] textarea { font-family: Times New Roman, Times, serif; }
 html[lang="zh"] body, html[lang="zh"] button, html[lang="zh"] input, html[lang="zh"] select, html[lang="zh"] textarea { font-family: Assessment Latin, Ma Shan Zheng, KaiTi, STKaiti, serif; }
 #assessmentHub { width: 100%; min-width: 0px; text-align: center; }
-#assessmentHub .gate-grid { width: min(100%, 46rem); grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: clamp(14px, 3vw, 26px); margin: 1rem auto; }
+#assessmentHub .gate-grid { width: 100%; max-width: none; grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: clamp(14px, 3vw, 26px); margin: 1rem auto; }
 body[data-view="home"] #assessmentHub .gate-card { height: clamp(220px, 35vh, 300px); }
 body[data-view="home"] #assessmentHub .gate-card strong { text-align: center; }
 #landing #assessmentHub .welcome-title { text-align: center !important; white-space: normal; }
-@media (max-width: 580px){#assessmentHub .gate-grid { grid-template-columns: minmax(0px, 1fr); width: min(100%, 22rem); }
+@media (max-width: 580px){#assessmentHub .gate-grid { grid-template-columns: minmax(0px, 1fr); width: 100%; max-width: none; }
 body[data-view="home"] #assessmentHub .gate-card { height: 230px; }}
 body[data-view="home"] { height: auto; min-height: 100dvh; }
 body[data-view="home"] #landing { grid-template-rows: max-content max-content; }
@@ -201,11 +201,11 @@ html[dir=ltr] body :is(h1, h2, h3, h4, p, label, dt, dd, li, caption, summary, b
 html[dir=ltr] body :is(.welcome-title, #pageTitle, #assessmentName, .assessment-row-title, .assessment-day-card, .assessment-day-card strong, .assessment-day-card small, .assessment-day-tile, .assessment-day-tile span, .assessment-day-tile strong, .assessment-day-tile small, .score, .score strong, .score small) { text-align: center !important; }
 html[lang=zh] .gate-card strong { font-size: 26px; }
 html[lang=en] body { font-family: Times New Roman, Times, serif; }
-#assessmentHub .gate-grid.six { width: min(100%, 60rem); grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 22px; grid-auto-rows: 1fr; margin: 1.5rem auto; }
+#assessmentHub .gate-grid.six { width: 100%; max-width: none; grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 22px; grid-auto-rows: 1fr; margin: 1.5rem auto; }
 #assessmentHub .gate-create-plus { position: absolute; inset-inline-end: 12%; bottom: 12%; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: rgb(38, 118, 92); color: white; font-family: Arial, sans-serif; font-size: 28px; border: 3px solid rgb(255, 255, 255); }
 #assessmentHub [data-create-test] .gate-illustration { position: relative; }
 @media (max-width: 850px){#assessmentHub .gate-grid.six { grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: 16px; }}
-@media (max-width: 520px){#assessmentHub .gate-grid.six { grid-template-columns: minmax(0px, 1fr); max-width: 22rem; }}
+@media (max-width: 520px){#assessmentHub .gate-grid.six { grid-template-columns: minmax(0px, 1fr); max-width: none; }}
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card { height: auto; min-height: 250px; padding: 20px 22px; grid-template-rows: 100px 1fr auto; gap: 8px; }
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration { width: 160px; height: 100px; align-self: center; }
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration svg { width: 140px; height: 100px; }
@@ -214,7 +214,7 @@ body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta { font-siz
 #assessmentHub .gate-grid.six .gate-create-plus { width: 29px; height: 29px; font-size: 22px; inset-inline-end: 6%; bottom: 6%; }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=4"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=dialog-style-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=5"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=header-width-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}

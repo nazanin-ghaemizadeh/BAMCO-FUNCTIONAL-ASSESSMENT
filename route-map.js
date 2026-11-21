@@ -106,7 +106,7 @@ async function mount(p){
 let driveRoads;
 function loadDriveRoads(){
  if(!driveRoads){
-  driveRoads=fetch('./assets/drive-routes.json?v=1').then(response=>{
+  driveRoads=fetch(window.BAMCO_RELEASE?.asset('./assets/drive-routes.json')||'./assets/drive-routes.json?v=1').then(response=>{
    if(!response.ok)throw new Error('Route data unavailable');
    return response.json();
   }).catch(error=>{driveRoads=null;throw error});

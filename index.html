@@ -2,6 +2,92 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<!--release-start-->
+<style id="release-styles">
+.release-notice {box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;max-width:1920px;margin:0 auto 22px;padding:16px 22px;border:1px solid #b8d6c7;border-radius:16px;background:linear-gradient(110deg,#f5f1fa,#edf7f1);color:#285744;font:inherit;text-align:start;box-shadow:0 4px 18px #28574406}
+.release-notice>div {display:grid;gap:4px;line-height:1.6}
+.release-notice strong {font-size:18px}
+.release-notice span {font-size:16px;color:#526e60}
+.release-notice .release-update {display:inline-flex;align-items:center;justify-content:center;flex:none;min-height:44px;padding:8px 18px;border-radius:12px;border:1px solid #2c735a;background:#2c735a;color:white;text-decoration:none;font:inherit;line-height:1.5}
+.release-notice .release-update:hover {background:#205b46}
+.release-notice .release-update:focus-visible {outline:3px solid #9b7cbd;outline-offset:3px}
+@media(max-width:540px){.release-notice{align-items:stretch;flex-direction:column;padding:14px 16px;gap:12px}}
+</style>
+<script id="release-runtime">
+(() => {
+  'use strict';
+  const config = {"version":"b774fdb3cd628e54","assets":{"app.js":"03deadf75df2bb1c","assessment-workspace.css":"71160c6e767830ab","assessment-workspace.js":"7ad0ad233c59cbe8","dashboard-translations.js":"cf5fc086d9c0b7ff","data.js":"e940a86f2f50cdc9","day-pdf.css":"ae1d1863abf51b5e","day-pdf.js":"83266b60b8540f81","day-scores.js":"7e065958e7820d2e","day-workflow.css":"c399a5386c768f7b","day-workflow.js":"65739ee03b39264b","dropdowns.css":"c56d825cf4a47478","dropdowns.js":"f118e6ddc8c1e929","durability-planner.js":"81edcbcc068fbbe6","i18n.js":"e2bc622ef95443a7","legacy-planner.js":"7b60eea51d435f28","manager-dashboard.js":"2e34880e4570a793","planning-translations.js":"a028d653211787b4","planning.css":"ecf4f26500921f98","polish.js":"55c23d7e22b25216","portal.css":"9c1d737b341de748","portal.js":"750eb9c9bbb5b242","pre-drive-checklist.js":"b169d0a9a139e4bd","question-bank.css":"1dae2780ad8286cc","question-bank.js":"b1a19c5b6eb5714f","refined.css":"ceb94b54b40bcfaa","release.css":"dd6ef96f04cf2a04","release.js":"3b29467a50cb3c87","report-charts.js":"492f7701394fd0af","report-export.js":"6e7c8d519c9d1204","report-model.js":"571f77c45b17afc3","report-ui.css":"65e22660c3574c9b","report-ui.js":"006dc7ae9acbb19d","review-contract.js":"7355040ce6284236","route-map.js":"7ab82b81e7125397","snapshot-merge.js":"dfe04520de17288b","style.css":"37de57a03c1457d9","translations-en.js":"36fcc1fb62c5dd75","translations-zh.js":"fad00c66f43c272d","weighting-catalog.js":"71bbba78618e6844","weighting-content.js":"6ccf9e267a5e822f","weighting.css":"9ed00147a471fca8","weighting.js":"a2b8ee0df6444eb4","workbook-metadata.js":"8398e4408169a6d6","assets/drive-routes.json":"7afc3e33edc613f5","assets/weighting-sample.json":"116ea5f6d9e2a50f","vendor/leaflet-1.9.4.css":"652db25ba73a950c","vendor/leaflet-1.9.4.js":"b117185e02a3d27d","manager-reference/view/manager.html":"d3856670bc764ed5"}};
+  const root = new URL('./', location.href);
+  function asset(value) {
+    const url = new URL(value, root);
+    if (url.origin !== root.origin || !url.pathname.startsWith(root.pathname)) return value;
+    const version = config.assets[url.pathname.slice(root.pathname.length)];
+    if (!version) return value;
+    url.searchParams.set('v', version);
+    return url.href;
+  }
+  window.BAMCO_RELEASE = { version: config.version, asset };
+
+  const words = {
+    fa: ['نسخه جدید سامانه آماده است.', 'پیش از به‌روزرسانی، تغییرات خود را ذخیره کنید.', 'به‌روزرسانی صفحه', 'تغییرات خود را ذخیره کرده‌اید؟ با به‌روزرسانی صفحه، اطلاعات ذخیره‌نشده از بین می‌روند.'],
+    en: ['A new version is available.', 'Save your changes before updating.', 'Update page', 'Have you saved your changes? Updating the page will discard unsaved information.'],
+    zh: ['系统新版本已就绪。', '更新前请保存更改。', '更新页面', '是否已保存更改？更新页面将丢失未保存的信息。']
+  };
+  let notice, latest, edited = false, lastCheck = 0, pending = false;
+  document.addEventListener('input', event => {
+    if (event.target.matches?.('input:not([type=search]),textarea,select,[contenteditable=true]') && !event.target.closest('.qb-filters,.comprehensive-filters')) edited = true;
+  }, true);
+  document.addEventListener('change', event => {
+    if (event.target.matches?.('input,textarea,select') && !event.target.closest('.qb-filters,.comprehensive-filters')) edited = true;
+  }, true);
+
+  function showUpdate(version) {
+    latest = version;
+    if (!notice) {
+      notice = document.createElement('aside'); notice.className = 'release-notice'; notice.setAttribute('role', 'status');
+      const copy = document.createElement('div');
+      copy.append(document.createElement('strong'), document.createElement('span'));
+      const link = document.createElement('a'); link.className = 'release-update';
+      link.addEventListener('click', event => {
+        const text = words[document.documentElement.lang] || words.fa;
+        if ((edited || document.querySelector('dialog[open]') || window.BAMCO_CASES?.hasUnsaved()) && !window.confirm(text[3])) event.preventDefault();
+      });
+      notice.append(copy, link);
+      const header = document.querySelector('.app-header');
+      if (header) header.insertAdjacentElement('afterend', notice); else document.body.prepend(notice);
+    }
+    const text = words[document.documentElement.lang] || words.fa;
+    notice.querySelector('strong').textContent = text[0]; notice.querySelector('span').textContent = text[1];
+    const link = notice.querySelector('a'); link.textContent = text[2];
+    const url = new URL(location.href); url.searchParams.set('_release', latest); link.href = url.href;
+  }
+
+  async function check() {
+    if (pending || document.visibilityState === 'hidden' || navigator.onLine === false || Date.now() - lastCheck < 60000) return;
+    lastCheck = Date.now(); pending = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const url = new URL('release.json', root); url.searchParams.set('check', String(Date.now()));
+      const response = await fetch(url.href, { cache: 'no-store', credentials: 'omit', signal: controller.signal });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (/^[a-f0-9]{16}$/.test(data.version) && data.version !== config.version) showUpdate(data.version);
+    } catch { /* Update discovery must never block sign-in, data entry, or saving. */ }
+    finally { clearTimeout(timeout); pending = false; }
+  }
+  function start() {
+    check();
+    setInterval(check, 60000);
+    window.addEventListener('focus', check);
+    window.addEventListener('pageshow', check);
+    document.addEventListener('visibilitychange', check);
+    new MutationObserver(() => { if (notice) showUpdate(latest); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true }); else start();
+})();
+</script>
+<!--release-end-->
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#153a60"><meta name="description" content="سامانه مستقل آزمون قابلیت رانندگی و دوام عملکردی و بررسی استاتیک خودروسازان بم">
@@ -213,8 +299,8 @@ body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card strong { 
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta { font-size: 15px; padding-top: 8px; line-height: 1.4; }
 #assessmentHub .gate-grid.six .gate-create-plus { width: 29px; height: 29px; font-size: 22px; inset-inline-end: 6%; bottom: 6%; }
 </style>
-<link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=6"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=header-width-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./style.css?v=37de57a03c1457d9" media="print" onload="this.media='all'">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=ceb94b54b40bcfaa" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=1dae2780ad8286cc"><link data-style="weighting" data-href="./weighting.css?v=9ed00147a471fca8"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css?v=652db25ba73a950c"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=71160c6e767830ab" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -916,6 +1002,7 @@ const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
 function loadExternal(url){
+ url=window.BAMCO_RELEASE?.asset(url)||url;
  if(externalScripts.has(url))return externalScripts.get(url);
  const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
  externalScripts.set(url,pending);return pending;
@@ -928,7 +1015,7 @@ function loadStyles(group) {
       link.onload = resolve;
       link.onerror = () => reject(new Error('Stylesheet unavailable'));
       link.rel = 'stylesheet';
-      link.href = link.dataset.href;
+      link.href = window.BAMCO_RELEASE?.asset(link.dataset.href)||link.dataset.href;
     }).catch(error=>{
       link.removeAttribute('href');
       link.removeAttribute('rel');
@@ -951,7 +1038,7 @@ function loadEditor() {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'script';
-      link.href = source.getAttribute('src');
+      link.href = window.BAMCO_RELEASE?.asset(source.getAttribute('src'))||source.getAttribute('src');
       document.head.append(link);
       return link;
     });

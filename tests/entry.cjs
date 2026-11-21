@@ -17,7 +17,7 @@ function visit(path,url,reply,options={}){
   w.structuredClone=structuredClone;
   w.scrollTo=()=>{};
   w.HTMLElement.prototype.scrollIntoView=()=>{};
-  w.fetch=async(_,request)=>({ok:true,json:()=>reply(JSON.parse(request.body))});
+  w.fetch=async(url,request)=>({ok:true,json:()=>String(url).includes('/release.json?') ? JSON.parse(fs.readFileSync('release.json','utf8')) : reply(JSON.parse(request.body))});
   const append=d.head.append.bind(d.head);
   d.head.append=(...nodes)=>{
     append(...nodes);
@@ -107,7 +107,7 @@ function visit(path,url,reply,options={}){
   },{beforeStart(w){
     w.eval(fs.readFileSync('vendor/leaflet-1.9.4.js','utf8'));
     w.L.Map.addInitHook(function(){maps.push(this)});
-    w.setInterval=(fn,ms)=>{assert.equal(ms,10000);poll=fn;return 51};
+    w.setInterval=(fn,ms)=>{if(ms===60000)return 52;assert.equal(ms,10000);poll=fn;return 51};
     w.clearInterval=id=>{assert.equal(id,51);poll=null};
   }});
   const captions=()=>[...observer.d.querySelectorAll('.location-card figcaption strong')].map(el=>el.textContent);

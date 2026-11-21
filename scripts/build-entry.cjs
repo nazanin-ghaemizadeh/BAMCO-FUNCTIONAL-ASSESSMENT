@@ -50,7 +50,8 @@ const landing = withController(html).replace(/(<style id="landing-critical">)[\s
 const sharedHeader = /<header class="app-header">[\s\S]*?<\/header>/;
 const caseSource = fs.readFileSync('case.html','utf8');
 const casePage = withController(caseSource.replace(sharedHeader,()=>html.match(sharedHeader)[0]));
-for (const [path,original,result] of [['index.html',html,landing],['case.html',caseSource,casePage]]) {
+const release = require('./release-assets.cjs')({'index.html': landing, 'case.html': casePage});
+for (const [path,original,result] of [['index.html',html,release.pages['index.html']],['case.html',caseSource,release.pages['case.html']],['release.json',fs.existsSync('release.json') ? fs.readFileSync('release.json','utf8') : '',release.manifest]]) {
   if (process.argv.includes('--check')) {
     if (original!==result) throw new Error('Run npm run build:entry to refresh '+path);
   } else fs.writeFileSync(path,result);

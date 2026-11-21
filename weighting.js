@@ -422,7 +422,7 @@ async function sampleResults(v){
   header(text('نتایج نمونه‌ی آزمایشی','Sample questionnaire results','示例问卷结果'),back);
   const wait=reportStatus(host,tr('load'));
   try{
-    const response=await fetch('./assets/weighting-sample.json');
+    const response=await fetch(window.BAMCO_RELEASE?.asset('./assets/weighting-sample.json')||'./assets/weighting-sample.json');
     if(!response.ok)throw new Error('Sample unavailable');
     const sample=await response.json();
     if(v!==version||!host.isConnected)return;

@@ -17,6 +17,7 @@ const listCache=new Map(),listRequests=new Map();
 let listEpoch=0;
 const externalScripts=new Map();
 function loadExternal(url){
+ url=window.BAMCO_RELEASE?.asset(url)||url;
  if(externalScripts.has(url))return externalScripts.get(url);
  const pending=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load service'));document.head.append(script)}).catch(error=>{externalScripts.delete(url);throw error});
  externalScripts.set(url,pending);return pending;
@@ -29,7 +30,7 @@ function loadStyles(group) {
       link.onload = resolve;
       link.onerror = () => reject(new Error('Stylesheet unavailable'));
       link.rel = 'stylesheet';
-      link.href = link.dataset.href;
+      link.href = window.BAMCO_RELEASE?.asset(link.dataset.href)||link.dataset.href;
     }).catch(error=>{
       link.removeAttribute('href');
       link.removeAttribute('rel');
@@ -52,7 +53,7 @@ function loadEditor() {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'script';
-      link.href = source.getAttribute('src');
+      link.href = window.BAMCO_RELEASE?.asset(source.getAttribute('src'))||source.getAttribute('src');
       document.head.append(link);
       return link;
     });

@@ -1,0 +1,32 @@
+const assert = require('node:assert/strict'), fs = require('node:fs'), {JSDOM} = require('jsdom');
+const tick = () => new Promise(resolve => setTimeout(resolve,0));
+(async () => {
+  const w = new JSDOM('<form><fieldset><label>شاخص<select name="criterion" required><option value="a">اول</option><option value="b">دوم</option><option value="c" disabled>سوم</option></select></label></fieldset></form>', {runScripts:'outside-only',pretendToBeVisual:true}).window;
+  const d = w.document;
+  w.eval(fs.readFileSync('dropdowns.js','utf8'));
+  const select = d.querySelector('select'), trigger = select.nextElementSibling, list = trigger.nextElementSibling;
+  let changes = 0; select.onchange = () => changes++;
+  assert.equal(trigger.getAttribute('aria-label'), 'شاخص');
+  assert.equal(trigger.getAttribute('aria-controls'), list.id);
+  trigger.click(); assert(!list.hidden);
+  list.querySelector('[data-value="b"]').click();
+  assert.equal(select.value,'b'); assert.equal(trigger.firstChild.textContent,'دوم'); assert.equal(changes,1); assert(list.hidden);
+  // Rebuilt native options with identical values must use the current option nodes.
+  select.innerHTML = '<option value="a">اول</option><option value="b">دوم</option><option value="c" disabled>سوم</option>';
+  await tick(); trigger.click(); list.querySelector('[data-value="b"]').click(); assert.equal(select.value,'b');
+  const key = (target,key) => target.dispatchEvent(new w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true}));
+  key(trigger,'ArrowDown'); assert.equal(d.activeElement.dataset.value,'b');
+  key(list,'ArrowDown'); assert.equal(d.activeElement.dataset.value,'a');
+  key(list,'End'); assert.equal(d.activeElement.dataset.value,'b');
+  key(list,'Escape'); assert(list.hidden); assert.equal(d.activeElement,trigger);
+  d.querySelector('fieldset').disabled = true; await tick(); assert(trigger.disabled);
+  d.querySelector('fieldset').disabled = false; await tick(); assert(!trigger.disabled);
+  d.querySelector('form').reset(); await tick(); assert.equal(trigger.firstChild.textContent,'اول');
+  const extra = d.createElement('label'); extra.innerHTML = 'Road<select><option>Urban</option></select>'; d.body.append(extra); await tick();
+  assert(extra.querySelector('.vehicle-dropdown-trigger'));
+  trigger.click(); extra.querySelector('.vehicle-dropdown-trigger').click(); assert(list.hidden);
+  w.BAMCO_DROPDOWNS(); w.BAMCO_DROPDOWNS(); assert.equal(d.querySelectorAll('.vehicle-dropdown-trigger').length,2);
+  select.options[0].textContent = 'First'; await tick(); assert.equal(trigger.firstChild.textContent,'First');
+  d.querySelector('label').firstChild.textContent = 'Criterion'; w.BAMCO_DROPDOWNS(); assert.equal(trigger.getAttribute('aria-label'),'Criterion');
+  w.close(); console.log('PASS shared dropdowns: selections, rebuilt options, dynamic forms, keyboard, fieldset permissions, reset and translated labels.');
+})().catch(error=>{console.error(error);process.exit(1)});

@@ -8,6 +8,7 @@ function open(){
  const payload={snapshot,tests:[{id:'CR-1',cat:'ایمنی',sub:'ترمز',name:'بررسی',measure:'روش',profile:'شرایط'}],categories:['ایمنی'],case:{id:'a',title:'Test vehicle'},settings,readOnly:false};
  Object.defineProperty(w,'parent',{value:{BAMCO_MANAGER:{data:()=>payload,save:async storage=>{saved=storage;settings={storage};return true},close:()=>{}},document:w.document}});
  for(const file of ['bridge.js','scripts-2.js','scripts-3.js','scripts-4.js','scripts-5.js','scripts-6.js','scripts-7-base.js','scripts-8.js','scripts-9.js','scripts-10.js','scripts-11.js','integration.js','ai-review.js'])require('node:vm').runInContext(fs.readFileSync(root+file,'utf8'),dom.getInternalVMContext());
+ w.eval(fs.readFileSync('dropdowns.js','utf8'));
  return dom;
 }
 (async()=>{

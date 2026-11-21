@@ -30,12 +30,13 @@ async function until(condition) {
     rows.set(args.id, row);
     return {data: structuredClone(row), error: null};
   }};
-  for (const file of ['data.js','workbook-metadata.js','question-bank.js']) w.eval(fs.readFileSync(file,'utf8'));
+  for (const file of ['data.js','workbook-metadata.js','dropdowns.js','question-bank.js']) w.eval(fs.readFileSync(file,'utf8'));
   const bank = w.BAMCO_QUESTION_BANK, original = structuredClone(w.BAMCO_DATA.tests[0]);
   const host = d.createElement('section'); d.body.append(host);
   bank.mount(host, {home() {}});
   await until(() => host.querySelector('.qb-question'));
   assert.equal(host.querySelectorAll('.qb-question').length, 12);
+  assert.equal(host.querySelectorAll('select').length, host.querySelectorAll('.vehicle-dropdown-trigger').length);
   const change = (selector, value) => {
     const control = host.querySelector(selector); assert(control, selector);
     if(control.type === 'checkbox') control.checked = value;
@@ -45,7 +46,7 @@ async function until(condition) {
   const firstEdit = () => host.querySelector('.qb-question .qb-actions button').click();
   firstEdit();
   change('[name=name]', 'Discarded draft');
-  host.querySelector('.qb-dialog form > .qb-actions .portal-secondary').click();
+  host.querySelector('.qb-dialog [data-qb-action=cancel]').click();
   assert.equal(writes, 0);
   assert.equal(w.BAMCO_DATA.tests[0].name, original.name);
   firstEdit();
@@ -75,7 +76,7 @@ async function until(condition) {
   change('[name=name]', 'Stale change'); submit();
   await until(() => host.querySelector('.qb-error').textContent.includes('هم‌زمان'));
   assert.equal(rows.get(original.id).definition.name, 'Concurrent change');
-  host.querySelector('.qb-dialog form > .qb-actions .portal-secondary').click();
+  host.querySelector('.qb-dialog [data-qb-action=cancel]').click();
   host.querySelector('.qb-question .qb-actions button:last-child').click();
   await until(() => w.BAMCO_DATA.tests[0].active === false);
   change('[data-filter=state]', 'inactive'); assert.equal(host.querySelectorAll('.qb-question').length,1);
@@ -83,17 +84,19 @@ async function until(condition) {
   host.querySelector('.qb-question .qb-actions button:last-child').click();
   await until(() => w.BAMCO_DATA.tests[0].active === true);
   change('[data-filter=state]', '');
-  host.querySelector('.qb-header .portal-primary').click();
-  change('[name=name]', 'New fixture test'); change('[name=sub]', original.sub);
+  host.querySelector('.qb-header [data-qb-action=create]').click();
+  change('[name=name]', 'New fixture test'); change('[name=sub]', '__new__');
+  assert(!host.querySelector('[name=subCustom]').parentElement.hidden);
+  change('[name=subCustom]', 'زیرشاخص آزمایشی');
   change('[name=scope][value=drive]', true); change('[name=days][value="7"]', true);
   change('[name=roads][value=rural]', true); change('[name=loadConditions][value="نیمه بار"]', true);
   submit(); await until(() => !host.querySelector('.qb-dialog'));
   const added = w.BAMCO_DATA.tests.find(test => test.name === 'New fixture test');
-  assert(added && added.id.startsWith('QB-')); assert.equal(w.BAMCO_DATA.tests.length,1027);
+  assert(added && added.id.startsWith('QB-')); assert.equal(added.sub, 'زیرشاخص آزمایشی'); assert.equal(w.BAMCO_DATA.tests.length,1027);
   change('[data-filter=query]', added.name); assert.equal(host.querySelectorAll('.qb-question').length,1);
   editable = false; bank.mount(host, {home() {}});
   await until(() => host.querySelector('.qb-question'));
-  assert(!host.querySelector('.qb-question .qb-actions')); assert(!host.querySelector('.qb-header .portal-primary'));
+  assert(!host.querySelector('.qb-question .qb-actions')); assert(!host.querySelector('.qb-header [data-qb-action=create]'));
 
   for (const file of ['durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','report-charts.js','report-model.js','app.js']) w.eval(fs.readFileSync(file,'utf8'));
   const app = w.BAMCO_ASSESSMENT;

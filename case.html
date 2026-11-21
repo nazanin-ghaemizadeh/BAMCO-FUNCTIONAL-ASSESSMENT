@@ -10,7 +10,7 @@
 <link rel="icon" type="image/webp" id="brandIcon">
 <style>[hidden]{display:none!important}</style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=question-bank-1"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=shared-controls-1"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -137,6 +137,26 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
 .portal-fields > label > span {display:block;margin-block-end:4px}
 #portalGate .portal-trust {display:flex;align-items:center;gap:8px;font-size:15px}
 .portal-trust input {accent-color:#226c54;width:16px;height:16px}
+</style>
+<style id="shared-dropdown-styles">
+/* The specifications dropdown, shared without page-specific variations. */
+.vehicle-dropdown {display:block;position:relative;width:100%;min-width:0;text-align:start}
+select.vehicle-native-hidden {position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;clip-path:inset(50%)}
+.vehicle-dropdown .vehicle-dropdown-trigger {display:flex;gap:12px;width:100%;align-items:center;justify-content:space-between;min-height:50px;margin:0;padding:10px 16px;border:1px solid #d8e7df;border-radius:14px;background:#f8fcfa;color:#25473c;font:inherit;line-height:1.5;cursor:pointer;text-align:start;box-shadow:none;transform:none;white-space:normal}
+.vehicle-dropdown-trigger>span:first-child {min-width:0;overflow-wrap:anywhere}
+.vehicle-dropdown .vehicle-dropdown-trigger:hover:not(:disabled) {background:#f0f8f4;border-color:#9ec9b6}
+.vehicle-dropdown .vehicle-dropdown-trigger:focus-visible {outline:2px solid #68af95;outline-offset:2px}
+.vehicle-dropdown-trigger[aria-invalid=true] {border-color:#b8546b}
+.vehicle-dropdown-trigger .vehicle-dropdown-arrow {flex:none;color:#4e987b;font:17px/1 Arial,sans-serif;transition:transform .18s}
+.vehicle-dropdown-trigger[aria-expanded=true] .vehicle-dropdown-arrow {transform:rotate(180deg)}
+.vehicle-dropdown .vehicle-dropdown-list {position:absolute;z-index:3000;top:calc(100% + 6px);inset-inline:0;max-height:260px;overflow-y:auto;overscroll-behavior:contain;padding:6px;border:1px solid #d8e7df;border-radius:14px;background:#fff;box-shadow:0 14px 30px #173e3229;scrollbar-width:thin;scrollbar-color:#bdd5c9 transparent}
+.vehicle-dropdown-up .vehicle-dropdown-list {top:auto;bottom:calc(100% + 6px)}
+.vehicle-dropdown-list[hidden] {display:none!important}
+.vehicle-dropdown .vehicle-dropdown-option {display:block;width:100%;min-height:40px;margin:0;padding:9px 12px;border:0;border-radius:9px;background:transparent;text-align:start;color:#285040;font:inherit;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none;transform:none}
+.vehicle-dropdown .vehicle-dropdown-option:hover:not(:disabled),.vehicle-dropdown .vehicle-dropdown-option:focus-visible,.vehicle-dropdown .vehicle-dropdown-option[aria-selected=true] {background:#e7f4ec}
+.vehicle-dropdown .vehicle-dropdown-option:focus-visible {outline:2px solid #68af95;outline-offset:-2px}
+.vehicle-dropdown button:disabled {opacity:.5;cursor:default}
+.vehicle-dropdown.english-dropdown {direction:ltr;font-family:'Times New Roman',Times,serif}
 </style>
 </head>
 <body data-view="modules">
@@ -286,16 +306,16 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
 <script src="./report-export.js?v=20261111-reference-2"></script>
 <script src="./report-charts.js?v=20261111-reference-3"></script>
 <script src="./workbook-metadata.js?v=20261111-dashboard-1"></script>
-<script src="./question-bank.js?v=1"></script>
+<script src="./question-bank.js?v=2"></script>
 <script src="./report-model.js?v=question-bank-1"></script>
-<script src="./app.js?v=question-bank-1"></script>
-<script src="./polish.js?v=module-art-2"></script>
+<script src="./app.js?v=shared-controls-1"></script>
+<script src="./polish.js?v=shared-controls-1"></script>
 <script src="./day-workflow.js?v=explicit-save-1"></script>
 <script src="./snapshot-merge.js?v=1"></script>
 <script src="./report-ui.js?v=portal-access-1"></script>
 <script src="./day-pdf.js?v=20261114-2"></script>
 <script src="./day-scores.js?v=explicit-save-1"></script>
-<script src="./manager-dashboard.js?v=portal-access-1"></script>
+<script src="./manager-dashboard.js?v=shared-controls-1"></script>
 </template>
 <template id="caseDictionaries">
 <script data-locale="en" src="./translations-en.js?v=startup-1"></script>
@@ -643,6 +663,144 @@ async function start(onReady,initialLanguage){
  await resume();
 }
 window.BAMCO_PORTAL={start,can,rpc,token,applyLanguage,text:t,get user(){return profile}};
+})();
+</script>
+<script id="shared-dropdowns">
+// One dropdown component for specifications, filters, dialogs and dashboards.
+(() => {
+  'use strict';
+  if (window.BAMCO_DROPDOWNS) return;
+  let sequence = 0;
+  const closeAll = except => document.querySelectorAll('.vehicle-dropdown-list').forEach(list => {
+    if (list !== except) {
+      list.hidden = true;
+      list.previousElementSibling?.setAttribute('aria-expanded', 'false');
+    }
+  });
+  function enhance(select) {
+    if (select.multiple || select.size > 1) return;
+    if (select._refreshDropdown) { select._refreshDropdown(); return; }
+    const label = select.labels?.[0]?.cloneNode(true);
+    label?.querySelectorAll('select,input,button,datalist').forEach(node => node.remove());
+    const accessibleName = select.getAttribute('aria-label') || label?.textContent.trim() || select.name;
+    const wrapper = document.createElement('span');
+    wrapper.className = 'vehicle-dropdown';
+    const english = select.closest('#vehicleForm') && ['vclass','body','power','gear','driveType'].includes(select.id);
+    if (english) wrapper.classList.add('english-dropdown');
+    select.before(wrapper); wrapper.append(select);
+    select.dataset.customDropdown = '1';
+    select.classList.add('vehicle-native-hidden');
+    select.tabIndex = -1; select.setAttribute('aria-hidden', 'true');
+    const trigger = document.createElement('button');
+    trigger.type = 'button'; trigger.className = 'vehicle-dropdown-trigger';
+    trigger.id = 'bamco-dropdown-' + (++sequence);
+    trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');
+    if (accessibleName) trigger.setAttribute('aria-label', accessibleName);
+    if (select.hasAttribute('aria-labelledby')) trigger.setAttribute('aria-labelledby', select.getAttribute('aria-labelledby'));
+    const title = document.createElement('span'), arrow = document.createElement('span');
+    arrow.className = 'vehicle-dropdown-arrow'; arrow.textContent = '⌄'; arrow.setAttribute('aria-hidden', 'true');
+    trigger.append(title, arrow);
+    const list = document.createElement('div');
+    list.className = 'vehicle-dropdown-list'; list.id = trigger.id + '-options'; list.hidden = true;
+    list.setAttribute('role', 'listbox'); list.setAttribute('aria-labelledby', trigger.id);
+    trigger.setAttribute('aria-controls', list.id);
+    wrapper.append(trigger, list);
+    let signature = '';
+    const refresh = () => {
+      const options = [...select.options];
+      const next = JSON.stringify(options.map(option => [option.value, option.textContent, option.disabled, option.parentElement?.disabled]));
+      if (signature !== next) {
+        signature = next; list.replaceChildren();
+        for (const [index, option] of options.entries()) {
+          const item = document.createElement('button');
+          item.type = 'button'; item.className = 'vehicle-dropdown-option'; item.tabIndex = -1;
+          item.setAttribute('role', 'option'); item.dataset.value = option.value; item.textContent = option.textContent;
+          item.addEventListener('click', () => {
+            const current = select.options[index];
+            if (!current || select.matches(':disabled') || current.disabled || current.parentElement?.disabled) return;
+            select.selectedIndex = index;
+            select.dispatchEvent(new Event('input', {bubbles:true}));
+            select.dispatchEvent(new Event('change', {bubbles:true}));
+            refresh(); closeAll();
+            if (trigger.isConnected) trigger.focus();
+          });
+          list.append(item);
+        }
+      }
+      const disabled = select.matches(':disabled');
+      trigger.disabled = disabled || !options.length;
+      const value = select.selectedOptions[0]?.textContent || '—';
+      if (title.textContent !== value) title.textContent = value;
+      trigger.setAttribute('aria-required', String(select.required));
+      const currentLabel = select.labels?.[0]?.cloneNode(true);
+      currentLabel?.querySelectorAll('select,input,button,datalist,.vehicle-dropdown').forEach(node => node.remove());
+      const name = select.getAttribute('aria-label') || currentLabel?.textContent.trim() || select.name;
+      if (name) trigger.setAttribute('aria-label', name);
+      list.querySelectorAll('button').forEach((item, index) => {
+        item.disabled = disabled || options[index].disabled || Boolean(options[index].parentElement.disabled);
+        item.setAttribute('aria-selected', String(index === select.selectedIndex));
+      });
+      if (trigger.disabled) { list.hidden = true; trigger.setAttribute('aria-expanded', 'false'); }
+    };
+    select._refreshDropdown = refresh;
+    select.addEventListener('change', refresh);
+    select.addEventListener('focus', () => trigger.focus());
+    select.addEventListener('invalid', event => {
+      event.preventDefault(); trigger.setAttribute('aria-invalid', 'true'); trigger.focus();
+    });
+    select.addEventListener('change', () => trigger.removeAttribute('aria-invalid'));
+    trigger.addEventListener('click', () => {
+      const opening = list.hidden; closeAll(); refresh();
+      if (trigger.disabled) return;
+      if (opening) {
+        const bounds = trigger.getBoundingClientRect(), dialog = trigger.closest('dialog')?.getBoundingClientRect();
+        const below = Math.min(innerHeight, dialog?.bottom ?? innerHeight) - bounds.bottom - 12;
+        const above = bounds.top - Math.max(0, dialog?.top ?? 0) - 12;
+        wrapper.classList.toggle('vehicle-dropdown-up', below < 220 && above > below);
+        list.style.maxHeight = Math.min(260, Math.max(100, below < 220 && above > below ? above : below)) + 'px';
+      }
+      list.hidden = !opening; trigger.setAttribute('aria-expanded', String(opening));
+      if (opening) { const selected = list.querySelector('[aria-selected=true]'); if (selected) list.scrollTop = selected.offsetTop - list.offsetTop; }
+    });
+    trigger.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { closeAll(); return; }
+      if (['ArrowDown','ArrowUp','Enter',' '].includes(event.key)) {
+        event.preventDefault(); if (list.hidden) trigger.click();
+        (list.querySelector('[aria-selected=true]:not(:disabled)') || list.querySelector('button:not(:disabled)'))?.focus();
+      }
+    });
+    list.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeAll(); trigger.focus(); }
+      if (event.key === 'Tab') closeAll();
+      if (['ArrowDown','ArrowUp','Home','End'].includes(event.key)) {
+        event.preventDefault();
+        const items = [...list.querySelectorAll('button:not(:disabled)')], index = items.indexOf(document.activeElement);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items[next]?.focus();
+      }
+    });
+    refresh();
+  }
+  window.BAMCO_DROPDOWNS = (root = document) => {
+    if (root.matches?.('select')) enhance(root);
+    root.querySelectorAll?.('select').forEach(enhance);
+  };
+  window.BAMCO_DROPDOWNS();
+  document.addEventListener('bamco:render', () => window.BAMCO_DROPDOWNS());
+  document.addEventListener('pointerdown', event => { if (!event.target.closest('.vehicle-dropdown')) closeAll(); });
+  document.addEventListener('focusin', event => { if (!event.target.closest('.vehicle-dropdown')) closeAll(); });
+  document.addEventListener('reset', event => queueMicrotask(() => window.BAMCO_DROPDOWNS(event.target)));
+  new MutationObserver(changes => {
+    const refresh = new Set();
+    for (const change of changes) {
+      const target = change.target.nodeType === 1 ? change.target : change.target.parentElement;
+      const select = target?.closest('select');
+      if (select) refresh.add(select);
+      if (change.type === 'attributes' && target?.matches('fieldset')) window.BAMCO_DROPDOWNS(target);
+      for (const node of change.addedNodes || []) if (node.nodeType === 1) window.BAMCO_DROPDOWNS(node);
+    }
+    refresh.forEach(select => select.isConnected && enhance(select));
+  }).observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['disabled','selected','label','value','required']});
 })();
 </script>
 <script id="workspace-entry">
@@ -1012,7 +1170,7 @@ function render() {
       (async()=>{
         if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
         if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
-        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=1');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=2');
       })()
     ]).then(open).catch(()=>{
       if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));

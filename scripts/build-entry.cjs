@@ -40,7 +40,7 @@ const entry = fs.readFileSync('assessment-workspace.js','utf8').replace(/<\/scri
 function withController(source) {
   const portal = fs.readFileSync('portal-login.html','utf8');
   source = source.replace(/<!--portal-markup-->[\s\S]*?<!--\/portal-markup-->/,()=> '<!--portal-markup-->\n'+portal+'<!--/portal-markup-->');
-  for(const [id,file,tag] of [['portal-styles','portal.css','style'],['portal-runtime','portal.js','script']]) {
+  for(const [id,file,tag] of [['shared-dropdown-styles','dropdowns.css','style'],['shared-dropdowns','dropdowns.js','script'],['portal-styles','portal.css','style'],['portal-runtime','portal.js','script']]) {
     const pattern=new RegExp('(<'+tag+' id="'+id+'">)[\\s\\S]*?(</'+tag+'>)');
     source=source.replace(pattern,(_,open,close)=>open+'\n'+fs.readFileSync(file,'utf8')+close);
   }

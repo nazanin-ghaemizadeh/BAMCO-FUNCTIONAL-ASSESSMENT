@@ -423,12 +423,20 @@ body[data-view="comprehensiveDashboard"] #assessmentPageActions>:not(#managerPag
 .case-entry p {margin:10px 0 18px}
 .case-entry a {display:inline-block}
 
-#assessmentHub .gate-grid.six {width:min(100%,72rem);grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:1.5rem auto}
+#assessmentHub .gate-grid.six {width:min(100%,60rem);grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;grid-auto-rows:1fr;margin:1.5rem auto}
 #assessmentHub .gate-create-plus {position:absolute;inset-inline-end:12%;bottom:12%;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#26765c;color:white;font-family:Arial,sans-serif;font-size:28px;border:3px solid #fff}
 #assessmentHub [data-create-test] .gate-illustration {position:relative}
-.comprehensive-filters {display:flex;align-items:end;flex-wrap:wrap;gap:14px;padding:16px;margin-bottom:18px;border-radius:16px;border:1px solid #d4e4db;background:#f0f7f3}
-.comprehensive-filters label {display:grid;gap:6px;flex:1 1 220px;min-width:0;font-size:1rem}
-.comprehensive-filters select {width:100%;min-height:44px;border:1px solid #bfd7ca;border-radius:10px;background:#fff;padding:8px 12px;color:#254b3e}
-.comprehensive-filters button {min-height:44px}
+.comprehensive-filters {display:flex;align-items:end;flex-wrap:wrap;gap:18px;padding:20px;margin:14px 0 22px;border:1px solid transparent;border-radius:22px;background:linear-gradient(115deg,#f4faf7,#faf7fd) padding-box,linear-gradient(120deg,#9cd4bd,#d4bce5,#e9cfaa) border-box;box-shadow:0 6px 20px #31584505}
+.comprehensive-filters label {display:flex;flex-direction:column;gap:8px;flex:1 1 220px;min-width:0;color:#365b4d}
+.comprehensive-filters [data-clear-question-filters] {min-height:50px;padding:10px 18px;border:1px solid #b9d7cb;border-radius:14px;background:#f4faf7;color:#254c3e;box-shadow:none;font:inherit}
+.comprehensive-filters [data-clear-question-filters]:hover {background:#e8f5ee;transform:none}
 @media(max-width:850px){#assessmentHub .gate-grid.six {grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
 @media(max-width:520px){#assessmentHub .gate-grid.six {grid-template-columns:minmax(0,1fr);max-width:22rem}}
+
+/* Keep all six entry cards at the same scale as the system's module cards. */
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card {height:auto;min-height:250px;padding:20px 22px;grid-template-rows:100px 1fr auto;gap:8px}
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration {width:160px;height:100px;align-self:center}
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration svg {width:140px;height:100px}
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card strong {font-size:26px;line-height:1.35;font-weight:400}
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta {font-size:15px;padding-top:8px;line-height:1.4}
+#assessmentHub .gate-grid.six .gate-create-plus {width:29px;height:29px;font-size:22px;inset-inline-end:6%;bottom:6%}

@@ -56,4 +56,16 @@
     <path d="m106 82 7 7 13-16" stroke="#688f7c" stroke-width="3.8"/>
     <path d="M130 27v8m-4-4h8" stroke="#b2a0c7" stroke-width="2.3"/>
   </symbol>
+  <symbol id="question-bank" viewBox="0 0 160 128" fill="none" stroke="none" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="80" cy="115" rx="49" ry="6" fill="#4b8d7b" opacity=".09"/>
+    <path d="M25 35q28-12 55 2 27-14 55-2v67q-28-12-55 2-27-14-55-2z" fill="#e8def2" stroke="#ab8cc1" stroke-width="2.5"/>
+    <path d="M30 28q25-8 50 7 25-15 50-7v66q-25-8-50 7-25-15-50-7z" fill="#fbf7fd" stroke="#b79ac8" stroke-width="2.5"/>
+    <path d="M80 35v66" stroke="#b79ac8" stroke-width="2.5"/>
+    <path d="M42 44l24 4m-24 9 24 4m-24 9 17 3M94 48l23-4m-23 17 23-4m-23 17 16-3" stroke="#a9bfb4" stroke-width="2.5"/>
+    <path d="M104 26v24l8-5 8 3V25" fill="#b4daca" stroke="#78aa98" stroke-width="2"/>
+    <circle cx="126" cy="93" r="17" fill="#e1f2e8" stroke="#78aa98" stroke-width="2.3"/>
+    <path d="m118 93 5 5 10-12" stroke="#5a967d" stroke-width="3"/>
+    <path d="M23 20v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"/>
+    <path d="M138 45v8m-4-4h8" stroke="#b5a0d1" stroke-width="2.5"/>
+  </symbol>
 </svg>

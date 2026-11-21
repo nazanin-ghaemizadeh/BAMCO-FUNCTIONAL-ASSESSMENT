@@ -201,14 +201,20 @@ html[dir=ltr] body :is(h1, h2, h3, h4, p, label, dt, dd, li, caption, summary, b
 html[dir=ltr] body :is(.welcome-title, #pageTitle, #assessmentName, .assessment-row-title, .assessment-day-card, .assessment-day-card strong, .assessment-day-card small, .assessment-day-tile, .assessment-day-tile span, .assessment-day-tile strong, .assessment-day-tile small, .score, .score strong, .score small) { text-align: center !important; }
 html[lang=zh] .gate-card strong { font-size: 26px; }
 html[lang=en] body { font-family: Times New Roman, Times, serif; }
-#assessmentHub .gate-grid.six { width: min(100%, 72rem); grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 22px; margin: 1.5rem auto; }
+#assessmentHub .gate-grid.six { width: min(100%, 60rem); grid-template-columns: repeat(3, minmax(0px, 1fr)); gap: 22px; grid-auto-rows: 1fr; margin: 1.5rem auto; }
 #assessmentHub .gate-create-plus { position: absolute; inset-inline-end: 12%; bottom: 12%; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: rgb(38, 118, 92); color: white; font-family: Arial, sans-serif; font-size: 28px; border: 3px solid rgb(255, 255, 255); }
 #assessmentHub [data-create-test] .gate-illustration { position: relative; }
 @media (max-width: 850px){#assessmentHub .gate-grid.six { grid-template-columns: repeat(2, minmax(0px, 1fr)); gap: 16px; }}
 @media (max-width: 520px){#assessmentHub .gate-grid.six { grid-template-columns: minmax(0px, 1fr); max-width: 22rem; }}
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card { height: auto; min-height: 250px; padding: 20px 22px; grid-template-rows: 100px 1fr auto; gap: 8px; }
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration { width: 160px; height: 100px; align-self: center; }
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration svg { width: 140px; height: 100px; }
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card strong { font-size: 26px; line-height: 1.35; font-weight: 400; }
+body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta { font-size: 15px; padding-top: 8px; line-height: 1.4; }
+#assessmentHub .gate-grid.six .gate-create-plus { width: 29px; height: 29px; font-size: 22px; inset-inline-end: 6%; bottom: 6%; }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=form-labels-2" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=1"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=question-bank-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=2"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=shared-controls-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -336,6 +342,26 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
 #portalGate .portal-trust {display:flex;align-items:center;gap:8px;font-size:15px}
 .portal-trust input {accent-color:#226c54;width:16px;height:16px}
 </style>
+<style id="shared-dropdown-styles">
+/* The specifications dropdown, shared without page-specific variations. */
+.vehicle-dropdown {display:block;position:relative;width:100%;min-width:0;text-align:start}
+select.vehicle-native-hidden {position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;clip-path:inset(50%)}
+.vehicle-dropdown .vehicle-dropdown-trigger {display:flex;gap:12px;width:100%;align-items:center;justify-content:space-between;min-height:50px;margin:0;padding:10px 16px;border:1px solid #d8e7df;border-radius:14px;background:#f8fcfa;color:#25473c;font:inherit;line-height:1.5;cursor:pointer;text-align:start;box-shadow:none;transform:none;white-space:normal}
+.vehicle-dropdown-trigger>span:first-child {min-width:0;overflow-wrap:anywhere}
+.vehicle-dropdown .vehicle-dropdown-trigger:hover:not(:disabled) {background:#f0f8f4;border-color:#9ec9b6}
+.vehicle-dropdown .vehicle-dropdown-trigger:focus-visible {outline:2px solid #68af95;outline-offset:2px}
+.vehicle-dropdown-trigger[aria-invalid=true] {border-color:#b8546b}
+.vehicle-dropdown-trigger .vehicle-dropdown-arrow {flex:none;color:#4e987b;font:17px/1 Arial,sans-serif;transition:transform .18s}
+.vehicle-dropdown-trigger[aria-expanded=true] .vehicle-dropdown-arrow {transform:rotate(180deg)}
+.vehicle-dropdown .vehicle-dropdown-list {position:absolute;z-index:3000;top:calc(100% + 6px);inset-inline:0;max-height:260px;overflow-y:auto;overscroll-behavior:contain;padding:6px;border:1px solid #d8e7df;border-radius:14px;background:#fff;box-shadow:0 14px 30px #173e3229;scrollbar-width:thin;scrollbar-color:#bdd5c9 transparent}
+.vehicle-dropdown-up .vehicle-dropdown-list {top:auto;bottom:calc(100% + 6px)}
+.vehicle-dropdown-list[hidden] {display:none!important}
+.vehicle-dropdown .vehicle-dropdown-option {display:block;width:100%;min-height:40px;margin:0;padding:9px 12px;border:0;border-radius:9px;background:transparent;text-align:start;color:#285040;font:inherit;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer;box-shadow:none;transform:none}
+.vehicle-dropdown .vehicle-dropdown-option:hover:not(:disabled),.vehicle-dropdown .vehicle-dropdown-option:focus-visible,.vehicle-dropdown .vehicle-dropdown-option[aria-selected=true] {background:#e7f4ec}
+.vehicle-dropdown .vehicle-dropdown-option:focus-visible {outline:2px solid #68af95;outline-offset:-2px}
+.vehicle-dropdown button:disabled {opacity:.5;cursor:default}
+.vehicle-dropdown.english-dropdown {direction:ltr;font-family:'Times New Roman',Times,serif}
+</style>
 </head>
 <body data-view="home">
 <header class="app-header">
@@ -384,7 +410,7 @@ html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :i
 </dialog>
 <!--/portal-markup-->
 <main class="main" id="workspaceMain" hidden><section id="landing" class="landing-shell">
-  <div id="assessmentHub"><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid six"><button type="button" class="gate-card" data-create-test hidden><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128"><use href="./assets/assessment-modules.svg#comprehensive"></use></svg><span class="gate-create-plus">+</span></span><strong>تعریف آزمون جدید</strong><span class="gate-cta">ایجاد پرونده و انتخاب نوع ارزیابی</span></button><button type="button" class="gate-card" data-boot-screen="questions" aria-label="بانک سؤالات"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128"><use href="./assets/assessment-modules.svg#static"></use></svg></span><strong>بانک سؤالات</strong><span class="gate-cta">مشاهده، ویرایش و زمان‌بندی آزمون‌ها</span></button><button class="gate-card" type="button" data-gate-icon="setup" aria-label="ارزیابی‌های فعال" data-boot-screen="active"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="113" rx="53" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M38 70V42c0-16 13-26 28-26h28c15 0 28 10 28 26v28" fill="#9dd4c5" stroke="#3f8473" stroke-width="2.5"></path><path d="M49 48v-7c0-10 8-16 18-16h26c10 0 18 6 18 16v7z" fill="#edf9fa" stroke="#6aab9d" stroke-width="2"></path><path d="M62 29l-8 14m21-14l-8 14" stroke="#fff" stroke-width="3" opacity=".9"></path><rect x="33" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="108" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="20" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><rect x="122" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><path d="M31 68c0-12 10-20 22-20h54c12 0 22 8 22 20v20c0 10-9 15-19 15H50c-10 0-19-5-19-15z" fill="#c6e9de" stroke="#3f8473" stroke-width="2.5"></path><ellipse cx="51" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><ellipse cx="109" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><circle cx="53" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><circle cx="107" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><ellipse cx="46" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><ellipse cx="114" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><path d="M70 84q10 11 20 0" stroke="#4b8575" stroke-width="2.5" fill="none"></path><path d="M58 97h44" stroke="#fff" stroke-width="3"></path><path d="M130 13v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M21 29v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path><path d="M140 79v7m-3.5-3.5h7" stroke="#b5a0d1" stroke-width="2"></path></svg></span><strong>ارزیابی‌های فعال</strong><span class="gate-cta">ورود به ارزیابی‌ها</span></button><button class="gate-card" type="button" data-gate-icon="results" aria-label="تاریخچه ارزیابی‌ها" data-boot-screen="history"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><rect x="28" y="19" width="106" height="88" rx="14" fill="#f5edf8" stroke="#b99ac7" stroke-width="2.5"></rect><path d="M44 34v57h73" fill="none" stroke="#a18bac" stroke-width="2"></path><rect x="54" y="65" width="13" height="25" rx="4" fill="#a9d8c5" stroke="#78b29b"></rect><rect x="76" y="51" width="13" height="39" rx="4" fill="#b9cce8" stroke="#8ca8cf"></rect><rect x="98" y="35" width="13" height="55" rx="4" fill="#d8b8e2" stroke="#b18bc0"></rect><path d="M53 51l22-13 18 5 19-19m-9 0h9v9" fill="none" stroke="#c7a16c" stroke-width="2.5"></path><path d="M132 18v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M23 38v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>تاریخچه ارزیابی‌ها</strong><span class="gate-cta">مشاهده نتایج ثبت‌شده</span></button><button class="gate-card" type="button" data-gate-icon="weighting" data-boot-screen="weighting" aria-label="وزن‌دهی"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09"/><rect x="69" y="91" width="22" height="13" rx="5" fill="#d8b8e2" stroke="#b18bc0" stroke-width="2"/><rect x="48" y="103" width="64" height="9" rx="4.5" fill="#c7e5da" stroke="#78aa98" stroke-width="2"/><path d="M80 25v68M37 37l86-8" stroke="#a58bb8" stroke-width="5" stroke-linecap="round"/><circle cx="80" cy="30" r="9" fill="#eedbb2" stroke="#c7a16c" stroke-width="2"/><path d="m38 39-18 36h36L38 39Zm85-8-18 36h36l-18-36Z" fill="#f5edf8" stroke="#b99ac7" stroke-width="2" stroke-linejoin="round"/><path d="M19 75q19 31 38 0Z" fill="#a9d8c5" stroke="#78b29b" stroke-width="2"/><path d="M104 67q19 31 38 0Z" fill="#b9cce8" stroke="#8ca8cf" stroke-width="2"/><path d="M80 75q5 6 10 0" fill="none" stroke="#6e927f" stroke-width="2" stroke-linecap="round"/><path d="M132 12v10m-5-5h10M23 27v8m-4-4h8" stroke="#c7a16c" stroke-width="2.5" stroke-linecap="round"/></svg></span><strong>وزن‌دهی</strong><span class="gate-cta">وزن‌دهی زیرشاخص‌ها</span></button><button class="gate-card" type="button" data-gate-icon="observer" aria-label="نظارت بر موقعیت مکانی" data-boot-screen="observer"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M29 53l35-13 33 13 34-13v56l-34 13-33-13-35 13z" fill="#edf7f3" stroke="#78a99a" stroke-width="2.5" stroke-linejoin="round"></path><path d="M64 40v56m33-43v56M40 88l17-13 14 6 19-12 18 8 11-12" fill="none" stroke="#8ebbad" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M80 13c-15 0-27 12-27 27 0 17 27 38 27 38s27-21 27-38c0-15-12-27-27-27z" fill="#d9c8e9" stroke="#9980b5" stroke-width="2.5"></path><circle cx="80" cy="40" r="10" fill="#fbf7fd" stroke="#9980b5" stroke-width="2"></circle><path d="M127 15v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M24 30v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>نظارت بر موقعیت مکانی</strong><span class="gate-cta">مشاهده موقعیت خودرو</span></button></div></div>
+  <div id="assessmentHub"><h1 class="gate-title welcome-title">کیفیت از <span>ارزیابی دقیق</span> آغاز می‌شود.</h1><div class="welcome-divider" aria-hidden="true"><i></i><i></i><i></i></div><div class="gate-grid six"><button type="button" class="gate-card" data-create-test hidden><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128"><use href="./assets/assessment-modules.svg#comprehensive"></use></svg><span class="gate-create-plus">+</span></span><strong>تعریف آزمون جدید</strong><span class="gate-cta">ایجاد پرونده و انتخاب نوع ارزیابی</span></button><button type="button" class="gate-card" data-boot-screen="questions" aria-label="بانک سؤالات"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128"><use href="./assets/assessment-modules.svg?v=2#question-bank"></use></svg></span><strong>بانک سؤالات</strong><span class="gate-cta">مشاهده، ویرایش و زمان‌بندی آزمون‌ها</span></button><button class="gate-card" type="button" data-gate-icon="setup" aria-label="ارزیابی‌های فعال" data-boot-screen="active"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="113" rx="53" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M38 70V42c0-16 13-26 28-26h28c15 0 28 10 28 26v28" fill="#9dd4c5" stroke="#3f8473" stroke-width="2.5"></path><path d="M49 48v-7c0-10 8-16 18-16h26c10 0 18 6 18 16v7z" fill="#edf9fa" stroke="#6aab9d" stroke-width="2"></path><path d="M62 29l-8 14m21-14l-8 14" stroke="#fff" stroke-width="3" opacity=".9"></path><rect x="33" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="108" y="87" width="19" height="23" rx="8" fill="#497d73" stroke="none"></rect><rect x="20" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><rect x="122" y="51" width="18" height="11" rx="5.5" fill="#b8dfd4" stroke="#5e9f8e" stroke-width="2"></rect><path d="M31 68c0-12 10-20 22-20h54c12 0 22 8 22 20v20c0 10-9 15-19 15H50c-10 0-19-5-19-15z" fill="#c6e9de" stroke="#3f8473" stroke-width="2.5"></path><ellipse cx="51" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><ellipse cx="109" cy="73" rx="11" ry="10" fill="#fff9e9" stroke="#94b8a3" stroke-width="1.5"></ellipse><circle cx="53" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><circle cx="107" cy="73" r="3.5" fill="#426f65" stroke="none"></circle><ellipse cx="46" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><ellipse cx="114" cy="86" rx="6" ry="3" fill="#edb7be" stroke="none"></ellipse><path d="M70 84q10 11 20 0" stroke="#4b8575" stroke-width="2.5" fill="none"></path><path d="M58 97h44" stroke="#fff" stroke-width="3"></path><path d="M130 13v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M21 29v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path><path d="M140 79v7m-3.5-3.5h7" stroke="#b5a0d1" stroke-width="2"></path></svg></span><strong>ارزیابی‌های فعال</strong><span class="gate-cta">ورود به ارزیابی‌ها</span></button><button class="gate-card" type="button" data-gate-icon="results" aria-label="تاریخچه ارزیابی‌ها" data-boot-screen="history"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><rect x="28" y="19" width="106" height="88" rx="14" fill="#f5edf8" stroke="#b99ac7" stroke-width="2.5"></rect><path d="M44 34v57h73" fill="none" stroke="#a18bac" stroke-width="2"></path><rect x="54" y="65" width="13" height="25" rx="4" fill="#a9d8c5" stroke="#78b29b"></rect><rect x="76" y="51" width="13" height="39" rx="4" fill="#b9cce8" stroke="#8ca8cf"></rect><rect x="98" y="35" width="13" height="55" rx="4" fill="#d8b8e2" stroke="#b18bc0"></rect><path d="M53 51l22-13 18 5 19-19m-9 0h9v9" fill="none" stroke="#c7a16c" stroke-width="2.5"></path><path d="M132 18v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M23 38v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>تاریخچه ارزیابی‌ها</strong><span class="gate-cta">مشاهده نتایج ثبت‌شده</span></button><button class="gate-card" type="button" data-gate-icon="weighting" data-boot-screen="weighting" aria-label="وزن‌دهی"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09"/><rect x="69" y="91" width="22" height="13" rx="5" fill="#d8b8e2" stroke="#b18bc0" stroke-width="2"/><rect x="48" y="103" width="64" height="9" rx="4.5" fill="#c7e5da" stroke="#78aa98" stroke-width="2"/><path d="M80 25v68M37 37l86-8" stroke="#a58bb8" stroke-width="5" stroke-linecap="round"/><circle cx="80" cy="30" r="9" fill="#eedbb2" stroke="#c7a16c" stroke-width="2"/><path d="m38 39-18 36h36L38 39Zm85-8-18 36h36l-18-36Z" fill="#f5edf8" stroke="#b99ac7" stroke-width="2" stroke-linejoin="round"/><path d="M19 75q19 31 38 0Z" fill="#a9d8c5" stroke="#78b29b" stroke-width="2"/><path d="M104 67q19 31 38 0Z" fill="#b9cce8" stroke="#8ca8cf" stroke-width="2"/><path d="M80 75q5 6 10 0" fill="none" stroke="#6e927f" stroke-width="2" stroke-linecap="round"/><path d="M132 12v10m-5-5h10M23 27v8m-4-4h8" stroke="#c7a16c" stroke-width="2.5" stroke-linecap="round"/></svg></span><strong>وزن‌دهی</strong><span class="gate-cta">وزن‌دهی زیرشاخص‌ها</span></button><button class="gate-card" type="button" data-gate-icon="observer" aria-label="نظارت بر موقعیت مکانی" data-boot-screen="observer"><span class="gate-illustration" aria-hidden="true"><svg viewBox="0 0 160 128" aria-hidden="true"><ellipse cx="80" cy="115" rx="48" ry="6" fill="#4b8d7b" opacity=".09" stroke="none"></ellipse><path d="M29 53l35-13 33 13 34-13v56l-34 13-33-13-35 13z" fill="#edf7f3" stroke="#78a99a" stroke-width="2.5" stroke-linejoin="round"></path><path d="M64 40v56m33-43v56M40 88l17-13 14 6 19-12 18 8 11-12" fill="none" stroke="#8ebbad" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M80 13c-15 0-27 12-27 27 0 17 27 38 27 38s27-21 27-38c0-15-12-27-27-27z" fill="#d9c8e9" stroke="#9980b5" stroke-width="2.5"></path><circle cx="80" cy="40" r="10" fill="#fbf7fd" stroke="#9980b5" stroke-width="2"></circle><path d="M127 15v10m-5-5h10" stroke="#b5a0d1" stroke-width="2.5"></path><path d="M24 30v8m-4-4h8" stroke="#dfba7e" stroke-width="2.5"></path></svg></span><strong>نظارت بر موقعیت مکانی</strong><span class="gate-cta">مشاهده موقعیت خودرو</span></button></div></div>
 
 </section>
 </main>
@@ -730,6 +756,144 @@ async function start(onReady,initialLanguage){
  await resume();
 }
 window.BAMCO_PORTAL={start,can,rpc,token,applyLanguage,text:t,get user(){return profile}};
+})();
+</script>
+<script id="shared-dropdowns">
+// One dropdown component for specifications, filters, dialogs and dashboards.
+(() => {
+  'use strict';
+  if (window.BAMCO_DROPDOWNS) return;
+  let sequence = 0;
+  const closeAll = except => document.querySelectorAll('.vehicle-dropdown-list').forEach(list => {
+    if (list !== except) {
+      list.hidden = true;
+      list.previousElementSibling?.setAttribute('aria-expanded', 'false');
+    }
+  });
+  function enhance(select) {
+    if (select.multiple || select.size > 1) return;
+    if (select._refreshDropdown) { select._refreshDropdown(); return; }
+    const label = select.labels?.[0]?.cloneNode(true);
+    label?.querySelectorAll('select,input,button,datalist').forEach(node => node.remove());
+    const accessibleName = select.getAttribute('aria-label') || label?.textContent.trim() || select.name;
+    const wrapper = document.createElement('span');
+    wrapper.className = 'vehicle-dropdown';
+    const english = select.closest('#vehicleForm') && ['vclass','body','power','gear','driveType'].includes(select.id);
+    if (english) wrapper.classList.add('english-dropdown');
+    select.before(wrapper); wrapper.append(select);
+    select.dataset.customDropdown = '1';
+    select.classList.add('vehicle-native-hidden');
+    select.tabIndex = -1; select.setAttribute('aria-hidden', 'true');
+    const trigger = document.createElement('button');
+    trigger.type = 'button'; trigger.className = 'vehicle-dropdown-trigger';
+    trigger.id = 'bamco-dropdown-' + (++sequence);
+    trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');
+    if (accessibleName) trigger.setAttribute('aria-label', accessibleName);
+    if (select.hasAttribute('aria-labelledby')) trigger.setAttribute('aria-labelledby', select.getAttribute('aria-labelledby'));
+    const title = document.createElement('span'), arrow = document.createElement('span');
+    arrow.className = 'vehicle-dropdown-arrow'; arrow.textContent = '⌄'; arrow.setAttribute('aria-hidden', 'true');
+    trigger.append(title, arrow);
+    const list = document.createElement('div');
+    list.className = 'vehicle-dropdown-list'; list.id = trigger.id + '-options'; list.hidden = true;
+    list.setAttribute('role', 'listbox'); list.setAttribute('aria-labelledby', trigger.id);
+    trigger.setAttribute('aria-controls', list.id);
+    wrapper.append(trigger, list);
+    let signature = '';
+    const refresh = () => {
+      const options = [...select.options];
+      const next = JSON.stringify(options.map(option => [option.value, option.textContent, option.disabled, option.parentElement?.disabled]));
+      if (signature !== next) {
+        signature = next; list.replaceChildren();
+        for (const [index, option] of options.entries()) {
+          const item = document.createElement('button');
+          item.type = 'button'; item.className = 'vehicle-dropdown-option'; item.tabIndex = -1;
+          item.setAttribute('role', 'option'); item.dataset.value = option.value; item.textContent = option.textContent;
+          item.addEventListener('click', () => {
+            const current = select.options[index];
+            if (!current || select.matches(':disabled') || current.disabled || current.parentElement?.disabled) return;
+            select.selectedIndex = index;
+            select.dispatchEvent(new Event('input', {bubbles:true}));
+            select.dispatchEvent(new Event('change', {bubbles:true}));
+            refresh(); closeAll();
+            if (trigger.isConnected) trigger.focus();
+          });
+          list.append(item);
+        }
+      }
+      const disabled = select.matches(':disabled');
+      trigger.disabled = disabled || !options.length;
+      const value = select.selectedOptions[0]?.textContent || '—';
+      if (title.textContent !== value) title.textContent = value;
+      trigger.setAttribute('aria-required', String(select.required));
+      const currentLabel = select.labels?.[0]?.cloneNode(true);
+      currentLabel?.querySelectorAll('select,input,button,datalist,.vehicle-dropdown').forEach(node => node.remove());
+      const name = select.getAttribute('aria-label') || currentLabel?.textContent.trim() || select.name;
+      if (name) trigger.setAttribute('aria-label', name);
+      list.querySelectorAll('button').forEach((item, index) => {
+        item.disabled = disabled || options[index].disabled || Boolean(options[index].parentElement.disabled);
+        item.setAttribute('aria-selected', String(index === select.selectedIndex));
+      });
+      if (trigger.disabled) { list.hidden = true; trigger.setAttribute('aria-expanded', 'false'); }
+    };
+    select._refreshDropdown = refresh;
+    select.addEventListener('change', refresh);
+    select.addEventListener('focus', () => trigger.focus());
+    select.addEventListener('invalid', event => {
+      event.preventDefault(); trigger.setAttribute('aria-invalid', 'true'); trigger.focus();
+    });
+    select.addEventListener('change', () => trigger.removeAttribute('aria-invalid'));
+    trigger.addEventListener('click', () => {
+      const opening = list.hidden; closeAll(); refresh();
+      if (trigger.disabled) return;
+      if (opening) {
+        const bounds = trigger.getBoundingClientRect(), dialog = trigger.closest('dialog')?.getBoundingClientRect();
+        const below = Math.min(innerHeight, dialog?.bottom ?? innerHeight) - bounds.bottom - 12;
+        const above = bounds.top - Math.max(0, dialog?.top ?? 0) - 12;
+        wrapper.classList.toggle('vehicle-dropdown-up', below < 220 && above > below);
+        list.style.maxHeight = Math.min(260, Math.max(100, below < 220 && above > below ? above : below)) + 'px';
+      }
+      list.hidden = !opening; trigger.setAttribute('aria-expanded', String(opening));
+      if (opening) { const selected = list.querySelector('[aria-selected=true]'); if (selected) list.scrollTop = selected.offsetTop - list.offsetTop; }
+    });
+    trigger.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { closeAll(); return; }
+      if (['ArrowDown','ArrowUp','Enter',' '].includes(event.key)) {
+        event.preventDefault(); if (list.hidden) trigger.click();
+        (list.querySelector('[aria-selected=true]:not(:disabled)') || list.querySelector('button:not(:disabled)'))?.focus();
+      }
+    });
+    list.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeAll(); trigger.focus(); }
+      if (event.key === 'Tab') closeAll();
+      if (['ArrowDown','ArrowUp','Home','End'].includes(event.key)) {
+        event.preventDefault();
+        const items = [...list.querySelectorAll('button:not(:disabled)')], index = items.indexOf(document.activeElement);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items[next]?.focus();
+      }
+    });
+    refresh();
+  }
+  window.BAMCO_DROPDOWNS = (root = document) => {
+    if (root.matches?.('select')) enhance(root);
+    root.querySelectorAll?.('select').forEach(enhance);
+  };
+  window.BAMCO_DROPDOWNS();
+  document.addEventListener('bamco:render', () => window.BAMCO_DROPDOWNS());
+  document.addEventListener('pointerdown', event => { if (!event.target.closest('.vehicle-dropdown')) closeAll(); });
+  document.addEventListener('focusin', event => { if (!event.target.closest('.vehicle-dropdown')) closeAll(); });
+  document.addEventListener('reset', event => queueMicrotask(() => window.BAMCO_DROPDOWNS(event.target)));
+  new MutationObserver(changes => {
+    const refresh = new Set();
+    for (const change of changes) {
+      const target = change.target.nodeType === 1 ? change.target : change.target.parentElement;
+      const select = target?.closest('select');
+      if (select) refresh.add(select);
+      if (change.type === 'attributes' && target?.matches('fieldset')) window.BAMCO_DROPDOWNS(target);
+      for (const node of change.addedNodes || []) if (node.nodeType === 1) window.BAMCO_DROPDOWNS(node);
+    }
+    refresh.forEach(select => select.isConnected && enhance(select));
+  }).observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['disabled','selected','label','value','required']});
 })();
 </script>
 <script id="workspace-entry">
@@ -1099,7 +1263,7 @@ function render() {
       (async()=>{
         if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
         if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
-        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=1');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=2');
       })()
     ]).then(open).catch(()=>{
       if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));

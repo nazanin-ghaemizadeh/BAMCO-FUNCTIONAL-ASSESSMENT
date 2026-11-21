@@ -7,7 +7,7 @@ const Excel=require('exceljs'), fs=require('node:fs'), assert=require('node:asse
   const w=new JSDOM(fs.readFileSync('case.html','utf8'),{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:console}).window;
   const d=w.document;
   w.structuredClone=structuredClone;w.ExcelJS=Excel;w.scrollTo=()=>{};
-  for(const f of ['translations-en.js','translations-zh.js','pre-drive-checklist.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','polish.js','day-workflow.js','day-scores.js']) w.eval(fs.readFileSync(f,'utf8'));
+  for(const f of ['translations-en.js','translations-zh.js','pre-drive-checklist.js','i18n.js','data.js','durability-planner.js','legacy-planner.js','route-map.js','review-contract.js','app.js','dropdowns.js','polish.js','day-workflow.js','day-scores.js']) w.eval(fs.readFileSync(f,'utf8'));
   const app=w.BAMCO_ASSESSMENT, find=s=>{const el=d.querySelector(s);assert(el,s);return el};
   const click=s=>{require('./navigation.cjs')(d,s);find(s).click()};
   const enter=(tab='drive',day=1)=>{click('[data-open="'+tab+'"]');click('[data-day="'+day+'"]');click('[data-daysection="form"]')};

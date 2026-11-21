@@ -397,7 +397,8 @@ if(state.tab==='durability'&&!Object.hasOwn(state.mileage.durability,state.durDa
 if(!select.length)html+='<div class="empty">آزمونی مطابق فیلتر یا روز انتخاب‌شده پیدا نشد.</div>';
 for(const t of select)html+=questionCard(t);
 html+='<div class="toolbar"><button class="secondary" data-pagejump="'+(page-1)+'" '+(page===0?'disabled':'')+'>صفحه قبل</button><span class="tiny">صفحه '+number(page+1)+' از '+number(pages)+'</span><button class="secondary" data-pagejump="'+(page+1)+'" '+(page>=pages-1?'disabled':'')+'>صفحه بعد</button></div>';
-byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'')
+byId('questionsPanel').innerHTML=html+(state.tab==='supplementary'?staticTestForm():'');
+window.BAMCO_DROPDOWNS?.(byId('questionsPanel'))
 }
 
 const modes={

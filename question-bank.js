@@ -15,6 +15,8 @@
     edit: ['ویرایش', 'Edit', '编辑'], save: ['ذخیره تغییرات', 'Save changes', '保存更改'],
     cancel: ['انصراف', 'Cancel', '取消'], search: ['جست‌وجوی سؤال یا کد آزمون', 'Search questions or test IDs', '搜索问题或测试编号'],
     category: ['شاخص', 'Criterion', '指标'], sub: ['زیرشاخص', 'Subcriterion', '子指标'],
+    newSub: ['زیرشاخص جدید…', 'New subcriterion…', '新增子指标…'],
+    subName: ['نام زیرشاخص جدید', 'New subcriterion name', '新子指标名称'],
     all: ['همه', 'All', '全部'], state: ['وضعیت', 'Status', '状态'],
     active: ['فعال', 'Active', '启用'], inactive: ['غیرفعال', 'Inactive', '停用'],
     enable: ['فعال‌سازی', 'Activate', '启用'], disable: ['غیرفعال‌سازی', 'Deactivate', '停用'],
@@ -109,13 +111,18 @@
       return node;
     };
     const button = (label, action, primary = false) => {
-      const node = element('button', text(label), primary ? 'portal-primary' : 'portal-secondary');
-      node.type = 'button'; node.onclick = action;
+      const node = element('button', text(label), 'assessment-action' + (primary ? ' qb-primary' : ''));
+      node.type = 'button'; node.onclick = action; node.dataset.qbAction = label;
       return node;
     };
     const header = element('div', '', 'qb-header');
-    header.append(button('back', home), element('h1', text('title')));
-    if (canEdit()) header.append(button('create', () => edit(), true));
+    const heading = element('h1', text('title'), 'gate-title welcome-title');
+    const divider = element('div', '', 'welcome-divider'); divider.setAttribute('aria-hidden', 'true');
+    divider.append(element('i'), element('i'), element('i'));
+    const navigation = element('div', '', 'assessment-page-toolbar');
+    const back = button('back', home); back.classList.add('assessment-back-action'); navigation.append(back);
+    if (canEdit()) navigation.append(button('create', () => edit(), true));
+    header.append(heading, divider, navigation);
     const status = element('p', '', 'qb-status'); status.setAttribute('role', 'status');
     const toolbar = element('div', '', 'qb-filters');
     const results = element('div', '', 'qb-results');
@@ -146,6 +153,9 @@
       select('sub', 'sub', unique('sub').map(value => [value, value]));
       select('placement', 'placement', ['comprehensive','drive','durability','supplementary'].map(key => [key, text(key)]));
       select('state', 'state', ['active','inactive'].map(key => [key, text(key)]));
+      const reset = button('clearFilters', () => { Object.keys(filters).forEach(key => { filters[key] = ''; }); page = 0; renderFilters(); renderResults(); });
+      toolbar.append(reset);
+      window.BAMCO_DROPDOWNS?.(toolbar);
     }
     const normalize = value => value.toLowerCase().replace(/ي/g, 'ی').replace(/ك/g, 'ک');
     function renderResults() {
@@ -163,12 +173,15 @@
         const card = element('article', '', 'qb-question'); card.dataset.question = test.id;
         const heading = element('div', '', 'qb-question-heading');
         const titles = element('div');
-        titles.append(element('small', test.cat + ' / ' + test.sub), element('h2', test.name));
+        const category = element('div', '', 'qb-taxonomy');
+        category.append(element('span', test.cat), element('span', test.sub));
+        titles.append(category, element('h2', test.name));
         heading.append(titles, element('span', text(test.active === false ? 'inactive' : 'active'), 'qb-badge ' + (test.active === false ? 'inactive' : '')));
         card.append(heading, element('code', test.id + (test.sourceId ? ' · ' + test.sourceId : '')));
-        const placements = ['comprehensive', ...test.scope].map(text).join(' · ');
-        card.append(element('p', placements, 'qb-placement'));
-        if (test.scope.includes('drive')) card.append(element('p', text('days') + ' — ' + test.days.map(number).join('، ')));
+        const placements = element('div', '', 'qb-placement');
+        for (const key of ['comprehensive', ...test.scope]) placements.append(element('span', text(key), 'qb-chip qb-chip-' + key));
+        card.append(placements);
+        if (test.scope.includes('drive')) card.append(element('p', text('days') + ' — ' + test.days.map(number).join('، '), 'qb-day-summary'));
         const details = element('details'); details.append(element('summary', text('profile')));
         details.append(element('p', test.profile), element('p', text('measure') + ' — ' + test.measure),
           element('p', text('loads') + ' — ' + (loads(test).join(' / ') || text('unspecified'))),
@@ -209,10 +222,12 @@
       const dialog = element('dialog', '', 'qb-dialog');
       const form = element('form'); const fields = element('fieldset');
       const controls = {};
-      form.append(element('h2', text(existing ? 'edit' : 'create')), fields);
+      const editorTitle = element('h2', text(existing ? 'edit' : 'create')); editorTitle.id = 'qb-editor-title';
+      dialog.setAttribute('aria-labelledby', editorTitle.id);
+      form.append(editorTitle, fields);
       function input(key, label, multiline = false) {
-        const wrapper = element('label', text(label));
-        const control = element(key === 'cat' ? 'select' : multiline ? 'textarea' : 'input');
+        const wrapper = element('label', text(label), ['cat','sub'].includes(key) ? 'qb-field' : 'qb-field qb-wide');
+        const control = element(['cat','sub'].includes(key) ? 'select' : multiline ? 'textarea' : 'input');
         if(key === 'cat') for(const value of new Set(originals.map(item => item.cat))) control.append(new Option(value, value));
         control.name = key; control.value = test[key] || ''; control.maxLength = multiline ? 5000 : 500;
         control.required = ['name','cat','sub'].includes(key);
@@ -221,11 +236,22 @@
       }
       input('cat', 'category');
       const sub = input('sub', 'sub');
-      for (const [control, key] of [[sub,'sub']]) {
-        const options = element('datalist'); options.id = 'qb-options-' + key;
-        for (const value of new Set(database.tests.map(item => item[key]))) options.append(new Option(value, value));
-        control.setAttribute('list', options.id); fields.append(options);
-      }
+      const customSubLabel = element('label', text('subName'), 'qb-field qb-wide');
+      const customSub = element('input'); customSub.name = 'subCustom'; customSub.maxLength = 500;
+      customSubLabel.append(customSub); fields.append(customSubLabel);
+      const updateCustomSub = () => {
+        customSubLabel.hidden = sub.value !== '__new__'; customSub.required = !customSubLabel.hidden;
+      };
+      const updateSubs = (value = '') => {
+        sub.replaceChildren(new Option('—', ''));
+        const values = new Set(database.tests.filter(item => item.cat === controls.cat.value).map(item => item.sub));
+        if (value) values.add(value);
+        for (const name of values) sub.append(new Option(name, name));
+        sub.append(new Option(text('newSub'), '__new__')); sub.value = value;
+        updateCustomSub(); sub._refreshDropdown?.();
+      };
+      updateSubs(test.sub); controls.cat.addEventListener('change', () => updateSubs());
+      sub.addEventListener('change', updateCustomSub);
       input('name', 'name'); input('profile', 'profile', true); input('measure', 'measure', true);
       function choices(label, key, options, selected, parent = fields) {
         const group = element('fieldset', '', 'qb-choice-group'); group.append(element('legend', text(label)));
@@ -258,10 +284,11 @@
       fields.append(vehicles);
       const errorMessage = element('p', '', 'qb-error'); errorMessage.setAttribute('role', 'alert');
       const actions = element('div', '', 'qb-actions');
-      const submit = element('button', text('save'), 'portal-primary'); submit.type = 'submit';
+      const submit = element('button', text('save'), 'assessment-action qb-primary'); submit.type = 'submit';
       actions.append(submit, button('cancel', () => dialog.close()));
       form.append(errorMessage, actions); dialog.append(form); host.append(dialog);
-      dialog.onclose = () => dialog.remove(); dialog.showModal();
+      dialog.onclose = () => dialog.remove();
+      window.BAMCO_DROPDOWNS?.(dialog); dialog.showModal();
       const selected = key => [...form.querySelectorAll('input[name="' + key + '"]:checked')].map(control => control.value);
       form.onsubmit = async event => {
         event.preventDefault(); if (submit.disabled) return;
@@ -271,6 +298,7 @@
         if (scopes.includes('durability') && !chosenRoads.length) { errorMessage.textContent = text('selectRoad'); return; }
         if (Object.values(vehicle).some(values => !values.length)) { errorMessage.textContent = text('selectVehicle'); return; }
         const next = {...test, ...Object.fromEntries(Object.entries(controls).map(([key, control]) => [key, control.value.trim()])),
+          sub: sub.value === '__new__' ? customSub.value.trim() : sub.value,
           active: active.querySelector('input').checked, scope: scopes, days: chosenDays, vehicle,
           routeIds: chosenRoads.filter(key => key !== 'stationary'), stationary: chosenRoads.includes('stationary'),
           loadConditions: selected('loadConditions'), route: chosenRoads.map(key => routeNames[key][0]).join(' / ')};

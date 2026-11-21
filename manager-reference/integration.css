@@ -43,7 +43,7 @@ body{font-size:19px;color:#244b43}
 .sectionTitle{justify-content:center}
 .sectionTitle p{color:#6b8a7e;font-size:16px;line-height:1.9}
 .analyticsGrid{gap:22px!important}
-button,.button,.managerUploadButton,.comparisonUploadButton{font:inherit!important;border-radius:11px!important;min-height:44px}
+button:not(.vehicle-dropdown-trigger):not(.vehicle-dropdown-option),.button,.managerUploadButton,.comparisonUploadButton{font:inherit!important;border-radius:11px!important;min-height:44px}
 input,select,textarea{font:inherit;border-radius:13px!important;border-color:#d7e6df!important;background:#f7fbf9!important;color:#244b43!important}
 .dashboard{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
 .dashboard>.managerHeadline{border:1px solid #d7e6df;border-radius:23px;padding:24px;background:#fff;justify-content:center;flex-wrap:wrap}

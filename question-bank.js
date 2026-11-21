@@ -13,7 +13,7 @@
     title: ['بانک سؤالات', 'Question bank', '题库'], back: ['بازگشت', 'Back', '返回'],
     create: ['تعریف سؤال / آزمون', 'Add question / test', '新增问题 / 测试'],
     edit: ['ویرایش', 'Edit', '编辑'], save: ['ذخیره تغییرات', 'Save changes', '保存更改'],
-    cancel: ['انصراف', 'Cancel', '取消'], search: ['جست‌وجوی سؤال یا کد آزمون', 'Search questions or test IDs', '搜索问题或测试编号'],
+    cancel: ['انصراف', 'Cancel', '取消'], close: ['بستن', 'Close', '关闭'], search: ['جست‌وجوی سؤال یا کد آزمون', 'Search questions or test IDs', '搜索问题或测试编号'],
     category: ['شاخص', 'Criterion', '指标'], sub: ['زیرشاخص', 'Subcriterion', '子指标'],
     newSub: ['زیرشاخص جدید…', 'New subcriterion…', '新增子指标…'],
     subName: ['نام زیرشاخص جدید', 'New subcriterion name', '新子指标名称'],
@@ -168,6 +168,7 @@
       const pages = Math.max(1, Math.ceil(tests.length / 12));
       page = Math.min(page, pages - 1);
       results.replaceChildren(element('p', number(tests.length) + ' ' + text('count'), 'qb-count'));
+      const cards = element('div', '', 'qb-card-grid'); results.append(cards);
       if (!tests.length) results.append(element('p', text('empty')));
       for (const test of tests.slice(page * 12, (page + 1) * 12)) {
         const card = element('article', '', 'qb-question'); card.dataset.question = test.id;
@@ -210,7 +211,7 @@
           });
           actions.append(toggle); card.append(actions);
         }
-        results.append(card);
+        cards.append(card);
       }
       const pager = element('div', '', 'qb-pagination');
       const previous = button('previous', () => { page--; renderResults(); host.scrollIntoView({block: 'start'}); });
@@ -229,12 +230,17 @@
         stationary: false, route: '', freq: '', vehicle: vehicleValues
       };
       const revision = revisions.get(test.id)?.revision || 0;
-      const dialog = element('dialog', '', 'qb-dialog');
-      const form = element('form'); const fields = element('fieldset');
+      const dialog = element('dialog', '', 'qb-dialog portal-dialog');
+      const form = element('form', '', 'portal-dialog-body portal-editor'); const fields = element('fieldset', '', 'portal-section');
       const controls = {};
       const editorTitle = element('h2', text(existing ? 'edit' : 'create')); editorTitle.id = 'qb-editor-title';
       dialog.setAttribute('aria-labelledby', editorTitle.id);
-      form.append(editorTitle, fields);
+      const head = element('div', '', 'portal-dialog-head'), heading = element('div', '', 'portal-heading');
+      heading.innerHTML = '<svg class="portal-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 12h6m-6 4h6"/></svg>';
+      heading.append(editorTitle);
+      const close = element('button', '×', 'portal-dialog-close'); close.type = 'button'; close.setAttribute('aria-label', text('close')); close.onclick = () => dialog.close();
+      head.append(heading, close); dialog.append(head); form.append(fields);
+      const editorButton = (key, action) => { const node = button(key, action); node.className = 'portal-secondary'; return node; };
       function input(key, label, multiline = false) {
         const wrapper = element('label', text(label), ['cat','sub'].includes(key) ? 'qb-field' : 'qb-field qb-wide');
         const control = element(['cat','sub'].includes(key) ? 'select' : multiline ? 'textarea' : 'input');
@@ -278,8 +284,8 @@
       const days = choices('days', 'days', database.driveDays.map(day => [String(day.day), text('day') + ' ' + number(day.day) + ' · ' + (language === 'fa' ? day.type : text({شهری:'urban','برون‌شهری':'rural',گرمسیری:'hot',کوهستانی:'mountain'}[day.type] || 'day'))]), test.days.map(String));
       days.classList.add('qb-days');
       const dayActions = element('div', '', 'qb-actions');
-      dayActions.append(button('everyDay', () => days.querySelectorAll('input').forEach(control => { control.checked = true; })),
-        button('clearDays', () => days.querySelectorAll('input').forEach(control => { control.checked = false; })));
+      dayActions.append(editorButton('everyDay', () => days.querySelectorAll('input').forEach(control => { control.checked = true; })),
+        editorButton('clearDays', () => days.querySelectorAll('input').forEach(control => { control.checked = false; })));
       days.append(dayActions);
       const updateDays = () => { days.hidden = !placements.querySelector('[value="drive"]').checked; };
       placements.onchange = updateDays; updateDays();
@@ -294,9 +300,9 @@
       }
       fields.append(vehicles);
       const errorMessage = element('p', '', 'qb-error'); errorMessage.setAttribute('role', 'alert');
-      const actions = element('div', '', 'qb-actions');
-      const submit = element('button', text('save'), 'assessment-action qb-primary'); submit.type = 'submit';
-      actions.append(submit, button('cancel', () => dialog.close()));
+      const actions = element('div', '', 'qb-actions portal-actions');
+      const submit = element('button', text('save'), 'portal-primary'); submit.type = 'submit';
+      actions.append(submit, editorButton('cancel', () => dialog.close()));
       form.append(errorMessage, actions); dialog.append(form); host.append(dialog);
       dialog.onclose = () => dialog.remove();
       window.BAMCO_DROPDOWNS?.(dialog); dialog.showModal();

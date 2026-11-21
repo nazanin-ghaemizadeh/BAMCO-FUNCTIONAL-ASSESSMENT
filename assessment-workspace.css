@@ -68,10 +68,8 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
 #assessmentHub .assessment-back-action {min-width:0;width:auto;padding-inline:1.15rem;background:#fff}
 #assessmentHub .assessment-new-launch {display:inline-flex;align-items:center;gap:.6rem;margin:0 auto .5rem;padding:.55rem 1.3rem;border:1px solid #206c57;border-radius:14px;background:#226c54;color:white}
 .assessment-new-launch span {font:24px/1 sans-serif}
-#assessmentHub .assessment-create-panel {width:min(34rem,calc(100vw - 28px));max-height:90dvh;overflow:auto;margin:auto;padding:26px;border:1px solid #bdd5c9;border-radius:22px;background:#fbfdfb;color:#254b40;text-align:start;box-shadow:0 24px 78px #18382e40}
-.assessment-create-panel::backdrop {background:#1f3938a3}
-.assessment-create-panel h2 {margin:0 0 15px}
 .assessment-create-form {display:grid;gap:15px}
+.assessment-create-section {display:grid;gap:16px}
 .assessment-create-form label {text-align:start}
 .assessment-create-form input[type=text] {width:100%;min-height:46px;margin-top:6px;border:1px solid #c3dbcd;border-radius:11px;background:#fff;padding-inline:12px}
 .assessment-type-picker {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;margin:0;padding:0}
@@ -145,7 +143,6 @@ html[lang="zh"] .app-header .brand b {font-family:'Assessment Latin',"Ma Shan Zh
   #assessmentHub.assessment-list-page {padding-top:0}
   #assessmentHub .assessment-page-toolbar {margin:0 0 12px}
   #assessmentHub.assessment-list-page .gate-title {margin-top:6px}
-  #assessmentHub .assessment-create-panel {padding:18px 15px;border-radius:16px}
   #assessmentHub .assessment-create-form {grid-template-columns:1fr}
   #assessmentHub .assessment-list-heading {align-items:flex-start}
   #assessmentHub .assessment-list-heading h2 {font-size:21px}

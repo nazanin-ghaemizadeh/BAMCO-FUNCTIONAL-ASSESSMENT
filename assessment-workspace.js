@@ -201,6 +201,7 @@ labels.locationStale=['به‌روزرسانی انجام نشد. نقشه‌ه�
 labels.accuracy=['دقت','Accuracy','精度'];
 labels.metres=['متر','m','米'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
+labels.closeDialog=['بستن','Close','关闭'];
 labels.newAssessmentTitle=['تعریف آزمون جدید','Define a new test','新建试验'];
 labels.chooseType=['نوع آزمون','Test type','试验类型'];
 labels.drive=['قابلیت رانندگی','Drivability','驾驶性能'];
@@ -364,7 +365,7 @@ function render() {
       (async()=>{
         if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
         if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
-        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=3');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=4');
       })()
     ]).then(open).catch(()=>{
       if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));
@@ -488,9 +489,14 @@ function renderCategories(){
 }
 function openCreate(){
   if(!canCreate()||hub.querySelector('dialog[open]'))return;
-  const dialog=node('dialog','','assessment-create-panel'),form=node('form','','assessment-create-form');
+  const dialog=node('dialog','','assessment-create-panel portal-dialog'),form=node('form','','assessment-create-form portal-dialog-body portal-editor');
   const heading=node('h2',tr('newAssessmentTitle'));heading.id='createTestTitle';
   dialog.setAttribute('aria-labelledby',heading.id);
+  const head=node('div','','portal-dialog-head'),caption=node('div','','portal-heading');
+  caption.innerHTML='<svg class="portal-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 14h6m-3-3v6"/></svg>';
+  caption.append(heading);
+  const close=node('button','×','portal-dialog-close');close.type='button';close.setAttribute('aria-label',tr('closeDialog'));close.onclick=()=>dialog.close();
+  head.append(caption,close);
   const title=field('text','name');title.maxLength=120;
   const label=node('label',tr('name'));label.append(title);
   const choices=node('fieldset','','assessment-type-picker');choices.append(node('legend',tr('chooseType')));
@@ -498,11 +504,13 @@ function openCreate(){
     const option=node('label'),radio=node('input');radio.type='radio';radio.name='assessmentType';radio.value=type;radio.required=true;
     option.append(radio,typeIcon(type),node('span',tr(type)));choices.append(option);
   }
-  const actions=node('div','','assessment-create-actions'),submit=node('button',tr('create'),'assessment-action assessment-create-action');
+  const actions=node('div','','assessment-create-actions portal-actions'),submit=node('button',tr('create'),'portal-primary assessment-create-action');
   submit.type='submit';
   const status=node('p');status.setAttribute('role','status');
-  actions.append(submit,button('back',()=>dialog.close()));form.append(label,choices,status,actions);
-  dialog.append(heading,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+  const back=button('back',()=>dialog.close());back.className='portal-secondary';
+  const section=node('div','','portal-section assessment-create-section');section.append(label,choices);
+  actions.append(submit,back);form.append(section,status,actions);
+  dialog.append(head,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   form.onsubmit=async event=>{
     event.preventDefault();const type=form.elements.assessmentType.value,name=title.value.trim();
     if(!types.includes(type)||!name||submit.disabled)return;

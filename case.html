@@ -10,7 +10,7 @@
 <link rel="icon" type="image/webp" id="brandIcon">
 <style>[hidden]{display:none!important}</style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=shared-controls-1"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1"><link data-style="case" data-href="./day-workflow.css?v=dashboard-pickup-2"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=dialog-style-1"><link data-style="case" data-href="./planning.css?v=drive-itineraries-1"><link data-style="case" data-href="./report-ui.css?v=20261111-reference-3"><link data-style="case" data-href="./day-pdf.css?v=20261114-2"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -22,25 +22,25 @@ html body #portalMotto {color:#25443b;text-align:center!important;font-size:clam
 html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-art {grid-area:art;background:radial-gradient(ellipse at 51% 53%,#e9f7f0 0%,#f6f1f94a 54%,transparent 73%);display:grid;place-items:center}
 .portal-art img {width:100%;height:auto;max-width:445px}
-.portal-form-side h2,#portalDialog h2 {font-size:clamp(24px,2.5vw,34px);font-weight:400;color:#2c4b41;margin:0 0 16px}
+.portal-form-side h2,:is(#portalDialog,.portal-dialog) h2 {font-size:clamp(24px,2.5vw,34px);font-weight:400;color:#2c4b41;margin:0 0 16px}
 #portalGate label,.portal-fields label {display:block;margin:12px 0 5px;color:#365c4d}
 #portalGate input:not([type=checkbox]),.portal-fields input:not([type=checkbox]) {width:100%;min-height:46px;padding:8px 12px;background:#fff;border:1px solid #cfe1d7;border-radius:12px;font:inherit;box-sizing:border-box}
 #portalGate input[dir=ltr],.portal-fields input[dir=ltr]{text-align:left!important;font-family:'Times New Roman',serif}
 .portal-password {position:relative}.portal-password input#portalPassword {padding-left:44px}
 #portalReveal {position:absolute;left:3px;top:3px;width:39px;height:40px;background:none;box-shadow:none;border:0;display:grid;place-items:center;padding:7px;color:#507364}
 #portalReveal svg {width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6}
-.portal-primary,.portal-secondary,#portalClose {min-height:42px;padding:7px 16px;border:1px solid #b9d7cb;border-radius:12px;background:#f4faf7;color:#254c3e;cursor:pointer;text-align:center!important}
+.portal-primary,.portal-secondary,:is(#portalClose,.portal-dialog-close) {min-height:42px;padding:7px 16px;border:1px solid #b9d7cb;border-radius:12px;background:#f4faf7;color:#254c3e;cursor:pointer;text-align:center!important}
 .portal-primary {background:#226c54;color:#fff;border-color:#226c54}
 .portal-primary:disabled,.portal-secondary:disabled {opacity:.6;cursor:wait}
 #portalLogin .portal-primary {width:100%;margin-block-start:15px}
 .portal-notice {font-size:16px;color:#874d39;margin:6px 0 0;overflow-wrap:anywhere}.portal-notice:empty{display:none}
-#portalDialog {
+:is(#portalDialog,.portal-dialog) {
   width:min(736px,calc(100vw - 28px));max-height:min(90dvh,830px);padding:0;
   border:1px solid #b6d1c7;border-radius:24px;color:#24453b;background:#f6f9f7;
-  overflow:hidden;box-shadow:0 24px 80px #12382d40;
+  overflow:hidden;box-shadow:0 24px 80px #12382d40;box-sizing:border-box;margin:auto;text-align:start;
 }
-#portalDialog[open] {display:flex;flex-direction:column}
-#portalDialog::backdrop {background:#223f39a6}
+:is(#portalDialog,.portal-dialog)[open] {display:flex;flex-direction:column}
+:is(#portalDialog,.portal-dialog)::backdrop {background:#223f39a6}
 .portal-dialog-head {
   display:flex;align-items:center;justify-content:space-between;gap:14px;flex:none;
   padding:16px 24px;color:#fff;
@@ -49,22 +49,22 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 }
 .portal-heading {display:flex;align-items:center;gap:11px}
 .portal-head-icon {width:39px;height:39px;padding:7px;background:#ffffff16;border:1px solid #ffffff42;border-radius:13px}
-#portalDialog .portal-heading h2 {font-size:clamp(21px,2vw,27px);line-height:1.35;color:#fff;margin:0;font-weight:600}
-#portalClose {width:34px;height:34px;min-height:0;min-width:0;padding:0;background:#ffffff12;border-color:#ffffff4d;color:#fff;font-size:24px;line-height:1}
-#portalClose:hover {background:#ffffff2b}
-#portalDialogBody {min-height:0;overflow:auto;overscroll-behavior:contain;padding:18px 22px;scrollbar-width:thin}
-#portalDialog :is(button,input):focus-visible {outline:2px solid #258664;outline-offset:2px}
+:is(#portalDialog,.portal-dialog) .portal-heading h2 {font-size:clamp(21px,2vw,27px);line-height:1.35;color:#fff;margin:0;font-weight:600}
+:is(#portalClose,.portal-dialog-close) {width:34px;height:34px;min-height:0;min-width:0;padding:0;background:#ffffff12;border-color:#ffffff4d;color:#fff;font-size:24px;line-height:1}
+:is(#portalClose,.portal-dialog-close):hover {background:#ffffff2b}
+:is(#portalDialogBody,.portal-dialog-body) {min-height:0;overflow:auto;overscroll-behavior:contain;padding:18px 22px;scrollbar-width:thin}
+:is(#portalDialog,.portal-dialog) :is(button,input):focus-visible {outline:2px solid #258664;outline-offset:2px}
 .portal-directory-tools,.portal-section-heading,.portal-account-tools,.portal-actions {display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .portal-directory-tools {margin-bottom:12px;justify-content:space-between}
 .portal-add::before {content:'+';font:21px/1 Arial;vertical-align:-1px;margin-inline-end:7px}
 .portal-save-note {font-size:15px;color:#2a7358}
 .portal-user-list {display:grid;gap:6px}
-#portalDialog .portal-person {
+:is(#portalDialog,.portal-dialog) .portal-person {
   width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:12px;align-items:center;
   margin:0;padding:10px 14px;border:1px solid #dbe7e1;border-radius:14px;background:#fff;
   color:#294b40;box-shadow:none;font:inherit;text-align:start;line-height:1.4;
 }
-#portalDialog button.portal-person:hover {background:#f1f8f4;border-color:#96c6b4}
+:is(#portalDialog,.portal-dialog) button.portal-person:hover {background:#f1f8f4;border-color:#96c6b4}
 .portal-identity {min-width:0}
 .portal-identity b,.portal-identity small {display:block;overflow-wrap:anywhere}
 .portal-identity b {font-size:17px}
@@ -86,7 +86,7 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-fields label>span:first-child {display:block}
 .portal-account-fields>label {min-width:0;margin:9px 0 0;font-size:15px}
 .portal-account-fields input {margin-top:4px}
-#portalDialog .portal-issued-password {font-family:'Assessment Latin','Times New Roman',serif}
+:is(#portalDialog,.portal-dialog) .portal-issued-password {font-family:'Assessment Latin','Times New Roman',serif}
 .portal-text-button {min-height:32px;background:none;border:0;padding:2px 5px;text-decoration:underline;text-underline-offset:4px;color:#326c58;font-size:15px;box-shadow:none}
 .portal-account-tools {margin-block-start:6px}
 .portal-account-tools label {width:100%}
@@ -107,33 +107,33 @@ html[dir=rtl] .portal-form-side {direction:rtl}
 .portal-scope-inside input {accent-color:#795f8f}
 .portal-hint {font-size:14px;color:#587065;margin:8px 0 0;line-height:1.55}
 .portal-actions {margin-top:14px}
-.portal-editor>.portal-actions {position:sticky;bottom:-18px;z-index:1;margin:0 -22px -18px;padding:12px 22px;border-top:1px solid #dbe7e0;background:#f7faf8}
-#portalDialog .portal-remove {margin-inline-start:auto;color:#9c3838;background:#fff7f6;border:1px solid #e4bdb9;border-radius:10px;padding:8px 13px}
-#portalDialog .portal-remove:hover {background:#fbe9e6}
+.portal-editor>.portal-actions {flex-shrink:0;position:sticky;bottom:-18px;z-index:1;margin:0 -22px -18px;padding:12px 22px;border-top:1px solid #dbe7e0;background:#f7faf8}
+:is(#portalDialog,.portal-dialog) .portal-remove {margin-inline-start:auto;color:#9c3838;background:#fff7f6;border:1px solid #e4bdb9;border-radius:10px;padding:8px 13px}
+:is(#portalDialog,.portal-dialog) .portal-remove:hover {background:#fbe9e6}
 .portal-editor>.portal-notice:empty {display:none}
 @media (max-width:600px) {
   .portal-dialog-head {padding:12px 16px}
-  #portalDialogBody {padding:12px}
+  :is(#portalDialogBody,.portal-dialog-body) {padding:12px}
   .portal-section {padding:12px}
   .portal-account-fields {grid-template-columns:1fr 1fr;gap:4px 10px}
   .portal-account-fields>label:first-child {grid-column:1/-1}
   .portal-permission-columns {grid-template-columns:1fr}
-  .portal-editor>.portal-actions {bottom:-12px;margin:0 -12px -12px;padding:10px 12px}
-  #portalDialog .portal-person {padding:8px;gap:8px}
+  .portal-editor>.portal-actions {flex-shrink:0;bottom:-12px;margin:0 -12px -12px;padding:10px 12px}
+  :is(#portalDialog,.portal-dialog) .portal-person {padding:8px;gap:8px}
 }
 @media (max-width:380px) {
   .portal-access-summary {display:none}
-  #portalDialog .portal-person {grid-template-columns:auto minmax(0,1fr) auto}
+  :is(#portalDialog,.portal-dialog) .portal-person {grid-template-columns:auto minmax(0,1fr) auto}
   .portal-account-fields {grid-template-columns:1fr}
 }
 #portalTools {display:flex;gap:8px;flex-wrap:wrap;z-index:1;align-items:center}.app-header .headerActions {flex-wrap:wrap}
 #portalTools button {background:#ffffff14;border:1px solid #ffffff52;color:#fff;border-radius:10px;padding:6px 11px;text-align:center;min-height:36px}
 html body [hidden] {display:none!important}
-html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] #portalDialog :is(button,input,label) {font-family:var(--assessment-fa)}
+html[lang=fa] #portalGate :is(button,input,label),html[lang=fa] :is(#portalDialog,.portal-dialog) :is(button,input,label) {font-family:var(--assessment-fa)}
 @media(max-width:700px){#portalGate{padding-top:8px}.portal-login-card{grid-template-columns:1fr .95fr;gap:12px;padding:22px}.portal-form-side h2{font-size:26px}.portal-art img{max-width:280px}}
 @media(max-width:520px){.portal-login-card{grid-template-areas:"art" "form";grid-template-columns:1fr;padding:16px 22px;gap:4px;max-width:400px}.portal-art img{width:150px}.portal-form-side h2{margin-bottom:8px}}
 
-#portalGate label,#portalDialog :is(label,legend,h2,h3,h4,b,small,.portal-hint,.portal-notice) {text-align:start!important;text-align-last:auto;word-spacing:normal;letter-spacing:normal}
+#portalGate label,:is(#portalDialog,.portal-dialog) :is(label,legend,h2,h3,h4,b,small,.portal-hint,.portal-notice) {text-align:start!important;text-align-last:auto;word-spacing:normal;letter-spacing:normal}
 .portal-fields > label > span {display:block;margin-block-end:4px}
 #portalGate .portal-trust {display:flex;align-items:center;gap:8px;font-size:15px}
 .portal-trust input {accent-color:#226c54;width:16px;height:16px}
@@ -306,7 +306,7 @@ select.vehicle-native-hidden {position:absolute!important;opacity:0!important;po
 <script src="./report-export.js?v=20261111-reference-2"></script>
 <script src="./report-charts.js?v=20261111-reference-3"></script>
 <script src="./workbook-metadata.js?v=20261111-dashboard-1"></script>
-<script src="./question-bank.js?v=3"></script>
+<script src="./question-bank.js?v=4"></script>
 <script src="./report-model.js?v=question-bank-1"></script>
 <script src="./app.js?v=shared-controls-1"></script>
 <script src="./polish.js?v=shared-controls-1"></script>
@@ -1007,6 +1007,7 @@ labels.locationStale=['به‌روزرسانی انجام نشد. نقشه‌ه�
 labels.accuracy=['دقت','Accuracy','精度'];
 labels.metres=['متر','m','米'];
 labels.keepOpen=['موقعیت در تب «نظارت بر موقعیت مکانی» نمایش داده می‌شود. صفحه را باز و گوشی را روشن نگه دارید.','Your location is visible in Location Monitoring. Keep this page open and the phone awake.','您的位置已显示在“位置监控”中。请保持页面开启及手机亮屏。'];
+labels.closeDialog=['بستن','Close','关闭'];
 labels.newAssessmentTitle=['تعریف آزمون جدید','Define a new test','新建试验'];
 labels.chooseType=['نوع آزمون','Test type','试验类型'];
 labels.drive=['قابلیت رانندگی','Drivability','驾驶性能'];
@@ -1170,7 +1171,7 @@ function render() {
       (async()=>{
         if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
         if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
-        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=3');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=4');
       })()
     ]).then(open).catch(()=>{
       if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));
@@ -1294,9 +1295,14 @@ function renderCategories(){
 }
 function openCreate(){
   if(!canCreate()||hub.querySelector('dialog[open]'))return;
-  const dialog=node('dialog','','assessment-create-panel'),form=node('form','','assessment-create-form');
+  const dialog=node('dialog','','assessment-create-panel portal-dialog'),form=node('form','','assessment-create-form portal-dialog-body portal-editor');
   const heading=node('h2',tr('newAssessmentTitle'));heading.id='createTestTitle';
   dialog.setAttribute('aria-labelledby',heading.id);
+  const head=node('div','','portal-dialog-head'),caption=node('div','','portal-heading');
+  caption.innerHTML='<svg class="portal-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M9 14h6m-3-3v6"/></svg>';
+  caption.append(heading);
+  const close=node('button','×','portal-dialog-close');close.type='button';close.setAttribute('aria-label',tr('closeDialog'));close.onclick=()=>dialog.close();
+  head.append(caption,close);
   const title=field('text','name');title.maxLength=120;
   const label=node('label',tr('name'));label.append(title);
   const choices=node('fieldset','','assessment-type-picker');choices.append(node('legend',tr('chooseType')));
@@ -1304,11 +1310,13 @@ function openCreate(){
     const option=node('label'),radio=node('input');radio.type='radio';radio.name='assessmentType';radio.value=type;radio.required=true;
     option.append(radio,typeIcon(type),node('span',tr(type)));choices.append(option);
   }
-  const actions=node('div','','assessment-create-actions'),submit=node('button',tr('create'),'assessment-action assessment-create-action');
+  const actions=node('div','','assessment-create-actions portal-actions'),submit=node('button',tr('create'),'portal-primary assessment-create-action');
   submit.type='submit';
   const status=node('p');status.setAttribute('role','status');
-  actions.append(submit,button('back',()=>dialog.close()));form.append(label,choices,status,actions);
-  dialog.append(heading,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+  const back=button('back',()=>dialog.close());back.className='portal-secondary';
+  const section=node('div','','portal-section assessment-create-section');section.append(label,choices);
+  actions.append(submit,back);form.append(section,status,actions);
+  dialog.append(head,form);hub.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   form.onsubmit=async event=>{
     event.preventDefault();const type=form.elements.assessmentType.value,name=title.value.trim();
     if(!types.includes(type)||!name||submit.disabled)return;

@@ -214,7 +214,7 @@ body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta { font-siz
 #assessmentHub .gate-grid.six .gate-create-plus { width: 29px; height: 29px; font-size: 22px; inset-inline-end: 6%; bottom: 6%; }
 </style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=daily-layout-1" media="print" onload="this.media='all'">
-<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=5"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=header-width-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link rel="stylesheet" data-shell-style href="./refined.css?v=shared-controls-1" media="print" onload="this.media='all'"><link data-style="questions" data-href="./question-bank.css?v=6"><link data-style="weighting" data-href="./weighting.css?v=subcriteria-1"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=header-width-1" media="print" onload="this.media='all'"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -1264,7 +1264,7 @@ function render() {
       (async()=>{
         if(!window.BAMCO_DATA) await loadExternal('./data.js?v=20261111-final-1');
         if(!window.BAMCO_WORKBOOK) await loadExternal('./workbook-metadata.js?v=20261111-dashboard-1');
-        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=4');
+        if(!window.BAMCO_QUESTION_BANK) await loadExternal('./question-bank.js?v=5');
       })()
     ]).then(open).catch(()=>{
       if(host.isConnected) host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')));

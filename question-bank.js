@@ -110,6 +110,23 @@
       if (className) node.className = className;
       return node;
     };
+    const icon = name => {
+      const paths = {
+        test: ['M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3', 'M9 2h6v4H9z', 'm8 12 2 2 5-5', 'M8 18h8'],
+        calendar: ['M8 2v4M16 2v4M3 10h18', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2', 'M8 14h2M14 14h2M8 18h2'],
+        procedure: ['M8 6h13M8 12h13M8 18h13', 'm2 6 1 1 2-2m-3 7 1 1 2-2m-3 7 1 1 2-2'],
+        measure: ['M12 3a9 9 0 1 0 9 9', 'M12 7a5 5 0 1 0 5 5', 'm12 12 9-9m-5 0h5v5'],
+        loads: ['M5 9h14l2 12H3L5 9Z', 'M9 9V6a3 3 0 0 1 6 0v3', 'M9 15h6'],
+        roads: ['M7 3 3 21M17 3l4 18M12 3v3m0 4v4m0 4v3'],
+        edit: ['m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15l-1 6Z'],
+        disable: ['M8 5v14M16 5v14'],
+        enable: ['m8 5 11 7-11 7V5Z']
+      };
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      for (const [key, value] of Object.entries({viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'1.65','stroke-linecap':'round','stroke-linejoin':'round','aria-hidden':'true',focusable:'false',class:'qb-icon'})) svg.setAttribute(key, value);
+      for (const d of paths[name]) { const path = document.createElementNS(svg.namespaceURI, 'path'); path.setAttribute('d', d); svg.append(path); }
+      return svg;
+    };
     const button = (label, action, primary = false) => {
       const node = element('button', text(label), 'assessment-action' + (primary ? ' qb-primary' : ''));
       node.type = 'button'; node.onclick = action; node.dataset.qbAction = label;
@@ -172,35 +189,42 @@
       if (!tests.length) results.append(element('p', text('empty')));
       for (const test of tests.slice(page * 12, (page + 1) * 12)) {
         const card = element('article', '', 'qb-question'); card.dataset.question = test.id;
+        const intro = element('div', '', 'qb-card-intro');
         const heading = element('div', '', 'qb-question-heading');
-        const titles = element('div');
+        const symbol = element('span', '', 'qb-card-symbol'); symbol.append(icon('test'));
         const category = element('div', '', 'qb-taxonomy');
         category.append(element('span', test.cat), element('span', test.sub));
-        titles.append(category, element('h2', test.name));
-        heading.append(titles, element('span', text(test.active === false ? 'inactive' : 'active'), 'qb-badge ' + (test.active === false ? 'inactive' : '')));
-        card.append(heading);
+        heading.append(symbol, category, element('span', text(test.active === false ? 'inactive' : 'active'), 'qb-badge ' + (test.active === false ? 'inactive' : '')));
         const placements = element('div', '', 'qb-placement');
         for (const key of ['comprehensive', ...test.scope]) placements.append(element('span', text(key), 'qb-chip qb-chip-' + key));
-        card.append(placements);
-        if (test.scope.includes('drive')) card.append(element('p', text('days') + ' — ' + test.days.map(number).join('، '), 'qb-day-summary'));
+        intro.append(heading, element('h2', test.name), placements); card.append(intro);
+        if (test.scope.includes('drive')) {
+          const days = element('div', '', 'qb-day-summary');
+          const title = element('div', '', 'qb-day-label'); title.append(icon('calendar'), element('span', text('days')));
+          const list = element('div', '', 'qb-day-list');
+          for (const day of test.days) { const chip = element('span', number(day)); chip.setAttribute('aria-label', text('day') + ' ' + number(day)); list.append(chip); }
+          days.append(title, list); card.append(days);
+        }
         const details = element('details', '', 'qb-test-details'); details.open = true;
-        details.append(element('summary', text('profile')));
+        const summary = element('summary'); summary.append(icon('procedure'), element('span', text('profile'))); details.append(summary);
         const content = element('div', '', 'qb-detail-content');
         content.append(element('p', test.profile, 'qb-procedure'));
         const measurement = element('section', '', 'qb-measure');
-        measurement.append(element('h3', text('measure')), element('p', test.measure));
+        const measureTitle = element('h3'); measureTitle.append(icon('measure'), element('span', text('measure')));
+        measurement.append(measureTitle, element('p', test.measure));
         const conditions = element('dl', '', 'qb-conditions');
         for (const [key, values] of [['loads', loads(test)], ['roads', roads(test).map(text)]]) {
           const condition = element('div', '', 'qb-condition qb-condition-' + key);
           const value = element('dd');
           for (const name of values.length ? values : [text('unspecified')]) value.append(element('span', name));
-          condition.append(element('dt', text(key)), value); conditions.append(condition);
+          const title = element('dt'); title.append(icon(key), element('span', text(key)));
+          condition.append(title, value); conditions.append(condition);
         }
         content.append(measurement, conditions); details.append(content);
         card.append(details);
         if (canEdit()) {
           const actions = element('div', '', 'qb-actions');
-          actions.append(button('edit', () => edit(test)));
+          const editButton = button('edit', () => edit(test)); editButton.prepend(icon('edit')); actions.append(editButton);
           const toggle = button(test.active === false ? 'enable' : 'disable', async () => {
             toggle.disabled = true; status.textContent = '';
             try {
@@ -209,6 +233,7 @@
               status.textContent = text('saved'); renderResults();
         } catch (error) { status.textContent = text(error.conflict ? 'conflict' : 'error'); toggle.disabled = false; if(error.conflict) renderResults(); }
           });
+          toggle.prepend(icon(test.active === false ? 'enable' : 'disable'));
           actions.append(toggle); card.append(actions);
         }
         cards.append(card);

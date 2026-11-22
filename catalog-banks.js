@@ -37,12 +37,7 @@ function mount(host,{kind,language='fa',home}){
   if(kind==='prompts'&&!records.some(r=>r.definition.active))results.append(el('p',t('noActive'),'bank-empty'));
   const grid=el('div','','bank-grid');results.append(grid);
   for(const row of sorted.slice(page*12,page*12+12)){
-   const d=row.definition;
-   if(kind==='prompts'){
-    const card=el('button','','bank-card bank-prompt-card'+(d.active?'':' is-inactive'));card.type='button';
-    card.append(el('span',d.title,'bank-prompt-title'));card.onclick=()=>openPrompt(row);grid.append(card);continue;
-   }
-   const card=el('article','','bank-card'+(d.active?'':' is-inactive')),top=el('div','','bank-card-top'),mark=el('span','','bank-symbol');mark.innerHTML=symbol(kind);
+   const d=row.definition,card=el('article','','bank-card'+(d.active?'':' is-inactive')),top=el('div','','bank-card-top'),mark=el('span','','bank-symbol');mark.innerHTML=symbol(kind);
    const badge=el('span',t(d.active?'active':'inactive'),'bank-badge'+(d.active?' active':''));top.append(mark,badge);
    const title=el('h2',d.name||d.title);card.append(top,title);
    if(kind==='routes'){
@@ -50,24 +45,14 @@ function mount(host,{kind,language='fa',home}){
     const journey=el('div','','bank-journey');for(const k of ['origin','destination']){const part=el('div');part.append(el('small',t(k)),el('strong',d[k]));journey.append(part)}card.append(journey);
     if(d.km)card.append(el('p',number(d.km)+' '+(li===0?'کیلومتر':li===1?'km':'公里'),'bank-distance'));
     if(d.notes)card.append(el('p',d.notes,'bank-notes'));
+   }else{
+    card.append(el('span',t('version')+' '+number(d.version),'bank-type'));
+    const details=el('details','','bank-full');details.append(el('summary',t('read')),el('p',d.content));card.append(details);
    }
    const footer=el('footer','','bank-actions');if(editable())footer.append(button('edit',()=>edit(row)),button(d.active?'deactivate':'activate',()=>toggle(row),!d.active));card.append(footer);grid.append(card);
   }
   if(!sorted.length)grid.append(el('p',t('empty'),'bank-empty'));
   if(sorted.length>12){const nav=el('nav','','bank-pager'),prev=button('previous',()=>{page--;draw()}),next=button('next',()=>{page++;draw()});prev.disabled=page===0;next.disabled=(page+1)*12>=sorted.length;nav.append(prev,el('span',number(page+1)+' / '+number(Math.ceil(sorted.length/12))),next);results.append(nav)}
- }
- function openPrompt(row){
-  const d=row.definition,dialog=el('dialog','','portal-dialog bank-dialog'),head=el('div','','portal-dialog-head');
-  const heading=el('div','','portal-heading'),title=el('h2',d.title);title.id='bank-prompt-title';heading.append(title);dialog.setAttribute('aria-labelledby',title.id);
-  const close=button('close',()=>dialog.close());close.className='portal-dialog-close';close.textContent='×';close.setAttribute('aria-label',t('close'));head.append(heading,close);
-  const body=el('div','','portal-dialog-body'),meta=el('div','','bank-prompt-meta');
-  meta.append(el('span',t(d.active?'active':'inactive'),'bank-badge'+(d.active?' active':'')),el('span',t('version')+' '+number(d.version),'bank-type'));
-  body.append(meta,el('p',d.content,'bank-prompt-text'));
-  if(editable()){
-   const actions=el('div','','bank-actions');
-   actions.append(button('edit',()=>{dialog.close();edit(row)}),button(d.active?'deactivate':'activate',()=>{dialog.close();toggle(row)},!d.active));body.append(actions);
-  }
-  dialog.append(head,body);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
  }
  function edit(existing){
   if(!editable())return;

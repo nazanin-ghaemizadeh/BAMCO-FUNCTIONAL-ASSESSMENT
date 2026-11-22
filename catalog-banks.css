@@ -32,3 +32,23 @@
 .bank-route-card.is-inactive .bank-route-illustration{filter:saturate(.55);opacity:.8}
 @media(min-width:1200px){.catalog-bank-routes .bank-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:600px){.bank-card.bank-route-card{padding:16px;gap:10px}.bank-route-illustration{width:60px;height:60px}}
+
+/* Route bank toolbar, selection and geographical coverage. */
+.catalog-bank-routes .bank-add{margin-inline-start:0}
+#assessmentHub .bank-excel{margin-inline-start:auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:52px;color:#287653;background:#edf8f1;border-color:#bedbcb}
+.bank-excel svg{width:23px;height:23px}.bank-excel span{font:600 13px Arial,sans-serif}
+.bank-selection-bar{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:12px 0 18px;padding:12px 16px;background:#ffffffb3;border:1px solid #dce9e2;border-radius:16px}
+.bank-select-all{display:flex;align-items:center;gap:9px;cursor:pointer}.bank-selection-count{margin-inline-start:auto;color:#587568;font-size:.95em}
+.bank-select-all input,.bank-route-select input{width:18px;height:18px;accent-color:#27775c;cursor:pointer;margin:0;flex:none}
+.bank-card-controls{display:flex;align-items:center;gap:10px}.bank-route-select{display:inline-flex;align-items:center;cursor:pointer}.bank-route-card .bank-badge{display:flex;align-items:center;gap:7px}
+.bank-card.bank-route-card.is-selected{border-color:var(--route-color);box-shadow:0 0 0 2px color-mix(in srgb,var(--route-color) 18%,transparent),0 4px 0 color-mix(in srgb,var(--route-color) 15%,white)}
+.bank-map-panel{overflow:hidden;border:1px solid #c6dfd1;border-radius:24px;background:#fff;padding:20px;margin-bottom:24px;box-shadow:0 16px 35px -28px #214f3e}
+.bank-map-panel[hidden]{display:none}.bank-map-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.bank-map-heading h2{font-size:1.3em;margin:0 0 5px}.bank-map-heading span{color:#5c786c;font-size:.95em}
+.bank-map-legend{display:flex;flex-wrap:wrap;gap:12px 22px;padding:0 0 16px}.bank-map-legend>span{display:inline-flex;align-items:center;gap:8px;font-size:.95em;color:var(--route-color)}.bank-map-legend>span:before{content:'';width:22px;height:4px;border-radius:4px;background:var(--route-color)}
+.bank-map-panel .bank-map-canvas{height:540px;min-width:0;width:100%;border-radius:18px;border:1px solid #dce7e4;box-sizing:border-box;background:radial-gradient(ellipse at 45% 35%,#f7fcfc,#e1f0f2);direction:ltr;z-index:0;font-family:inherit}
+.bank-map-canvas .leaflet-popup-content,.bank-map-canvas .leaflet-tooltip{font-family:inherit;font-size:16px;line-height:1.7;color:#254c3e}.bank-map-canvas .leaflet-tooltip{font-family:inherit}.bank-map-popup,.bank-city-popup{font-family:inherit;text-align:start;direction:rtl}.bank-map-popup p{margin:4px 0!important}.bank-map-popup a{display:block;margin-top:8px;color:#276b91}.bank-city-popup details{border-top:1px solid #e0ebe5;padding:8px 0}.bank-city-popup summary{cursor:pointer}.bank-city-popup{max-height:260px;overflow:auto}.bank-map-popup strong{font-size:1.1em}
+html:not([dir=rtl]) .bank-map-popup,html:not([dir=rtl]) .bank-city-popup{direction:ltr}
+.bank-map-caption{margin:12px 2px 0;color:#657d72;font-size:.9em;line-height:1.7}.bank-map-missing{margin-top:14px;padding:12px 16px;border-radius:14px;background:#fcf5e9;color:#87612d}.bank-map-missing ul{margin-bottom:0;padding-inline-start:24px}.bank-map-missing summary{cursor:pointer}
+@media(max-width:600px){.bank-map-panel{padding:12px;border-radius:18px}.bank-map-panel .bank-map-canvas{height:390px}.bank-map-heading{align-items:start}.bank-map-heading h2{font-size:1.2em}.bank-map-legend{gap:9px 16px}.bank-selection-bar{gap:10px;padding:12px}.bank-selection-count{font-size:.9em}.bank-map-caption{font-size:14px}}
+
+.bank-map-canvas .bank-city-label{font-family:inherit;font-size:14px;line-height:1.5;color:#345f50;background:#fffffff0;border:1px solid #d7e5de;border-radius:8px;box-shadow:0 3px 8px #254c3e0d;padding:2px 7px}

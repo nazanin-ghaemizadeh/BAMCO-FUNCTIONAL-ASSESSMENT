@@ -1,0 +1,16 @@
+Route bank map sources
+
+Iran boundary: Natural Earth, Admin 0 Countries, 1:50m, public domain.
+https://www.naturalearthdata.com/downloads/50m-cultural-vectors/50m-admin-0-countries-2/
+Retrieved 2026-11-22 from:
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
+
+City points are the existing route-map.js catalogue coordinates.
+Additional representative regional points (longitude, latitude):
+Namak Lake: 51.89, 34.52 — ILEC World Lake Database
+https://wldb.ilec.or.jp/Search/CountryLakeList/IR?name_index=DESC
+Maranjab Desert: 51.660833, 34.184722 — Wikidata Q1107362 (CC0)
+https://www.wikidata.org/wiki/Q1107362
+
+These are geographical overview points, not surveyed road endpoints.
+Connections indicate origin/destination coverage, not road geometry.

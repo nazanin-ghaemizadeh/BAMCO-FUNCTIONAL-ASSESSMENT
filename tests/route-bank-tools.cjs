@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),Excel=require('exceljs'),{JSDOM}=require('jsdom');
+const Tools=require('../route-bank-tools.js');
+(async()=>{
+ const routes=Array.from({length:15},(_,i)=>({id:'r'+i,revision:1,updated_at:'2026-11-22',definition:{name:i?'Route '+i:'=HYPERLINK("https://example.test")',routeId:['urban','rural','hot','mountain','offroad'][i%5],origin:i===0?' تهران ':'تهران',destination:i===0?'تهران':i===1?'کرمان':'Unknown city',km:i===0?null:42.125,active:i%2===0,bidirectional:i%3===0,notes:'<img src=x> Text & notes'}}));
+ const located=Tools.locate(routes,JSON.parse(fs.readFileSync('assets/route-cities.json','utf8')));assert.deepEqual(located[0].a,located[0].b);assert.equal(located[1].missing.length,0);assert.deepEqual(located[2].missing,['Unknown city']);
+ const book=Tools.buildWorkbook(Excel,routes,{language:'fa',selected:true,now:new Date('2026-11-22')});const restored=new Excel.Workbook();await restored.xlsx.load(await book.xlsx.writeBuffer());const sheet=restored.worksheets[0];
+ assert.equal(sheet.rowCount,19,'exports all selected routes beyond the card page');assert.equal(sheet.views[0].rightToLeft,true);assert.equal(sheet.views[0].ySplit,4);assert.equal(sheet.getCell('B5').value,routes[0].definition.name,'formula-like input stays literal');assert.equal(sheet.getCell('B5').type,Excel.ValueType.String);assert.equal(sheet.getCell('F6').value,42.125);assert.equal(sheet.getCell('C5').fill.fgColor.argb,'FFedf8f1');assert.equal(sheet.getCell('B5').font.name,'B Nazanin');assert.equal(sheet.getCell('I5').value,routes[0].definition.notes);assert(sheet.getTable('Routes'));assert.equal(restored.worksheets[1].getCell('B9').value,15);
+ const w=new JSDOM('<main><div id="host"></div></main>',{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document;const host=d.getElementById('host');let exported,shown,removed=0;
+ w.BAMCO_PORTAL={user:{admin:true},can:()=>true,rpc:async()=>({data:routes})};w.BAMCO_ROUTE_BANK_TOOLS={downloadExcel:async(rows,o)=>{exported={rows,o}},mountMap:(h,rows,o)=>{shown={rows,o};h.textContent='Map preview';return ()=>removed++}};w.eval(fs.readFileSync('catalog-banks.js','utf8'));
+ const tick=()=>new Promise(r=>setTimeout(r,0)),button=text=>[...host.querySelectorAll('button')].find(b=>b.textContent===text);
+ w.BAMCO_BANKS.mount(host,{kind:'routes',language:'en',home(){}});await tick();assert.equal(host.querySelectorAll('.bank-card').length,12);
+ host.querySelector('.bank-select-all input').click();button('Next').click();assert.equal(host.querySelectorAll('.bank-route-select input:checked').length,3);host.querySelector('.bank-excel').click();await tick();assert.equal(exported.rows.length,15);assert.equal(exported.o.selected,true);
+ button('Show map').click();await tick();assert.equal(shown.rows.length,15);assert.equal(button('Hide map').getAttribute('aria-expanded'),'true');
+ button('Clear selection').click();host.querySelector('.bank-route-select input').click();await tick();assert.equal(shown.rows.length,1);host.querySelector('.bank-excel').click();await tick();assert.equal(exported.rows.length,1);
+ const search=host.querySelector('input[type=search]');search.value='not found';search.dispatchEvent(new w.Event('input'));await tick();assert.equal(shown.rows.length,0);assert.equal(host.querySelector('.bank-excel').disabled,true);
+ button('Hide map').click();assert(host.querySelector('.bank-map-panel').hidden);assert(removed>0);host.remove();await tick();w.close();
+ console.log('PASS route bank: selection across pages, filter reset, map lifecycle, unknown cities, full styled RTL Excel, literal unsafe text and numeric distances.');
+})().catch(e=>{console.error(e);process.exit(1)});

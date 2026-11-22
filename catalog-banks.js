@@ -4,6 +4,9 @@ const portal=window.BAMCO_PORTAL;
 const rpc=async(operation,args={})=>{const {data,error}=await portal.rpc('bamco_banks',{operation,args});if(error)throw error;return data};
 const routes={urban:['شهری','Urban','城市'],rural:['برون‌شهری','Interurban','城际'],hot:['گرمسیری','Hot climate','高温'],mountain:['کوهستانی','Mountain','山区'],offroad:['خارج‌جاده / خاکی','Off-road','越野']};
 const words={routes:['بانک مسیرها','Route bank','路线库'],prompts:['بانک پرامپت‌ها','Prompt bank','提示词库'],back:['بازگشت','Back','返回'],createRoute:['تعریف مسیر جدید','Add route','新增路线'],createPrompt:['تعریف پرامپت جدید','Add prompt','新增提示词'],edit:['ویرایش','Edit','编辑'],save:['ذخیره','Save','保存'],cancel:['انصراف','Cancel','取消'],close:['بستن','Close','关闭'],all:['همه','All','全部'],active:['فعال','Active','启用'],inactive:['غیرفعال','Inactive','停用'],activate:['فعال‌سازی','Activate','启用'],deactivate:['غیرفعال‌سازی','Deactivate','停用'],status:['وضعیت','Status','状态'],search:['جست‌وجو','Search','搜索'],name:['نام مسیر','Route name','路线名称'],title:['عنوان پرامپت','Prompt title','提示词标题'],origin:['مبدأ','Origin','起点'],destination:['مقصد','Destination','终点'],kind:['نوع مسیر','Route type','路线类型'],km:['مسافت مرجع (کیلومتر)','Reference distance (km)','参考距离（公里）'],notes:['مسیر عبوری و توضیحات','Waypoints and notes','途经地点及备注'],bidirectional:['قابل استفاده در هر دو جهت','Available in both directions','可双向使用'],content:['متن پرامپت','Prompt text','提示词内容'],version:['نسخه','Version','版本'],previous:['قبلی','Previous','上一页'],next:['بعدی','Next','下一页'],retry:['تلاش مجدد','Retry','重试'],loading:['در حال دریافت اطلاعات…','Loading…','加载中…'],error:['دریافت یا ذخیره اطلاعات انجام نشد. دوباره تلاش کنید.','Could not load or save. Please retry.','无法加载或保存，请重试。'],conflict:['این مورد هم‌زمان تغییر کرده است. پنجره را ببندید و پس از تازه‌سازی دوباره ویرایش کنید.','This item changed in another session. Close and refresh before editing again.','此项已在其他会话中更改，请关闭并刷新后重试。'],refresh:['تازه‌سازی','Refresh','刷新'],empty:['موردی یافت نشد.','No matching items.','未找到匹配项。'],saved:['تغییرات ذخیره شد.','Changes saved.','更改已保存。'],routeHint:['مسیرهای فعال در برنامهٔ آزمون دوام قابل انتخاب‌اند. برنامهٔ قابلیت رانندگی ثابت است.','Active routes are available for durability planning. The drivability schedule is fixed.','启用的路线可用于耐久性计划；驾驶性能路线固定。'],promptHint:['پرامپت فعال هنگام تحلیل هوش مصنوعی ارسال می‌شود. ویرایش، یک نسخهٔ جدید می‌سازد و نسخه‌های قبلی باقی می‌مانند.','The active prompt is sent for AI analysis. Editing creates a new version and keeps earlier versions.','AI分析使用已启用的提示词。编辑将创建新版本并保留旧版本。'],promptRule:['خروجی تحلیل در قالب پنج پیشنهاد فنی سامانه نمایش داده می‌شود.','Analysis is displayed as five structured technical recommendations.','分析将显示为五条结构化技术建议。'],noActive:['پرامپت فعالی انتخاب نشده است. برای تحلیل هوش مصنوعی، یک پرامپت را فعال کنید.','Activate a prompt to enable AI analysis.','请启用一个提示词以使用AI分析。'],read:['مشاهده متن','Read prompt','查看内容'],activeUse:['استفاده برای تحلیل هوش مصنوعی','Use for AI analysis','用于AI分析'],count:['مورد','items','项'],optional:['اختیاری','Optional','可选']};
+Object.assign(words,{showMap:['نمایش نقشه','Show map','显示地图'],hideMap:['بستن نقشه','Hide map','关闭地图'],excel:['دانلود اکسل مسیرها','Download routes Excel','下载路线Excel'],exporting:['در حال آماده‌سازی اکسل…','Preparing Excel…','正在生成Excel…'],exportError:['خروجی اکسل آماده نشد. دوباره تلاش کنید.','Excel export failed. Please retry.','导出失败，请重试。'],mapError:['نقشه بارگیری نشد. دوباره تلاش کنید.','Could not load the map. Please retry.','无法加载地图，请重试。'],selectAll:['انتخاب همهٔ نتایج','Select all results','选择全部结果'],selected:['مسیر انتخاب شده','routes selected','条路线已选择'],selectRoute:['انتخاب مسیر','Select route','选择路线'],clearSelection:['لغو انتخاب‌ها','Clear selection','清除选择'],filtered:['مسیر در نتایج','routes in results','条筛选路线']});
+let toolsLoad;
+function loadTools(){if(window.BAMCO_ROUTE_BANK_TOOLS)return Promise.resolve(window.BAMCO_ROUTE_BANK_TOOLS);return toolsLoad??=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=window.BAMCO_RELEASE?.asset('./route-bank-tools.js')||'./route-bank-tools.js';s.onload=()=>resolve(window.BAMCO_ROUTE_BANK_TOOLS);s.onerror=()=>{s.remove();toolsLoad=null;reject(Error('tools'))};document.head.append(s)})}
 const el=(tag,text='',className='')=>{const e=document.createElement(tag);e.textContent=text;e.className=className;return e};
 const editable=()=>portal.user?.admin||portal.can('setup');
 const icon=(kind)=>kind==='routes'?'<path d="m4 5 5-2 6 2 5-2v16l-5 2-6-2-5 2Z"/><path d="M9 3v16m6-14v16"/>':'<rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 9h8m-8 4h8m-8 4h4M16 1v5m-2-2h4"/>';
@@ -14,26 +17,49 @@ function promptText(row,language='fa'){return window.BAMCO_REVIEW_CONTRACT.compo
 function mount(host,{kind,language='fa',home}){
  const li={fa:0,en:1,zh:2}[language]??0,t=k=>words[k]?.[li]||k,number=n=>new Intl.NumberFormat(language==='fa'?'fa-IR':language).format(n);
  let records=[],query='',type='',status='',page=0,busy=false;
+ const selection=new Set();let mapOpen=false,mapDispose=null,mapGeneration=0,mapSignature='',exportBusy=false;
+ const mapPanel=el('section','','bank-map-panel');mapPanel.id='bank-route-map';mapPanel.hidden=true;
+ const resetFilter=()=>{page=0;selection.clear();draw()};
  host.className='catalog-bank catalog-bank-'+kind;
  const header=el('header','','qb-header'),heading=el('h1',t(kind),'gate-title');header.append(heading);
  const divider=el('div','','welcome-divider');divider.innerHTML='<i></i><i></i><i></i>';divider.setAttribute('aria-hidden','true');header.append(divider);
  const button=(key,fn,primary=false)=>{const b=el('button',t(key),'assessment-action'+(primary?' qb-primary':''));b.type='button';b.onclick=fn;return b};
- const bar=el('div','','assessment-page-toolbar');bar.append(button('back',home));if(editable()){const b=button(kind==='routes'?'createRoute':'createPrompt',()=>edit(),true);b.classList.add('bank-add');bar.append(b)}header.append(bar);
+ const bar=el('div','','assessment-page-toolbar');bar.append(button('back',home));if(editable()){const b=button(kind==='routes'?'createRoute':'createPrompt',()=>edit(),true);b.classList.add('bank-add');bar.append(b)}
+ let mapButton,excelButton;
+ if(kind==='routes'){
+  mapButton=button('showMap',()=>{mapOpen=!mapOpen;refreshMap()});mapButton.setAttribute('aria-controls',mapPanel.id);mapButton.setAttribute('aria-expanded','false');
+  excelButton=button('excel',exportRoutes);excelButton.classList.add('bank-excel');excelButton.title=t('excel');excelButton.setAttribute('aria-label',t('excel'));excelButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5M3 9h9M9 9v12M3 15h9M18 2v9m-3-3 3 3 3-3"/></svg><span>Excel</span>';bar.append(mapButton,excelButton);
+ }header.append(bar);
  const filters=el('div','','bank-filters');
  const field=(label,control)=>{const l=el('label',t(label));l.append(control);return l};
- const search=el('input');search.type='search';search.setAttribute('aria-label',t('search'));search.oninput=()=>{query=search.value.trim().toLocaleLowerCase();page=0;draw()};filters.append(field('search',search));
- function select(label,options,change){const s=el('select');s.append(new Option(t('all'),''));for(const [key,name] of options)s.append(new Option(name,key));s.onchange=()=>{change(s.value);page=0;draw()};filters.append(field(label,s));}
+ const search=el('input');search.type='search';search.setAttribute('aria-label',t('search'));search.oninput=()=>{query=search.value.trim().toLocaleLowerCase();resetFilter()};filters.append(field('search',search));
+ function select(label,options,change){const s=el('select');s.append(new Option(t('all'),''));for(const [key,name] of options)s.append(new Option(name,key));s.onchange=()=>{change(s.value);resetFilter()};filters.append(field(label,s));}
  if(kind==='routes')select('kind',Object.entries(routes).map(([k,v])=>[k,v[li]]),v=>type=v);
  select('status',[['active',t('active')],['inactive',t('inactive')]],v=>status=v);
  filters.append(button('refresh',()=>reload()));
  const message=el('p','','qb-status');message.setAttribute('role','status');const results=el('div','','bank-results');
- host.replaceChildren(header,filters,message,results);window.BAMCO_DROPDOWNS?.(host);
- async function reload(note=''){message.textContent=t('loading');try{const data=await rpc('list',{kind});if(!Array.isArray(data))throw Error('invalid');records=data;message.textContent=note;draw()}catch{message.textContent=t('error');results.replaceChildren(button('retry',()=>reload()))}}
+ host.replaceChildren(header,filters,message,...(kind==='routes'?[mapPanel]:[]),results);window.BAMCO_DROPDOWNS?.(host);
+ async function reload(note=''){message.textContent=t('loading');try{const data=await rpc('list',{kind});if(!Array.isArray(data))throw Error('invalid');records=data;for(const id of selection)if(!records.some(r=>r.id===id))selection.delete(id);message.textContent=note;draw()}catch{message.textContent=t('error');results.replaceChildren(button('retry',()=>reload()))}}
  async function toggle(row){if(busy)return;busy=true;try{const saved=await rpc('toggle',{kind,id:row.id,revision:row.revision,active:!row.definition.active});if(saved?.conflict)throw Error('conflict');await reload(t('saved'))}catch(e){message.textContent=t(e.message==='conflict'?'conflict':'error')}finally{busy=false}}
+ function filtered(){return records.filter(r=>{const d=r.definition;return (!query||[d.name,d.title,d.origin,d.destination,d.notes,d.content].join(' ').toLocaleLowerCase().includes(query))&&(!type||type===d.routeId)&&(!status||(status==='active')===d.active)}).sort((a,b)=>Number(b.definition.active)-Number(a.definition.active)||b.updated_at.localeCompare(a.updated_at))}
+ function chosen(){const matches=filtered();return selection.size?matches.filter(r=>selection.has(r.id)):matches}
+ async function exportRoutes(){
+  const rows=chosen(),selected=selection.size>0;if(exportBusy||!rows.length)return;exportBusy=true;excelButton.disabled=true;message.textContent=t('exporting');
+  try{const tools=await loadTools();await tools.downloadExcel(rows,{language,selected});message.textContent=''}catch{message.textContent=t('exportError')}finally{exportBusy=false;if(host.isConnected)excelButton.disabled=!chosen().length}
+ }
+ function refreshMap(){
+  if(kind!=='routes')return;mapPanel.hidden=!mapOpen;mapButton.textContent=t(mapOpen?'hideMap':'showMap');mapButton.setAttribute('aria-expanded',String(mapOpen));
+  const rows=chosen(),signature=mapOpen?JSON.stringify(rows.map(r=>[r.id,r.revision]))+'|'+selection.size:'';if(signature===mapSignature)return;mapSignature=signature;const token=++mapGeneration;mapDispose?.();mapDispose=null;
+  if(!mapOpen)return;mapPanel.textContent=t('loading');loadTools().then(tools=>{if(token===mapGeneration&&host.isConnected)mapDispose=tools.mountMap(mapPanel,rows,{language,selected:selection.size>0})}).catch(()=>{if(token===mapGeneration){mapSignature='';mapPanel.replaceChildren(el('p',t('mapError')),button('retry',refreshMap))}});
+ }
+ const unmount=new MutationObserver(()=>{if(!host.isConnected){mapGeneration++;mapDispose?.();unmount.disconnect()}});unmount.observe(host.parentNode||document.body,{childList:true});
  function draw(){
-  const sorted=records.filter(r=>{const d=r.definition;return (!query||[d.name,d.title,d.origin,d.destination,d.notes,d.content].join(' ').toLocaleLowerCase().includes(query))&&(!type||type===d.routeId)&&(!status||(status==='active')===d.active)}).sort((a,b)=>Number(b.definition.active)-Number(a.definition.active)||b.updated_at.localeCompare(a.updated_at));
+  const sorted=filtered();
   page=Math.min(page,Math.max(0,Math.ceil(sorted.length/12)-1));
   results.replaceChildren(el('p',number(sorted.length)+' '+t('count'),'qb-count'));
+  if(kind==='routes'){
+   const choices=el('div','','bank-selection-bar'),label=el('label','','bank-select-all'),all=el('input');all.type='checkbox';all.checked=sorted.length>0&&sorted.every(r=>selection.has(r.id));all.indeterminate=!all.checked&&sorted.some(r=>selection.has(r.id));all.disabled=!sorted.length;all.onchange=()=>{for(const r of sorted)all.checked?selection.add(r.id):selection.delete(r.id);draw()};label.append(all,el('span',t('selectAll')));const count=el('span',number(chosen().length)+' '+t(selection.size?'selected':'filtered'),'bank-selection-count');choices.append(label,count);if(selection.size)choices.append(button('clearSelection',()=>{selection.clear();draw()}));results.append(choices);excelButton.disabled=exportBusy||!chosen().length;refreshMap();
+  }
   if(kind==='prompts'&&!records.some(r=>r.definition.active))results.append(el('p',t('noActive'),'bank-empty'));
   const grid=el('div','','bank-grid');results.append(grid);
   for(const row of sorted.slice(page*12,page*12+12)){
@@ -42,13 +68,14 @@ function mount(host,{kind,language='fa',home}){
    const title=el('h2',d.name||d.title);card.append(top,title);
    if(kind==='routes'){
     const routeKind=Object.hasOwn(routes,d.routeId)?d.routeId:'rural';
-    card.classList.add('bank-route-card');card.dataset.route=routeKind;
+    card.classList.add('bank-route-card');card.dataset.route=routeKind;card.classList.toggle('is-selected',selection.has(row.id));
+    const pickLabel=el('label','','bank-route-select'),pick=el('input');pick.type='checkbox';pick.checked=selection.has(row.id);pick.setAttribute('aria-label',t('selectRoute')+' '+d.name);pick.onchange=()=>{pick.checked?selection.add(row.id):selection.delete(row.id);draw()};pickLabel.title=t('selectRoute');pickLabel.append(pick);const cardControls=el('div','','bank-card-controls');cardControls.append(badge,pickLabel);
     mark.className='bank-route-illustration';mark.setAttribute('aria-hidden','true');
     mark.innerHTML='<svg viewBox="0 0 96 96"><use href="./assets/route-types.svg?v=06b7be2620213e0f#'+routeKind+'"></use></svg>';
     const identity=el('div','','bank-route-identity'),meta=el('div','','bank-route-meta');
     meta.append(el('span',routes[routeKind][li],'bank-type'));
     if(d.km)meta.append(el('span',number(d.km)+' '+(li===0?'کیلومتر':li===1?'km':'公里'),'bank-distance'));
-    identity.append(mark,meta);top.replaceChildren(identity,badge);
+    identity.append(mark,meta);top.replaceChildren(identity,cardControls);
     const journey=el('div','','bank-journey');for(const k of ['origin','destination']){const part=el('div');part.append(el('small',t(k)),el('strong',d[k]));journey.append(part)}card.append(journey);
     if(d.notes)card.append(el('p',d.notes,'bank-notes'));
    }else{

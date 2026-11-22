@@ -28,7 +28,7 @@ function mount(host,{kind,language='fa',home}){
  let mapButton,excelButton;
  if(kind==='routes'){
   mapButton=button('showMap',()=>{mapOpen=!mapOpen;draw()});mapButton.setAttribute('aria-controls',mapPanel.id);mapButton.setAttribute('aria-expanded','false');
-  excelButton=button('excel',exportRoutes);excelButton.classList.add('bank-excel');excelButton.title=t('excel');excelButton.setAttribute('aria-label',t('excel'));excelButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5M3 9h9M9 9v12M3 15h9M18 2v9m-3-3 3 3 3-3"/></svg><span>Excel</span>';bar.append(mapButton,excelButton);
+  excelButton=button('excel',exportRoutes);excelButton.classList.add('bank-excel');excelButton.title=t('excel');excelButton.setAttribute('aria-label',t('excel'));excelButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7zM17 3v5h4M3 8h11v11H3zM6 11l5 5m0-5-5 5"/></svg>';bar.append(mapButton,excelButton);
  }header.append(bar);
  const filters=el('div','','bank-filters');
  const field=(label,control)=>{const l=el('label',t(label));l.append(control);return l};

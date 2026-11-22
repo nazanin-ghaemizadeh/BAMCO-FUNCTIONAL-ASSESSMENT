@@ -159,7 +159,7 @@ function visit(path,url,reply,options={}){
       assert.deepEqual([target.min,target.max,target.step,target.value],['10000','50000','5000','35000']);
       const update=el=>el.dispatchEvent(new typed.w.Event('input',{bubbles:true}));
       const days=()=>doc.getElementById('durDays').value;
-      assert.equal(days(),'۰');assert(doc.getElementById('startCity').readOnly);
+      assert.equal(days(),'۸۸');assert(doc.getElementById('startCity').readOnly);
       assert.equal(doc.getElementById('startCity').value,'تهران');
       const shares=[...doc.querySelectorAll('[id^=share-]')];
       assert(shares.every(el=>el.readOnly));
@@ -167,13 +167,13 @@ function visit(path,url,reply,options={}){
       doc.getElementById('twoDiff').value='yes';doc.getElementById('twoDiff').dispatchEvent(new typed.w.Event('change',{bubbles:true}));
       assert.deepEqual(shares.map(el=>el.value),['۲۵','۴۰','۱۵','۲','۱۸']);
       for(const value of ['10000','50000','35000']){target.value=value;update(target);assert.equal(target.value,value)}
-      const cap=doc.getElementById('cap-urban');cap.value='150';update(cap);assert.equal(days(),'۰');
-      cap.value='300';update(cap);assert.equal(days(),'۰');
+      const cap=doc.getElementById('cap-urban');cap.value='150';update(cap);assert.equal(days(),'۱۱۶');
+      cap.value='300';update(cap);assert.equal(days(),'۸۸');
     }
     doc.getElementById('vehicleForm').requestSubmit();
     await until(()=>doc.body.dataset.view===mode);
     assert(stored.setupComplete);
-    if(kind==='durability'){assert.equal(stored.durabilitySchedule.length,0);assert.equal(doc.querySelectorAll('.phase-card').length,4)}
+    if(kind==='durability'){assert.equal(stored.durabilitySchedule.length,88);assert.equal(doc.querySelectorAll('.phase-card').length,4)}
     else assert.equal(stored.durabilitySchedule,undefined);
     assert.equal(doc.getElementById('backModulesBtn').dataset.open,'modules');
     typed.close();

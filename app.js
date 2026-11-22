@@ -106,7 +106,7 @@ function activeRoutes(){const a=DB.routes.filter(r=>(conf().body==='Off-road'||c
 function dayCategoryPlan(){
  if(!hasDurabilitySetup())return [];
  if(state.durabilitySchedule)return phases?phases.normalize(state.durabilitySchedule):state.durabilitySchedule;
- if(phases)return [];
+ if(phases)return phases.manualPlan(snapshot(),readOnly,targetRows());
  const version=conf().durabilityPlannerVersion;
  const plan=version===2?planner.calculate(plannerConfig()).schedule:
    version===1?window.BAMCO_LEGACY_PLANNER.calculate(plannerConfig()).schedule:legacyDayCategoryPlan();
@@ -197,10 +197,8 @@ function readSetup(){
 function planForSetup(config) {
  const plan=planner.calculate(plannerConfig(config));
  if(phases){
-  if(!state.setupComplete)return {...plan,rows:plan.rows.map(r=>({...r,days:0,lastKm:0})),schedule:[],days:0};
-  const schedule=dayCategoryPlan();
-  const targetsChanged=num(conf().durKm)!==plan.target;
-  return {...plan,rows:plan.rows.map(r=>{const days=schedule.filter(p=>p.routeId===r.id);return {...r,days:days.length,lastKm:days.at(-1)?.km||0}}),schedule,days:schedule.length,targetsChanged};
+  const schedule=phases.manualPlan({...snapshot(),config},readOnly,plan.rows);
+  return {...plan,rows:plan.rows.map(r=>({...r,days:4*Math.ceil(r.km/4/r.cap),lastKm:phases.precision(r.km/4%r.cap)||r.cap})),schedule,days:schedule.length,targetsChanged:num(conf().durKm)!==plan.target};
  }
  if(!state.setupComplete)return plan;
  const previous=dayCategoryPlan();
@@ -346,9 +344,10 @@ function renderDayNavigation(){
   const plan=state.tab==='drive'?driveProgram():dayCategoryPlan().filter(p=>!phases||p.phase===state.durPhase);
   host.innerHTML='<div class="assessment-days-grid">'+plan.map(p=>{
    const theme=dayRouteAppearance(p),drive=state.tab==='drive';
-   const title=drive?p.route:theme.label;
+   const pending=!drive&&phases&&!phases.assigned(p)&&p.day>phases.protectedDay(snapshot());
+   const title=pending?'ابتدا مسیر این روز را تعیین کن':drive?p.route:theme.label;
    const category=drive?'<span class="drive-card-category">'+esc(p.type)+'</span>':'';
-   return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'">'+
+   return '<button type="button" class="assessment-day-tile" data-route="'+esc(theme.kind)+'" data-needs-route="'+Boolean(p.needsRoute)+'" data-day="'+p.day+'"'+(pending?' disabled':'')+'>'+
     '<span class="day-card-top"><strong><span class="day-word">روز </span>'+number(p.day)+'</strong></span>'+
     '<span class="day-route-icon">'+theme.icon+'</span><span class="day-card-footer">'+category+
     '<span class="day-route-label">'+esc(title)+'</span><small>'+number(p.km)+' کیلومتر</small>'+
@@ -740,6 +739,7 @@ byId('vehicleForm').addEventListener('submit',async e=>{
  state.config=config;
  if(plan){
   config.durDays=plan.days;
+  if(phases){config.durabilityPhaseVersion=2;config.durabilityPhaseTargets=phases.targets(plan.rows)}
   state.durabilitySchedule=plan.schedule;
   state.durDay=Math.min(state.durDay,plan.days);
  }
@@ -815,12 +815,12 @@ window.BAMCO_ASSESSMENT={
     caseGeneration++;draft=null;cloudSave=onSave;readOnly=locked;dayScreen='days';dashboardModule=null;
     document.querySelectorAll('#vehicleForm button,#vehicleForm input,#vehicleForm select').forEach(el=>el.disabled=locked);
     Object.assign(state,{
-      config:{...normalizeConfig(data.config||{},Boolean(data.setupComplete)),...(phases?{durabilityPhaseVersion:1}:{})},
+      config:normalizeConfig(data.config||{},Boolean(data.setupComplete)),
       records:data.records||{},mileage:data.mileage||{drive:{},durability:{}},durabilitySchedule:data.durabilitySchedule,checkpointAssignments:data.checkpointAssignments||{},
       setupComplete:Boolean(data.setupComplete),missions:data.missions||{},driveDay:1,durDay:1,durPhase:1,
       category:'همه',query:'',loadFilter:'',roadFilter:'',page:0,tab:'modules'
     });
-    if(phases&&hasDurabilitySetup())state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly);
+    if(phases&&hasDurabilitySetup()){state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly,targetRows());state.config.durabilityPhaseVersion=2;}
     if(state.durabilitySchedule)state.config.durDays=state.durabilitySchedule.length;
     if(caseDocument())restoreRoute();else render();
   },
@@ -838,14 +838,14 @@ window.BAMCO_ASSESSMENT={
         }
       }
     }
-    state.config={...normalizeConfig(data.config||{},Boolean(data.setupComplete)),...(phases?{durabilityPhaseVersion:1}:{})};
+    state.config=normalizeConfig(data.config||{},Boolean(data.setupComplete));
     state.records=data.records||{};
     state.missions=data.missions||{};
     state.mileage=data.mileage||{drive:{},durability:{}};
     state.setupComplete=Boolean(data.setupComplete);
     state.durabilitySchedule=data.durabilitySchedule;
     state.checkpointAssignments=data.checkpointAssignments||{};
-    if(phases&&hasDurabilitySetup()){state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly);state.config.durDays=state.durabilitySchedule.length;}
+    if(phases&&hasDurabilitySetup()){state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly,targetRows());state.config.durDays=state.durabilitySchedule.length;state.config.durabilityPhaseVersion=2;}
     // The daily and setup forms may contain drafts that have not been submitted.
     if(scoreContext()?.section==='scores'||state.tab==='results'){
       const focus=document.activeElement;
@@ -869,7 +869,8 @@ window.BAMCO_ASSESSMENT={
   async savePhasePlan(plan,targets){
     if(readOnly||!hasPermission('setup'))return false;
     const original=snapshot(),generation=caseGeneration;
-    state.config={...state.config,durabilityPhaseVersion:1,durabilityPhaseTargets:targets,durDays:plan.length};state.durabilitySchedule=plan;
+    plan=phases.validatePlan({...original,durabilitySchedule:dayCategoryPlan()},plan);
+    state.config={...state.config,durabilityPhaseVersion:2,durabilityPhaseTargets:phases.targets(targetRows()),durDays:plan.length};state.durabilitySchedule=plan;
     const submitted=snapshot();let ok=false;
     try{ok=window.BAMCO_CASES?.saveNow?await window.BAMCO_CASES.saveNow(submitted):save(submitted)}
     finally{if(!ok&&generation===caseGeneration){if(state.config===submitted.config)state.config=original.config;if(state.durabilitySchedule===submitted.durabilitySchedule)state.durabilitySchedule=original.durabilitySchedule}}

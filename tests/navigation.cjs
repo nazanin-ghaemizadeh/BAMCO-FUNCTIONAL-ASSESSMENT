@@ -1,4 +1,5 @@
 module.exports=function navigate(document,selector){
+ if(selector==='[data-open="results"]'){document.defaultView.BAMCO_ASSESSMENT.openDashboard();return}
  if(document.querySelector(selector))return;
  const match=selector.match(/^\[data-open="(drive|durability|supplementary|comprehensive|results)"\]$/);
  if(!match)return;

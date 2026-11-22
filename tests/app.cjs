@@ -13,7 +13,7 @@ assert.equal(api.drivePlan().reduce((s,p)=>s+p.km,0),6930);assert.equal(api.driv
 assert(api.eligibleTests('drive').every(t=>t.vehicle.gear.includes('Manual')));
 assert(!api.eligibleTests('drive').some(t=>t.sourceId==='T6.11.36'));
 // Case navigation follows the same hierarchy for every assessment type.
-assert.deepEqual([...d.querySelectorAll('#moduleLanding [data-open]')].map(el=>el.dataset.open),['setup','assessmentTypes']);
+assert.deepEqual([...d.querySelectorAll('#moduleLanding [data-open]')].map(el=>el.dataset.open),['setup','assessmentTypes','results']);
 click('[data-open="assessmentTypes"]');
 assert.equal(d.querySelectorAll('#moduleLanding [data-open]').length,4);
 for(const mode of ['drive','durability','supplementary','comprehensive']){

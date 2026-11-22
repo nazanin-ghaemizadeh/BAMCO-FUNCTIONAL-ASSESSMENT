@@ -12,6 +12,7 @@ function applicable(t,c){return Object.entries({cls:c.vclass,body:c.body==='Stat
 function routeKind(p){if(p?.routeId)return p.routeId;const s=canonical(p?.type||p?.route);if(/برون.?شهری|آزادراه|بزرگراه/.test(s))return 'rural';if(/گرمسیری/.test(s))return 'hot';if(/کوهستان|دیزین/.test(s))return 'mountain';if(/خاکی|خارج.?جاده|آفرود/.test(s))return 'offroad';return /شهری/.test(s)?'urban':'unknown'}
 function activeRoutes(snapshot){try{return window.BAMCO_DURABILITY_PLANNER.calculate({target:num(snapshot.config?.durKm)||5000,twoDiff:snapshot.config?.twoDiff,caps:snapshot.config?.routeCaps,shares:snapshot.config?.routeShares}).rows.filter(r=>r.km>0).map(r=>r.id)}catch{return [...new Set((snapshot.durabilitySchedule||[]).map(routeKind))].filter(x=>x!=='unknown')}}
 function build(snapshot={},filter={}){
+ const phaseMode=Boolean(snapshot.config?.durabilityPhaseVersion);
  const config={vclass:'M1',body:'Sedan',power:'ICE',gear:'Automatic',driveType:'FWD',...snapshot.config};
  const staticTests=snapshot.missions?.['supplementary:general']?.customTests||[];
  const testMap=new Map([...DB.tests,...staticTests].map(t=>[t.id,t]));
@@ -19,22 +20,24 @@ function build(snapshot={},filter={}){
  const included=tab=>!filter.mode||filter.mode==='all'||filter.mode===tab;
  function ensure(tab,test){const key=tab+':'+test.id;if(!units.has(key))units.set(key,{key,tab,test,categoryId:categoryId(test),entries:[],expected:new Set(),avg:null});return units.get(key)}
  function expect(unit,key){unit.expected.add(key);expected.add(key)}
- for(const test of [...DB.tests,...staticTests.map(t=>({...t,scope:['supplementary']}))])if(test.active!==false&&applicable(test,config))for(const tab of test.scope||[])if(included(tab)){
+ for(const test of [...DB.tests,...staticTests.map(t=>({...t,scope:['supplementary']}))])if(test.active!==false&&applicable(test,config))for(const tab of window.BAMCO_ASSESSMENT_RULES?.scopeFor(test)||test.scope||[])if(included(tab)){
   const unit=ensure(tab,test);
   if(tab==='drive')for(const day of test.days||[])expect(unit,'drive:'+day+':'+test.id);
   if(tab==='supplementary')expect(unit,'supplementary:general:'+test.id);
-  if(tab==='durability')for(const route of routes)if(test.routeIds?.includes(route)||(!test.routeIds?.length&&test.stationary))for(let quarter=1;quarter<=4;quarter++)expect(unit,'durability:'+test.id+'@'+route+'-'+quarter);
+  if(tab==='durability'&&phaseMode)for(let phase=1;phase<=4;phase++)expect(unit,'durability:phase-'+phase+':'+test.id);
+  if(tab==='durability'&&!phaseMode)for(const route of routes)if(test.routeIds?.includes(route)||(!test.routeIds?.length&&test.stationary))for(let quarter=1;quarter<=4;quarter++)expect(unit,'durability:'+test.id+'@'+route+'-'+quarter);
  }
  const plan={drive:DB.driveDays,durability:snapshot.durabilitySchedule||[]};
  function add(tab,day,id,record,test,custom=false){
   if(!included(tab)||!test||!valid(record.score))return;
+  const phase=tab==='durability'&&/^phase-[1-4]$/.test(day)?Number(day.slice(-1)):null;
   const match=id.match(/@([a-z]+)-([1-4])$/),routeId=match?.[1]||routeKind(plan[tab]?.find(p=>p.day===Number(day))),quarter=match?Number(match[2]):null;
   const key=tab==='durability'&&match?'durability:'+test.id+'@'+match[1]+'-'+match[2]:tab+':'+day+':'+id;
-  const unit=ensure(tab,test);if(!expected.has(key))expect(unit,key);
+  const unit=ensure(tab,test);if(!expected.has(key)&&!(phaseMode&&tab==='durability'&&!phase))expect(unit,key);
   const daily=snapshot.missions?.[tab+':'+day]||{},mileage=snapshot.mileage?.[tab]||{};
   const distance=Object.hasOwn(mileage,day)?num(mileage[day]):null;
   const cumulative=distance===null?null:Object.entries(mileage).filter(([d,v])=>Number(d)<=Number(day)&&Number.isFinite(num(v))).reduce((sum,[,v])=>sum+num(v),0);
-  const entry={key,recordKey:tab+':'+day+':'+id,unitKey:unit.key,tab,day:day==='general'?null:Number(day),id,baseId:test.id,sourceId:test.sourceId||test.id,test,score:num(record.score),note:record.note||'',photo:record.photo||'',routeId,quarter,distance,cumulative,date:daily.date||daily.dailyInfo?.date||'',updatedAt:record.updatedAt||daily.updatedAt||'',custom};
+  const entry={key,recordKey:tab+':'+day+':'+id,unitKey:unit.key,tab,day:day==='general'||phase?null:Number(day),phase,legacy:phaseMode&&tab==='durability'&&!phase,id,baseId:test.id,sourceId:test.sourceId||test.id,test,score:num(record.score),note:record.note||'',photo:record.photo||'',routeId,quarter,distance,cumulative,date:daily.date||daily.dailyInfo?.date||'',updatedAt:record.updatedAt||daily.updatedAt||'',custom};
   entries.push(entry);unit.entries.push(entry);
  }
  for(const [key,record] of Object.entries(snapshot.records||{})){const [tab,day,...parts]=key.split(':'),id=parts.join(':');if(!modes.includes(tab))continue;add(tab,day,id,record,testMap.get(id.split('@')[0]));}
@@ -42,7 +45,7 @@ function build(snapshot={},filter={}){
  let allUnits=[...units.values()].filter(u=>u.expected.size||u.entries.length);
  if(filter.category)allUnits=allUnits.filter(u=>u.categoryId===filter.category);
  const selectedKeys=new Set(allUnits.map(u=>u.key)),selectedEntries=entries.filter(e=>selectedKeys.has(e.unitKey));
- for(const unit of allUnits){const days=new Map();for(const entry of unit.entries){const key=entry.day??'general';if(!days.has(key))days.set(key,[]);days.get(key).push(entry.score)}unit.avg=mean([...days.values()].map(mean));unit.answered=new Set(unit.entries.map(e=>e.key)).size;unit.total=unit.expected.size;unit.entries.sort((a,b)=>(a.day??0)-(b.day??0)||(a.quarter??0)-(b.quarter??0));}
+ for(const unit of allUnits){const days=new Map();const current=unit.entries.filter(e=>!e.legacy);for(const entry of current.length?current:unit.entries){const key=entry.phase?'phase-'+entry.phase:entry.day??'general';if(!days.has(key))days.set(key,[]);days.get(key).push(entry.score)}unit.avg=mean([...days.values()].map(mean));unit.answered=new Set(unit.entries.filter(e=>unit.expected.has(e.key)).map(e=>e.key)).size;unit.total=unit.expected.size;unit.entries.sort((a,b)=>(a.day??0)-(b.day??0)||(a.quarter??0)-(b.quarter??0));}
  const settings=snapshot.missions?.['results:general']||{},weights=settings.weights||{};
  const rows=criteria.map(c=>{const group=allUnits.filter(u=>u.categoryId===c.id),rated=group.filter(u=>u.avg!==null),raw=Object.hasOwn(weights,c.id)?num(weights[c.id]):1;return {...c,units:group,avg:mean(rated.map(u=>u.avg)),rated: rated.length,tests:group.length,answered:group.reduce((s,u)=>s+u.answered,0),total:group.reduce((s,u)=>s+u.total,0),rawWeight:Number.isFinite(raw)&&raw>=0?raw:0}}).filter(r=>r.tests>0);
  const totalWeight=rows.reduce((s,r)=>s+r.rawWeight,0),maxWeight=Math.max(0,...rows.map(r=>r.rawWeight));
@@ -57,8 +60,8 @@ function decision(score){return score===null?'unrated':score>=85?'pass':score>=7
 function trends(model,unitKey,route='all'){
  const unit=model.units.find(u=>u.key===unitKey);if(!unit)return {entries:[],days:[],first:null,last:null,delta:null};
  const entries=unit.entries.filter(e=>route==='all'||e.routeId===route),groups=new Map();
- for(const entry of entries){const day=entry.day??'general';if(!groups.has(day))groups.set(day,[]);groups.get(day).push(entry)}
- const days=[...groups].map(([day,items])=>({day:day==='general'?null:Number(day),avg:mean(items.map(e=>e.score)),count:items.length,min:Math.min(...items.map(e=>e.score)),max:Math.max(...items.map(e=>e.score))})).sort((a,b)=>(a.day??0)-(b.day??0));
+ for(const entry of entries){const day=entry.phase?'phase-'+entry.phase:entry.day??'general';if(!groups.has(day))groups.set(day,[]);groups.get(day).push(entry)}
+ const days=[...groups].map(([day,items])=>({day:day==='general'?null:String(day).startsWith('phase-')?Number(day.slice(-1)):Number(day),phase:String(day).startsWith('phase-'),avg:mean(items.map(e=>e.score)),count:items.length,min:Math.min(...items.map(e=>e.score)),max:Math.max(...items.map(e=>e.score))})).sort((a,b)=>(a.day??0)-(b.day??0));
  const first=days[0]?.avg??null,last=days.at(-1)?.avg??null;return {unit,entries,days,first,last,delta:days.length>1?last-first:null};
 }
 function validateWeights(rows){

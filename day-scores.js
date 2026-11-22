@@ -7,7 +7,7 @@ function collect(){const c=(app.scoreContext||app.dayContext)?.();if(c?.section!
 function sync(){const c=(app.scoreContext||app.dayContext)?.(),active=c?.section==='scores',bar=$('assessmentPageActions');let icon=$('dayScoresExcel');if(!active){icon?.remove();$('dayScoresSave')?.remove();return}
  if(c.tab==='supplementary'){icon?.remove();icon=null}
  if(c.tab!=='supplementary'&&bar&&!icon){icon=document.createElement('button');icon.id='dayScoresExcel';icon.type='button';icon.className='secondary';icon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7zM17 3v5h4M3 8h11v11H3zM6 11l5 5m0-5-5 5"/></svg>';icon.onclick=download;const pdf=$('dayQuestionsPdf');if(pdf)pdf.insertAdjacentElement('afterend',icon);else bar.append(icon)}
- if(icon){const label=c.tab==='comprehensive'?({fa:'دانلود اکسل ارزیابی جامع خودرو',en:'Download comprehensive assessment Excel',zh:'下载综合评估Excel'}[lang()]):tr('excel');icon.title=label;icon.setAttribute('aria-label',label);icon.disabled=exporting;icon.setAttribute('aria-busy',String(exporting))}
+ if(icon){const label=c.phase?({fa:'دانلود اکسل امتیازهای فاز',en:'Download phase scores as Excel',zh:'下载阶段评分Excel'}[lang()]):c.tab==='comprehensive'?({fa:'دانلود اکسل ارزیابی جامع خودرو',en:'Download comprehensive assessment Excel',zh:'下载综合评估Excel'}[lang()]):tr('excel');icon.title=label;icon.setAttribute('aria-label',label);icon.disabled=exporting;icon.setAttribute('aria-busy',String(exporting))}
  let controls=$('dayScoresSave');
  if(app.isReadOnly()){controls?.remove();return}
  if(bar&&!controls){
@@ -87,12 +87,14 @@ function exportName(data,kind='scores') {
   const title = [...String(data.title || '')].map(c =>
     c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '-' : c
   ).join('').trim() || 'BAMCO';
+  if(data.context.phase)return title+'-durability-phase-'+data.context.phase+'-'+kind+'.xlsx';
   if(data.context.tab==='comprehensive')return title+'-comprehensive-'+kind+'.xlsx';
   const module = data.context.tab === 'drive' ? 'driveability' : 'durability';
   return title + '-' + module + '-day-' + data.context.day + '-' + kind + '.xlsx';
 }
 
 function reportTitle(data,date) {
+  if(data.context.phase)return [data.title,'دوام','فاز '+data.context.phase,reportDate(date)].filter(Boolean).join(' | ');
   if(data.context.tab==='comprehensive')return [data.title,'ارزیابی جامع خودرو',reportDate(date)].filter(Boolean).join(' | ');
   const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
   return [data.title, moduleName, 'روز ' + data.context.day, reportDate(date)].filter(Boolean).join(' | ');

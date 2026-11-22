@@ -40,7 +40,7 @@
     power: ['قوای محرکه', 'Powertrain', '动力系统'], gear: ['گیربکس', 'Transmission', '变速箱'],
     vehicleDrive: ['سیستم انتقال قدرت', 'Drive system', '驱动系统'],
     freq: ['تناوب اجرا در دوام', 'Durability frequency', '耐久性测试频率'],
-    durabilityHint: ['در دوام، آزمون در نقاط ۲۵، ۵۰، ۷۵ و ۱۰۰ درصد پیمایش مسیرهای انتخاب‌شده نمایش داده می‌شود.', 'Durability tests appear at 25, 50, 75 and 100 percent of the selected routes’ mileage.', '耐久性测试在所选路线里程的25%、50%、75%和100%处显示。'],
+    durabilityHint: ['در دوام، هر سؤال یک‌بار در هر فاز و در مجموع چهار مرتبه ارزیابی می‌شود.', 'Each durability question is assessed once per phase, four times in total.', '每个耐久性问题在每个阶段评估一次，共四次。'],
     error: ['ذخیره انجام نشد. دوباره تلاش کنید.', 'Could not save. Please retry.', '保存失败，请重试。'],
     loadError: ['بانک سؤالات دریافت نشد.', 'Could not load the question bank.', '无法加载题库。'],
     retry: ['تلاش دوباره', 'Retry', '重试'], loading: ['در حال دریافت سؤالات…', 'Loading questions…', '正在加载问题…'],
@@ -65,7 +65,7 @@
     const bank = originals.map(test => ({...structuredClone(test), ...revisions.get(test.id)?.definition}));
     const existing = new Set(bank.map(test => test.id));
     for (const row of rows) if (!existing.has(row.id)) bank.push({...row.definition, id: row.id});
-    database.tests.splice(0, database.tests.length, ...bank);
+    database.tests.splice(0, database.tests.length, ...bank.map(test => window.BAMCO_ASSESSMENT_RULES?.apply(test) || test));
   }
 
   function load() {
@@ -79,6 +79,7 @@
   }
 
   async function save(test, revision) {
+    test = window.BAMCO_ASSESSMENT_RULES?.apply(test) || test;
     const {id, sourceId, ...definition} = test;
     const {data, error} = await window.BAMCO_PORTAL.rpc('bamco_question_bank', {
       operation: 'save', args: {id, revision, definition}
@@ -314,6 +315,13 @@
       days.append(dayActions);
       const updateDays = () => { days.hidden = !placements.querySelector('[value="drive"]').checked; };
       placements.onchange = updateDays; updateDays();
+      if (window.BAMCO_ASSESSMENT_RULES) {
+        const updatePlacement = () => {
+          const scopes=window.BAMCO_ASSESSMENT_RULES.scopeFor({cat:controls.cat.value,scope:[]});
+          for(const key of ['durability','supplementary']) {const control=placements.querySelector('[value="'+key+'"]');control.checked=scopes.includes(key);control.disabled=true;}
+        };
+        controls.cat.addEventListener('change',updatePlacement);updatePlacement();
+      }
       choices('roads', 'roads', Object.keys(routeNames).map(key => [key,text(key)]), roads(test));
       fields.append(element('p', text('durabilityHint'), 'qb-help'));
       const loadOptions = [...new Set([...originals.flatMap(loads), ...database.tests.flatMap(loads)])];
@@ -337,7 +345,7 @@
         const scopes = selected('scope'), chosenDays = selected('days').map(Number), chosenRoads = selected('roads');
         const vehicle = Object.fromEntries(Object.keys(vehicleValues).map(key => [key, selected('vehicle-' + key)]));
         if (scopes.includes('drive') && !chosenDays.length) { errorMessage.textContent = text('selectDays'); return; }
-        if (scopes.includes('durability') && !chosenRoads.length) { errorMessage.textContent = text('selectRoad'); return; }
+
         if (Object.values(vehicle).some(values => !values.length)) { errorMessage.textContent = text('selectVehicle'); return; }
         const next = {...test, ...Object.fromEntries(Object.entries(controls).map(([key, control]) => [key, control.value.trim()])),
           sub: sub.value === '__new__' ? customSub.value.trim() : sub.value,

@@ -7,7 +7,7 @@ const editor = $('assessmentEditorBar');
 const welcome = hub?.firstElementChild ? [...hub.children].map(el=>el.cloneNode(true)) : [];
 let app = window.BAMCO_ASSESSMENT;
 const portal=window.BAMCO_PORTAL;
-const can=permission=>permission==='questions'?Boolean(portal.user):portal.can(permission);
+const can=permission=>['questions','routes','prompts'].includes(permission)?Boolean(portal.user):portal.can(permission);
 const requestRpc=(name,args={})=>portal.rpc(name,args);
 const types=['drive','durability','static','comprehensive'];
 const canCreate=()=>can('active')&&can('setup');
@@ -59,7 +59,10 @@ function loadEditor() {
     });
     const initialize = async () => {
       for (const source of scripts) {
-        if (source.getAttribute('src').startsWith('./app.js')) await window.BAMCO_QUESTION_BANK.load();
+        if (source.getAttribute('src').startsWith('./app.js')) {
+          await window.BAMCO_QUESTION_BANK.load();
+          if(!window.BAMCO_BANKS) await loadExternal('./catalog-banks.js');
+        }
         await loadExternal(source.getAttribute('src'));
       }
       if (!window.BAMCO_ASSESSMENT) throw new Error('Editor unavailable');
@@ -86,6 +89,10 @@ const labels = {
   welcomeBefore:['کیفیت از ','Quality starts with ','品质源于'],
   welcomeAccent:['ارزیابی دقیق','precise assessment','精准评估'],
   welcomeAfter:[' آغاز می‌شود.','.','。'],
+  routes:['بانک مسیرها','Route bank','路线库'],
+  routesCta:['تعریف مسیر و نوع مسیرهای دوام','Manage durability routes and types','管理耐久性路线和类型'],
+  prompts:['بانک پرامپت‌ها','Prompt bank','提示词库'],
+  promptsCta:['مدیریت دستورهای تحلیل هوش مصنوعی','Manage AI analysis instructions','管理AI分析指令'],
   activeCta:['ورود به ارزیابی‌ها','View active assessments','查看进行中的评估'],
   historyCta:['مشاهده نتایج ثبت‌شده','Browse completed assessments','查看已完成的评估'],
   evaluatorCta:['ثبت و مدیریت ارزیابی','Record and manage assessments','记录和管理评估'],
@@ -353,6 +360,14 @@ function render() {
   closeLocationView();
   hub.className = screen === 'home' ? '' : 'assessment-list-page assessment-list-page-'+screen;
   if (screen === 'home') { renderWelcome(); return }
+  if (['routes','prompts'].includes(screen)) {
+    delete hub.dataset.welcome;
+    const kind=screen,host=node('section','','catalog-bank');hub.replaceChildren(host);host.textContent=tr('load');
+    Promise.all([loadStyles('banks'),loadExternal('./catalog-banks.js')]).then(()=>{
+      if(host.isConnected)window.BAMCO_BANKS.mount(host,{kind,language,home:()=>navigate('home')});
+    }).catch(()=>{if(host.isConnected)host.replaceChildren(node('p',tr('error')),button('retry',render),button('back',()=>navigate('home')))});
+    return;
+  }
   if (screen === 'questions') {
     delete hub.dataset.welcome;
     const host = node('section','','question-bank');
@@ -427,7 +442,7 @@ function render() {
 function listScreen() {
   const query=new URLSearchParams(location.search);
   const value=query.has('observer')?'observer':query.get('view');
-  return ['active','history','observer','weighting','questions'].includes(value)?value:'home';
+  return ['active','history','observer','weighting','questions','routes','prompts'].includes(value)?value:'home';
 }
 function caseURL(id) {
   const url=new URL('./case.html',location.href);
@@ -586,6 +601,7 @@ async function openAssessment(id) {
     const [result]=await Promise.all([ownerRequest('open',{id}),loadEditor(),loadDictionary(language)]);
     if(result.error || result.data?.id!==id)throw result.error || new Error('Case unavailable');
     const data=result.data;
+    if(!data.assessment_type||data.assessment_type==='durability')await window.BAMCO_BANKS.loadRoutes();
     if(!data.snapshot || typeof data.snapshot!=='object' || Array.isArray(data.snapshot))throw new Error('Invalid case snapshot');
     let requested;
     do {requested=language;await loadDictionary(requested)} while(requested!==language);

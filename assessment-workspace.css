@@ -440,3 +440,8 @@ body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-illustration s
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-card strong {font-size:26px;line-height:1.35;font-weight:400}
 body[data-view=home] #landing #assessmentHub .gate-grid.six .gate-cta {font-size:15px;padding-top:8px;line-height:1.4}
 #assessmentHub .gate-grid.six .gate-create-plus {width:29px;height:29px;font-size:22px;inset-inline-end:6%;bottom:6%}
+
+/* Home banks share the existing card dimensions. */
+#assessmentHub .gate-grid.eight{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;width:100%;max-width:none}
+@media(max-width:1100px){#assessmentHub .gate-grid.eight{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){#assessmentHub .gate-grid.eight{grid-template-columns:minmax(0,1fr)}}

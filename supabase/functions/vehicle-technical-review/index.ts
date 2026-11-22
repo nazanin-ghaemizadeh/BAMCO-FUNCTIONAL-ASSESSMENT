@@ -143,7 +143,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(origin) });
 
   const apiKey = Deno.env.get("OPENAI_API_KEY") || "";
-  if (req.method === "GET") return jsonResponse({ ok: true, configured: Boolean(apiKey), model: MODEL, version: 8, functional: { promptId: FunctionalReview.promptId, prompt: FunctionalReview.prompt("fa") } }, 200, origin);
+  if (req.method === "GET") return jsonResponse({ ok: true, configured: Boolean(apiKey), model: MODEL, version: 10, functional: { promptId: FunctionalReview.promptId, prompt: FunctionalReview.prompt("fa") } }, 200, origin);
   if (req.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405, origin);
   if (!apiKey) return jsonResponse({ error: "openai_key_missing" }, 503, origin);
 
@@ -151,8 +151,10 @@ Deno.serve(async (req: Request) => {
   if (length > 220000) return jsonResponse({ error: "payload_too_large" }, 413, origin);
 
   let needsPortalAccess = false;
+  let expectedPromptId: string | undefined;
+  let selectedPrompt: any = null;
   let payload: ReturnType<typeof normalizePayload>;
-  try { const body = await req.text(); if (new TextEncoder().encode(body).length > 220000) return jsonResponse({error:"payload_too_large"},413,origin); const raw = JSON.parse(body); needsPortalAccess = raw?.version === 4 || raw?.portal === "functional"; payload = normalizePayload(raw); }
+  try { const body = await req.text(); if (new TextEncoder().encode(body).length > 220000) return jsonResponse({error:"payload_too_large"},413,origin); const raw = JSON.parse(body); expectedPromptId = typeof raw.bankPromptId === "string" ? raw.bankPromptId : undefined; needsPortalAccess = raw?.version === 4 || raw?.portal === "functional"; payload = normalizePayload(raw); }
   catch (error) {
     const code = error instanceof Error ? error.message : "invalid_payload";
     return jsonResponse({ error: code === "empty_assessment" ? code : "invalid_payload" }, 400, origin);
@@ -167,6 +169,18 @@ Deno.serve(async (req: Request) => {
     const profile = r.ok ? await r.json() : null;
     if (!profile || !(profile.admin || profile.grants?.includes("results"))) return jsonResponse({error:"forbidden"},403,origin);
   }
+  if (payload.promptId) {
+    try {
+      const response = await fetch(Deno.env.get("SUPABASE_URL")+"/rest/v1/rpc/bamco_banks", {
+        method:"POST", headers:{apikey:Deno.env.get("SUPABASE_ANON_KEY")!, Authorization:req.headers.get("Authorization")!, "Content-Type":"application/json"},
+        body:JSON.stringify({operation:"active_prompt",args:{}}),signal:AbortSignal.timeout(10000)
+      });
+      if (!response.ok) return jsonResponse({error:"prompt_bank_unavailable"},503,origin);
+      selectedPrompt = await response.json();
+      if (!selectedPrompt?.definition?.content) return jsonResponse({error:"no_active_prompt"},409,origin);
+      if (expectedPromptId && expectedPromptId !== selectedPrompt.id) return jsonResponse({error:"prompt_changed"},409,origin);
+    } catch { return jsonResponse({error:"prompt_bank_unavailable"},503,origin); }
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 90000);
   try {
@@ -179,7 +193,7 @@ Deno.serve(async (req: Request) => {
         store: false,
         reasoning: { effort: "low" },
         input: [
-          { role: "system", content: payload.promptId ? FunctionalReview.prompt(payload.language) : FIXED_PROMPT },
+          { role: "system", content: selectedPrompt ? FunctionalReview.composePrompt(selectedPrompt.definition.content,payload.language) : FIXED_PROMPT },
           { role: "user", content: JSON.stringify(payload) }
         ],
         text: { format: { type: "json_schema", name: "bamco_vehicle_technical_review", strict: true, schema: OUTPUT_SCHEMA } },
@@ -199,7 +213,7 @@ Deno.serve(async (req: Request) => {
     if (!text) return jsonResponse({ error: "empty_model_response" }, 502, origin);
     try {
       const report = validateReport(JSON.parse(text));
-      return jsonResponse({ ok: true, report, model: MODEL, answeredItems: payload.answeredItems, ...(payload.promptId ? {promptId:payload.promptId,language:payload.language} : {}) }, 200, origin);
+      return jsonResponse({ ok: true, report, model: MODEL, answeredItems: payload.answeredItems, ...(payload.promptId ? {promptId:selectedPrompt.id,promptRevision:selectedPrompt.definition.version,promptTitle:selectedPrompt.definition.title,language:payload.language} : {}) }, 200, origin);
     } catch (error) {
       console.error("Invalid structured model response", error);
       return jsonResponse({ error: "invalid_model_response" }, 502, origin);

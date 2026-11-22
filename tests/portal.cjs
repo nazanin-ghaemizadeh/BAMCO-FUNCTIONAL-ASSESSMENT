@@ -105,7 +105,7 @@ async function visit(admin,staffLink=false){
   directory()[0].click();assert(!d.querySelector('.portal-remove'));
  }else{
   assert.equal(d.querySelectorAll('#portalTools button').length,1);
-  for(const card of d.querySelectorAll('[data-boot-screen]'))assert.equal(card.hidden,!['active','questions'].includes(card.dataset.bootScreen));
+  for(const card of d.querySelectorAll('[data-boot-screen]'))assert.equal(card.hidden,!['active','questions','routes','prompts'].includes(card.dataset.bootScreen));
  }
  w.close();
 }

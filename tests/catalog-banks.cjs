@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),{JSDOM}=require('jsdom'),planner=require('../durability-planner.js');
+(async()=>{
+ const w=new JSDOM('<div id="host"></div>',{runScripts:'outside-only',url:'https://example.test'}).window,d=w.document,host=d.getElementById('host');
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
+ const route={id:'custom',revision:1,updated_at:'2026-11-22',definition:{name:'New mountain route <img src=x>',routeId:'mountain',origin:'A',destination:'B',km:50,notes:'',active:true,bidirectional:true}};
+ const inactive={...route,id:'disabled',definition:{...route.definition,name:'Inactive road',active:false}};
+ let rows=[route,inactive],last,conflict=true,failed=false;
+ w.BAMCO_DATA={roadCatalog:[]};w.BAMCO_PORTAL={user:{admin:true},can:()=>true,rpc:async(name,{operation,args})=>{last={name,operation,args};if(failed)return {error:new Error('offline')};return {data:operation==='list'?rows:operation==='active_prompt'?{id:'p1',definition:{content:'Custom instructions'}}:conflict?{conflict:true}:{id:'saved'}}}};
+ w.BAMCO_REVIEW_CONTRACT=require('../review-contract.js');w.eval(fs.readFileSync('catalog-banks.js','utf8'));
+ await w.BAMCO_BANKS.loadRoutes();assert.equal(w.BAMCO_DATA.roadCatalog.length,1);assert.equal(w.BAMCO_DATA.roadCatalog[0].id,'custom');
+ const tick=()=>new Promise(r=>setTimeout(r,0)),button=text=>[...d.querySelectorAll('button')].find(b=>b.textContent===text);
+ w.BAMCO_BANKS.mount(host,{kind:'routes',language:'en',home(){}});await tick();assert.equal(host.querySelectorAll('.bank-card').length,2);assert(!host.querySelector('img'),'user text must not inject HTML');
+ button('Edit').click();const form=d.querySelector('dialog form');form.elements.name.value='Changed';form.dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert(d.querySelector('dialog[open]'));assert.equal(form.elements.name.value,'Changed');assert.match(form.textContent,/another session/);assert.equal(last.args.revision,1);button('Cancel').click();
+ const search=host.querySelector('input[type=search]');search.value='Inactive';search.dispatchEvent(new w.Event('input'));assert.equal(host.querySelectorAll('.bank-card').length,1);assert.match(host.querySelector('.bank-card').textContent,/Activate/);
+ w.BAMCO_PORTAL.user.admin=false;w.BAMCO_PORTAL.can=()=>false;w.BAMCO_BANKS.mount(host,{kind:'routes',language:'en',home(){}});await tick();assert(!button('Add route'));assert(!button('Edit'));
+ failed=true;await assert.rejects(w.BAMCO_BANKS.activePrompt());
+ const catalog=[{id:'one',name:'Named route',routeId:'urban',origin:'A',destination:'B',km:20,active:true,bidirectional:false},{id:'two',name:'Second path',routeId:'urban',origin:'A',destination:'B',km:30,active:true,bidirectional:true},{id:'disabled',routeId:'urban',origin:'A',destination:'C',active:false}];
+ assert.deepEqual(planner.optionsFrom(catalog,'A','urban').map(r=>r.id),['one','two']);assert.deepEqual(planner.optionsFrom(catalog,'B','urban').map(r=>r.id),['two:reverse']);
+ const plan=planner.calculate({target:100,origin:'A',catalog,shares:{urban:100}});assert.equal(plan.schedule[0].route,'Named route');
+ const saved=structuredClone(plan.schedule);planner.replan({plan:saved,fromDay:2,rows:plan.rows,mileage:{1:saved[0].km},catalog:[],origin:'B'});assert.deepEqual(saved,plan.schedule,'route bank changes must not mutate saved days');
+ w.close();console.log('PASS banks: shared data loading, inactive route exclusion, read-only access, safe user text, conflict recovery, directionality, recorded route preservation.');
+})().catch(e=>{console.error(e);process.exit(1)});

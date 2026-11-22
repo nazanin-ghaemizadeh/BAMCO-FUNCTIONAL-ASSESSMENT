@@ -52,7 +52,7 @@ function visit(path,url,reply,options={}){
   const l=landing.d;
   assert.equal(l.querySelectorAll('script[src]').length,0);
   assert.equal(l.querySelectorAll('link[rel="stylesheet"]:not([media="print"])').length,0);
-  assert.equal(l.querySelectorAll('#assessmentHub .gate-card svg').length,6);
+  assert.equal(l.querySelectorAll('#assessmentHub .gate-card svg').length,8);
   assert(l.querySelector('.gate-card[data-create-test]'));
   assert(l.querySelector('.gate-card[data-boot-screen="questions"]'));
   l.querySelector('[data-language="en"]').click();

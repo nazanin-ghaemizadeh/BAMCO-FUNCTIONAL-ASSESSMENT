@@ -14,12 +14,12 @@ function promptText(row,language='fa'){return window.BAMCO_REVIEW_CONTRACT.compo
 function mount(host,{kind,language='fa',home}){
  const li={fa:0,en:1,zh:2}[language]??0,t=k=>words[k]?.[li]||k,number=n=>new Intl.NumberFormat(language==='fa'?'fa-IR':language).format(n);
  let records=[],query='',type='',status='',page=0,busy=false;
- host.className='catalog-bank';
+ host.className='catalog-bank catalog-bank-'+kind;
  const header=el('header','','qb-header'),heading=el('h1',t(kind),'gate-title');header.append(heading);
  const divider=el('div','','welcome-divider');divider.innerHTML='<i></i><i></i><i></i>';divider.setAttribute('aria-hidden','true');header.append(divider);
  const button=(key,fn,primary=false)=>{const b=el('button',t(key),'assessment-action'+(primary?' qb-primary':''));b.type='button';b.onclick=fn;return b};
  const bar=el('div','','assessment-page-toolbar');bar.append(button('back',home));if(editable()){const b=button(kind==='routes'?'createRoute':'createPrompt',()=>edit(),true);b.classList.add('bank-add');bar.append(b)}header.append(bar);
- const hint=el('p',t(kind==='routes'?'routeHint':'promptHint'),'bank-hint'),filters=el('div','','bank-filters');
+ const filters=el('div','','bank-filters');
  const field=(label,control)=>{const l=el('label',t(label));l.append(control);return l};
  const search=el('input');search.type='search';search.setAttribute('aria-label',t('search'));search.oninput=()=>{query=search.value.trim().toLocaleLowerCase();page=0;draw()};filters.append(field('search',search));
  function select(label,options,change){const s=el('select');s.append(new Option(t('all'),''));for(const [key,name] of options)s.append(new Option(name,key));s.onchange=()=>{change(s.value);page=0;draw()};filters.append(field(label,s));}
@@ -27,7 +27,7 @@ function mount(host,{kind,language='fa',home}){
  select('status',[['active',t('active')],['inactive',t('inactive')]],v=>status=v);
  filters.append(button('refresh',()=>reload()));
  const message=el('p','','qb-status');message.setAttribute('role','status');const results=el('div','','bank-results');
- host.replaceChildren(header,...(kind==='routes'?[hint]:[]),filters,message,results);window.BAMCO_DROPDOWNS?.(host);
+ host.replaceChildren(header,filters,message,results);window.BAMCO_DROPDOWNS?.(host);
  async function reload(note=''){message.textContent=t('loading');try{const data=await rpc('list',{kind});if(!Array.isArray(data))throw Error('invalid');records=data;message.textContent=note;draw()}catch{message.textContent=t('error');results.replaceChildren(button('retry',()=>reload()))}}
  async function toggle(row){if(busy)return;busy=true;try{const saved=await rpc('toggle',{kind,id:row.id,revision:row.revision,active:!row.definition.active});if(saved?.conflict)throw Error('conflict');await reload(t('saved'))}catch(e){message.textContent=t(e.message==='conflict'?'conflict':'error')}finally{busy=false}}
  function draw(){
@@ -41,9 +41,15 @@ function mount(host,{kind,language='fa',home}){
    const badge=el('span',t(d.active?'active':'inactive'),'bank-badge'+(d.active?' active':''));top.append(mark,badge);
    const title=el('h2',d.name||d.title);card.append(top,title);
    if(kind==='routes'){
-    card.append(el('span',routes[d.routeId]?.[li]||d.routeId,'bank-type'));
+    const routeKind=Object.hasOwn(routes,d.routeId)?d.routeId:'rural';
+    card.classList.add('bank-route-card');card.dataset.route=routeKind;
+    mark.className='bank-route-illustration';mark.setAttribute('aria-hidden','true');
+    mark.innerHTML='<svg viewBox="0 0 96 96"><use href="./assets/route-types.svg?v=06b7be2620213e0f#'+routeKind+'"></use></svg>';
+    const identity=el('div','','bank-route-identity'),meta=el('div','','bank-route-meta');
+    meta.append(el('span',routes[routeKind][li],'bank-type'));
+    if(d.km)meta.append(el('span',number(d.km)+' '+(li===0?'کیلومتر':li===1?'km':'公里'),'bank-distance'));
+    identity.append(mark,meta);top.replaceChildren(identity,badge);
     const journey=el('div','','bank-journey');for(const k of ['origin','destination']){const part=el('div');part.append(el('small',t(k)),el('strong',d[k]));journey.append(part)}card.append(journey);
-    if(d.km)card.append(el('p',number(d.km)+' '+(li===0?'کیلومتر':li===1?'km':'公里'),'bank-distance'));
     if(d.notes)card.append(el('p',d.notes,'bank-notes'));
    }else{
     card.append(el('span',t('version')+' '+number(d.version),'bank-type'));

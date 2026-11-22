@@ -106,6 +106,7 @@ function activeRoutes(){const a=DB.routes.filter(r=>(conf().body==='Off-road'||c
 function dayCategoryPlan(){
  if(!hasDurabilitySetup())return [];
  if(state.durabilitySchedule)return phases?phases.normalize(state.durabilitySchedule):state.durabilitySchedule;
+ if(phases)return [];
  const version=conf().durabilityPlannerVersion;
  const plan=version===2?planner.calculate(plannerConfig()).schedule:
    version===1?window.BAMCO_LEGACY_PLANNER.calculate(plannerConfig()).schedule:legacyDayCategoryPlan();
@@ -199,7 +200,6 @@ function planForSetup(config) {
   if(!state.setupComplete)return {...plan,rows:plan.rows.map(r=>({...r,days:0,lastKm:0})),schedule:[],days:0};
   const schedule=dayCategoryPlan();
   const targetsChanged=num(conf().durKm)!==plan.target;
-  if(targetsChanged)delete config.durabilityPhaseTargets;
   return {...plan,rows:plan.rows.map(r=>{const days=schedule.filter(p=>p.routeId===r.id);return {...r,days:days.length,lastKm:days.at(-1)?.km||0}}),schedule,days:schedule.length,targetsChanged};
  }
  if(!state.setupComplete)return plan;
@@ -820,6 +820,7 @@ window.BAMCO_ASSESSMENT={
       setupComplete:Boolean(data.setupComplete),missions:data.missions||{},driveDay:1,durDay:1,durPhase:1,
       category:'همه',query:'',loadFilter:'',roadFilter:'',page:0,tab:'modules'
     });
+    if(phases&&hasDurabilitySetup())state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly);
     if(state.durabilitySchedule)state.config.durDays=state.durabilitySchedule.length;
     if(caseDocument())restoreRoute();else render();
   },
@@ -844,6 +845,7 @@ window.BAMCO_ASSESSMENT={
     state.setupComplete=Boolean(data.setupComplete);
     state.durabilitySchedule=data.durabilitySchedule;
     state.checkpointAssignments=data.checkpointAssignments||{};
+    if(phases&&hasDurabilitySetup()){state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly);state.config.durDays=state.durabilitySchedule.length;}
     // The daily and setup forms may contain drafts that have not been submitted.
     if(scoreContext()?.section==='scores'||state.tab==='results'){
       const focus=document.activeElement;

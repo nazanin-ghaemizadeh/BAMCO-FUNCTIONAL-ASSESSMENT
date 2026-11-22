@@ -21,7 +21,7 @@ function loadGeography(){return geography??=(Promise.all(['iran-boundary','route
 function node(tag,text='',cls=''){const e=document.createElement(tag);e.textContent=text;e.className=cls;return e}
 function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(palette)),renderCard,onTypesChange=()=>{}}={}){
  const t=labels[language]||labels.fa,li=langIndex[language]??0,fmt=n=>n.toLocaleString(language==='fa'?'fa-IR':language);
- const ui={fa:{close:'بستن',previous:'قبلی',next:'بعدی',city:'مسیرهای',empty:'برای نمایش مسیرها، یک نوع مسیر را روشن کنید.',tiles:'نقشهٔ زمینه در دسترس نیست؛ نمای ساده نمایش داده می‌شود.'},en:{close:'Close',previous:'Previous',next:'Next',city:'Routes at',empty:'Turn on a route type to display routes.',tiles:'Basemap unavailable; showing the simplified map.'},zh:{close:'关闭',previous:'上一条',next:'下一条',city:'路线：',empty:'请启用一种路线类型。',tiles:'底图不可用，正在显示简化地图。'}}[language]||{};
+ const ui={fa:{close:'بستن',previous:'قبلی',next:'بعدی',city:'مسیرهای',empty:'برای نمایش مسیرها، یک نوع مسیر را روشن کنید.',tiles:'نقشه زمینه در دسترس نیست؛ نمای ساده نمایش داده می‌شود.'},en:{close:'Close',previous:'Previous',next:'Next',city:'Routes at',empty:'Turn on a route type to display routes.',tiles:'Basemap unavailable; showing the simplified map.'},zh:{close:'关闭',previous:'上一条',next:'下一条',city:'路线：',empty:'请启用一种路线类型。',tiles:'底图不可用，正在显示简化地图。'}}[language]||{};
  let map,disposed=false,resize,retriedCleanup,drawLayers=()=>{};
  const bar=node('div','','bank-map-heading'),heading=node('h2',t.map);
  const fit=node('button',t.fit,'assessment-action');fit.type='button';fit.disabled=true;bar.append(heading,fit);

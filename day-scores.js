@@ -20,21 +20,22 @@ function sync(){const c=(app.scoreContext||app.dayContext)?.(),active=c?.section
  }
  if(!controls)return;
  const saveButton=controls.firstElementChild;
- const label=tr(saving?'saving':'save');
+ const label=saving?tr('saving'):c.tab==='comprehensive'?({fa:'ذخیره ارزیابی',en:'Save assessment',zh:'保存评估'}[lang()]):tr('save');
+ const evaluatorSave=$('comprehensiveEvaluatorSave');if(evaluatorSave){evaluatorSave.disabled=saving;evaluatorSave.setAttribute('aria-busy',String(saving))}
  if(saveButton.textContent!==label)saveButton.textContent=label;
  saveButton.disabled=saving;
  saveButton.setAttribute('aria-busy',String(saving));
 }
 document.addEventListener('bamco:draft-change',()=>{
- const status=$('dayScoresSave')?.lastElementChild;
- if(status?.textContent)status.textContent='';
+ for(const status of [$('dayScoresSave')?.lastElementChild,$('comprehensiveEvaluatorStatus')])if(status?.textContent)status.textContent='';
 });
 async function save(){
  const page=app.editSession();
  if(saving||!page||app.isReadOnly())return;
  saving=true;sync();
- const status=$('dayScoresSave')?.lastElementChild,panel=$('workPanel');
- if(status)status.textContent=tr('saving');
+ const statuses=[$('dayScoresSave')?.lastElementChild,$('comprehensiveEvaluatorStatus')].filter(Boolean),panel=$('workPanel');
+ const setStatus=text=>{for(const status of statuses)if(status.isConnected)status.textContent=text};
+ setStatus(tr('saving'));
  try{
   if(app.hasPendingImages()){
    panel.inert=true;
@@ -43,9 +44,9 @@ async function save(){
   if(app.editSession()!==page)return;
   const version=page.version;
   if(!await app.saveDraft())throw Error('Save not confirmed');
-  if(app.editSession()===page&&version===page.version&&status?.isConnected)status.textContent=tr(window.BAMCO_CASES?.saveNow?'saved':'local');
+  if(app.editSession()===page&&version===page.version)setStatus((app.scoreContext?.()?.tab==='comprehensive'&&window.BAMCO_CASES?.saveNow)?({fa:'اطلاعات ارزیابی ذخیره شد.',en:'Assessment details saved.',zh:'评估信息已保存。'}[lang()]):tr(window.BAMCO_CASES?.saveNow?'saved':'local'));
  }catch(error){
-  if(app.editSession()===page&&status?.isConnected)status.textContent=['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed');
+  if(app.editSession()===page)setStatus(['overlap','unavailable'].includes(window.BAMCO_CASES?.saveStatus?.())?'':tr('failed'));
  }finally{saving=false;sync()}
 }
 async function excelLibrary(){if(window.ExcelJS)return window.ExcelJS;if(!library)library=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';s.onload=()=>resolve(window.ExcelJS);s.onerror=()=>{library=null;s.remove();reject(Error('Excel unavailable'))};document.head.append(s)});return library}

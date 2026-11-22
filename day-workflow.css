@@ -549,3 +549,4 @@ html[dir=ltr] #assessmentPageActions:has(> :is(#dayFormExcel,#dayScoresExcel):no
   #bamco-day-workflow:has(.pre-drive-grid) {padding-inline:6px}
   #bamco-day-form .pre-drive {padding-inline:5px}
 }
+.comprehensive-evaluators .bamco-block-heading{flex-wrap:wrap;margin-bottom:4px}.comprehensive-evaluators h2{margin:0;font-size:1.3rem;color:#234d3c}.comprehensive-evaluator-row{display:flex;align-items:end;gap:10px;min-width:0}.comprehensive-evaluator-row label{flex:1;min-width:0}.comprehensive-evaluator-row>button{min-height:46px;flex-shrink:0}.comprehensive-evaluator-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid #dce9e1;padding-top:14px}.comprehensive-evaluator-actions[hidden]{display:none}.comprehensive-evaluator-actions [role=status]{font-size:1rem;color:#536e60;line-height:1.8}@media(max-width:600px){.comprehensive-evaluators .bamco-block-heading>button{width:100%}.comprehensive-evaluator-actions>button{width:100%}}

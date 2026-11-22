@@ -47,7 +47,6 @@ function mount(host,{kind,language='fa',home}){
     if(d.notes)card.append(el('p',d.notes,'bank-notes'));
    }else{
     card.append(el('span',t('version')+' '+number(d.version),'bank-type'));
-    const details=el('details','','bank-full');details.append(el('summary',t('read')),el('p',d.content));card.append(details);
    }
    const footer=el('footer','','bank-actions');if(editable())footer.append(button('edit',()=>edit(row)),button(d.active?'deactivate':'activate',()=>toggle(row),!d.active));card.append(footer);grid.append(card);
   }
@@ -68,6 +67,25 @@ function mount(host,{kind,language='fa',home}){
   let saving=false;dialog.oncancel=e=>{if(saving)e.preventDefault()};dialog.addEventListener('close',()=>dialog.remove(),{once:true});
   form.onsubmit=async e=>{e.preventDefault();if(saving||!form.reportValidity())return;saving=true;fields.disabled=true;save.disabled=close.disabled=cancel.disabled=true;notice.textContent=t('loading');const definition={};for(const [k,c]of Object.entries(controls))definition[k]=c.type==='checkbox'?c.checked:k==='km'?(c.value?Number(c.value):null):c.value.trim();try{const result=await rpc('save',{kind,id:existing?.id||null,revision:existing?.revision||0,definition});if(result?.conflict)throw Error('conflict');dialog.close();if(host.isConnected)await reload(t('saved'))}catch(err){notice.textContent=t(err.message==='conflict'?'conflict':'error')}finally{saving=false;fields.disabled=false;save.disabled=close.disabled=cancel.disabled=false}};
   dialog.showModal();window.BAMCO_DROPDOWNS?.(dialog);
+  if(controls.content){
+   const prompt=controls.content;prompt.classList.add('bank-prompt-input');prompt.rows=1;
+   const fit=()=>{
+    if(!dialog.open)return;
+    const scroll=form.scrollTop;prompt.style.height='auto';
+    const style=getComputedStyle(prompt),border=parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth);
+    prompt.style.height=Math.ceil(prompt.scrollHeight+border)+'px';
+    // The dialog scrollbar can narrow the field after it grows; remeasure wrapping.
+    for(let pass=0;pass<3&&prompt.scrollHeight>prompt.clientHeight;pass++)prompt.style.height=Math.ceil(prompt.scrollHeight+border)+'px';
+    prompt.scrollTop=0;form.scrollTop=scroll;
+   };
+   prompt.addEventListener('input',fit);fit();
+   let width=0;
+   const observer=typeof ResizeObserver==='function'?new ResizeObserver(()=>{if(prompt.clientWidth!==width){width=prompt.clientWidth;fit()}}):null;
+   observer?.observe(prompt);window.addEventListener('resize',fit);
+   document.fonts?.ready.then(fit);
+   dialog.addEventListener('close',()=>{observer?.disconnect();window.removeEventListener('resize',fit)},{once:true});
+  }
+
  }
  reload();
 }

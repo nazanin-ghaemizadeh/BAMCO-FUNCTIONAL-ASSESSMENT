@@ -19,12 +19,20 @@ function script(src,ready){
 let geography;
 function loadGeography(){return geography??=(Promise.all(['iran-boundary','route-cities'].map(name=>fetch(asset('./assets/'+name+'.json')).then(r=>{if(!r.ok)throw Error('Map data');return r.json()}))).catch(e=>{geography=null;throw e}))}
 function node(tag,text='',cls=''){const e=document.createElement(tag);e.textContent=text;e.className=cls;return e}
-function mountMap(host,records,{language='fa',selected=false}={}){
+function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(palette)),renderCard,onTypesChange=()=>{}}={}){
  const t=labels[language]||labels.fa,li=langIndex[language]??0,fmt=n=>n.toLocaleString(language==='fa'?'fa-IR':language);
- let map,disposed=false,resize,retriedCleanup;
- const bar=node('div','','bank-map-heading'),heading=node('div');heading.append(node('h2',t.map),node('span',fmt(records.length)+' '+unit[language]+' · '+(selected?t.selected:t.all)));
+ const ui={fa:{previous:'قبلی',next:'بعدی',city:'مسیرهای',empty:'برای نمایش مسیرها، یک نوع مسیر را روشن کنید.',tiles:'نقشهٔ زمینه در دسترس نیست؛ نمای ساده نمایش داده می‌شود.'},en:{previous:'Previous',next:'Next',city:'Routes at',empty:'Turn on a route type to display routes.',tiles:'Basemap unavailable; showing the simplified map.'},zh:{previous:'上一条',next:'下一条',city:'路线：',empty:'请启用一种路线类型。',tiles:'底图不可用，正在显示简化地图。'}}[language]||{};
+ let map,disposed=false,resize,retriedCleanup,drawLayers=()=>{};
+ const bar=node('div','','bank-map-heading'),heading=node('h2',t.map);
  const fit=node('button',t.fit,'assessment-action');fit.type='button';fit.disabled=true;bar.append(heading,fit);
- const legend=node('div','','bank-map-legend');for(const [key,p]of Object.entries(palette)){const item=node('span',names[key][li]);item.style.setProperty('--route-color',p.color);legend.append(item)}
+ const legend=node('div','','bank-map-legend');legend.setAttribute('role','group');legend.setAttribute('aria-label',t.type);
+ const syncLegend=()=>{for(const button of legend.children)button.setAttribute('aria-pressed',String(enabledTypes.has(button.dataset.route)))};
+ for(const [key,p]of Object.entries(palette)){
+  const button=node('button','','bank-map-type');button.type='button';button.dataset.route=key;button.style.setProperty('--route-color',p.color);button.style.setProperty('--route-bg',p.fill);
+  const illustration=node('span','','bank-map-type-icon');illustration.setAttribute('aria-hidden','true');illustration.innerHTML='<svg viewBox="0 0 96 96"><use href="./assets/route-types.svg?v=06b7be2620213e0f#'+key+'"></use></svg>';
+  button.append(illustration,node('span',names[key][li]));button.onclick=()=>{enabledTypes.has(key)?enabledTypes.delete(key):enabledTypes.add(key);syncLegend();drawLayers();onTypesChange()};legend.append(button);
+ }
+ syncLegend();
  const canvas=node('div','','bank-map-canvas');canvas.setAttribute('aria-label',t.map);canvas.setAttribute('role','region');canvas.tabIndex=0;
  const caption=node('p',t.overview,'bank-map-caption'),status=node('div','','bank-map-status');status.setAttribute('role','status');
  host.replaceChildren(bar,legend,canvas,caption,status);
@@ -34,32 +42,52 @@ function mountMap(host,records,{language='fa',selected=false}={}){
    if(!document.querySelector('[data-bank-leaflet]')){const css=document.createElement('link');css.rel='stylesheet';css.href=asset('./vendor/leaflet-1.9.4.css');css.dataset.bankLeaflet='';document.head.append(css)}
    const [[boundary,coords]]=await Promise.all([loadGeography(),script('./vendor/leaflet-1.9.4.js',()=>root.L)]);
    if(disposed||!host.isConnected)return;
-   const L=root.L;map=L.map(canvas,{scrollWheelZoom:false,minZoom:4,maxZoom:12,attributionControl:true}).setView([32.4,53.7],5);
-   map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>');
-   const country=L.geoJSON(boundary,{style:{color:'#83a99a',weight:1.8,fillColor:'#f5faf6',fillOpacity:1},interactive:false}).addTo(map);
-   const reset=()=>map?.fitBounds(country.getBounds(),{padding:[20,20]});fit.disabled=false;fit.onclick=reset;
-   const located=locate(records,coords),used=new Set(located.flatMap(x=>[normalize(x.row.definition.origin),normalize(x.row.definition.destination)]));
-   for(const [name,p]of Object.entries(coords))if(!used.has(normalize(name)))L.circleMarker([p[1],p[0]],{radius:3,weight:1,color:'#9faeaa',fillColor:'#fff',fillOpacity:1}).addTo(map).bindTooltip(node('span',name+' · '+t.unselected));
-   // Group shared city markers so every route remains accessible at busy endpoints.
-   const endpoints=new Map();
-   for(const item of located){
-    const {row,a,b}=item,d=row.definition,p=palette[d.routeId]||palette.rural;
-    const popup=()=>{const box=node('div','','bank-map-popup');box.append(node('strong',d.name),node('p',names[d.routeId]?.[li]||d.routeId),node('p',d.origin+' — '+d.destination),node('small',d.active?t.active:t.inactive));const link=node('a',t.show);link.href='https://www.google.com/maps/dir/?'+new URLSearchParams({api:'1',travelmode:'driving',origin:d.origin+', Iran',destination:d.destination+', Iran'});link.target='_blank';link.rel='noopener noreferrer';box.append(link);return box};
-    if(a&&b&&a.join(',')!==b.join(',')){
-     L.polyline([[a[1],a[0]],[b[1],b[0]]],{color:p.color,weight:3,opacity:d.active ? .7 : .35,dashArray:d.active?'7 6':'2 7'}).addTo(map).bindPopup(popup).bindTooltip(node('span',d.name));
+   const L=root.L;map=L.map(canvas,{scrollWheelZoom:false,minZoom:3,maxZoom:14,zoomSnap:.5,attributionControl:true}).setView([32.4,53.7],5);
+   map.attributionControl.setPrefix(false);
+   const country=L.geoJSON(boundary,{style:{color:'#598d7d',weight:1.7,fillColor:'#f5faf6',fillOpacity:.07},interactive:false}).addTo(map);
+   map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a>');
+   const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'}).addTo(map);
+   let loadedTiles=0;tiles.on('tileload',()=>{loadedTiles++;country.setStyle({fillOpacity:.07});canvas.classList.remove('is-basemap-unavailable');canvas.removeAttribute('title')});tiles.on('tileerror',()=>{if(!loadedTiles){country.setStyle({fillOpacity:1});canvas.classList.add('is-basemap-unavailable');canvas.title=ui.tiles}});
+   const reset=()=>map?.fitBounds(country.getBounds(),{padding:[24,24],animate:false});fit.disabled=false;fit.onclick=reset;
+   const routeLayer=L.layerGroup().addTo(map),markerLayer=L.layerGroup().addTo(map);let routeLines=[];
+   const highlight=id=>{for(const item of routeLines)item.line.setStyle({weight:item.id===id?5:2.6,opacity:!id?item.opacity:item.id===id?1:.18})};
+   const popupFor=(rows,name)=>{
+    const container=node('div','','bank-route-popup'),body=node('div','','bank-route-popup-body');let index=0;
+    const nav=node('div','','bank-route-popup-nav'),previous=node('button',ui.previous,'assessment-action'),next=node('button',ui.next,'assessment-action'),position=node('span');previous.type=next.type='button';
+    if(name)container.append(node('div',ui.city+' '+name,'bank-route-popup-city'));
+    const update=()=>{body.replaceChildren(renderCard?renderCard(rows[index]):node('article',rows[index].definition.name,'bank-card'));highlight(rows[index].id);previous.disabled=index===0;next.disabled=index===rows.length-1;position.textContent=fmt(index+1)+' / '+fmt(rows.length)};
+    previous.onclick=()=>{index--;update();map.getPopup?.()?.update()};next.onclick=()=>{index++;update();map.getPopup?.()?.update()};nav.append(previous,position,next);container.append(body);if(rows.length>1)container.append(nav);update();return container;
+   };
+   const openCards=(rows,name,point)=>{map.closePopup();L.popup({className:'bank-route-map-popup',maxWidth:350,minWidth:260,maxHeight:470,autoPanPadding:[14,14]}).setLatLng(point).setContent(popupFor(rows,name)).openOn(map)};
+   map.on('popupclose',()=>highlight(null));
+   drawLayers=()=>{
+    if(!map||disposed)return;map.closePopup();routeLayer.clearLayers();markerLayer.clearLayers();routeLines=[];status.replaceChildren();
+    const visible=records.filter(r=>enabledTypes.has(r.definition.routeId)),located=locate(visible,coords),endpoints=new Map();
+    if(!enabledTypes.size)status.append(node('p',ui.empty,'bank-map-empty'));
+    for(const {row,a,b}of located){
+     const d=row.definition,p=palette[d.routeId]||palette.rural;
+     if(a&&b&&a.join(',')!==b.join(',')){
+      // Curves denote registered origin/destination connections, not inferred roads.
+      const dx=b[0]-a[0],dy=b[1]-a[1],bend=.1+Object.keys(palette).indexOf(d.routeId)*.025,mx=(a[0]+b[0])/2-dy*bend,my=(a[1]+b[1])/2+dx*bend;
+      const curve=Array.from({length:25},(_,i)=>{const t=i/24,u=1-t;return [u*u*a[1]+2*u*t*my+t*t*b[1],u*u*a[0]+2*u*t*mx+t*t*b[0]]});
+      const opacity=d.active ? .75 : .4;
+      L.polyline(curve,{color:'#fff',weight:5.5,opacity:.8,interactive:false}).addTo(routeLayer);
+      const line=L.polyline(curve,{color:p.color,weight:2.6,opacity,dashArray:d.routeId==='offroad'?'5 5':null}).addTo(routeLayer);
+      line.bindTooltip(node('span',d.name),{sticky:true});line.on('click',event=>openCards([row],null,event.latlng));routeLines.push({id:row.id,line,opacity});
+     }
+     for(const [name,point]of [[d.origin,a],[d.destination,b]])if(point){const key=point.join(',');if(!endpoints.has(key))endpoints.set(key,{point,name,rows:new Map()});endpoints.get(key).rows.set(row.id,row)}
     }
-    for(const [name,point]of [[d.origin,a],[d.destination,b]])if(point){const key=point.join(',');if(!endpoints.has(key))endpoints.set(key,{point,name,rows:new Map()});endpoints.get(key).rows.set(row.id,{row,popup})}
-   }
-   for(const {point,name,rows}of endpoints.values()){
-    const types=[...new Set([...rows.values()].map(x=>x.row.definition.routeId))],color=types.length===1?(palette[types[0]]||palette.rural).color:'#286c54';
-    const popup=node('div','','bank-city-popup');popup.append(node('strong',name+' · '+fmt(rows.size)+' '+unit[language]));
-    for(const {row,popup:detail}of rows.values()){const entry=node('details');entry.append(node('summary',row.definition.name),detail());popup.append(entry)}
-    L.circleMarker([point[1],point[0]],{radius:rows.size>1?7:5,weight:2,color:'#fff',fillColor:color,fillOpacity:1}).addTo(map).bindTooltip(node('span',name+' · '+fmt(rows.size)),{permanent:records.length<=12,direction:'top',offset:[0,-7],className:'bank-city-label'}).bindPopup(popup,{maxWidth:330});
-   }
-   const missing=located.filter(x=>x.missing.length);
-   if(missing.length){const details=node('details','','bank-map-missing');details.open=true;details.append(node('summary',t.missing+' · '+fmt(missing.length)));const ul=node('ul');for(const x of missing)ul.append(node('li',x.row.definition.name+' ('+(names[x.row.definition.routeId]?.[li]||'')+') — '+[...new Set(x.missing)].join('، ')));details.append(ul);status.append(details)}
-   reset();resize=new ResizeObserver(()=>{if(map)map.invalidateSize()});resize.observe(canvas);
-  }catch(error){if(disposed||!host.isConnected)return;console.warn('Route bank map:',error);canvas.textContent=t.mapError;const retry=node('button',t.retry,'assessment-action');retry.type='button';retry.onclick=()=>{cleanup();retriedCleanup=mountMap(host,records,{language,selected})};status.replaceChildren(retry)}
+    for(const {point,name,rows}of endpoints.values()){
+     const related=[...rows.values()],types=[...new Set(related.map(r=>r.definition.routeId))],color=types.length===1?(palette[types[0]]||palette.rural).color:'#286c54';
+     const marker=L.marker([point[1],point[0]],{title:ui.city+' '+name,keyboard:true,icon:L.divIcon({className:'bank-map-pin',html:'<span style="--pin-color:'+color+'"></span>',iconSize:[22,22],iconAnchor:[11,11]})}).addTo(markerLayer);
+     marker.getElement()?.setAttribute('role','button');marker.getElement()?.setAttribute('aria-label',ui.city+' '+name);
+     marker.bindTooltip(node('span',name),{direction:'top',offset:[0,-8],className:'bank-city-label',permanent:visible.length<=10});marker.on('click',()=>openCards(related,name,[point[1],point[0]]));
+    }
+    const missing=located.filter(x=>x.missing.length);
+    if(missing.length){const details=node('details','','bank-map-missing');details.append(node('summary',t.missing+' · '+fmt(missing.length)));for(const x of missing){const item=node('button',x.row.definition.name,'assessment-action');item.type='button';item.onclick=()=>{const point=x.a||x.b;openCards([x.row],null,point?[point[1],point[0]]:map.getCenter())};details.append(item)}status.append(details)}
+   };
+   drawLayers();reset();resize=new ResizeObserver(()=>{if(map)map.invalidateSize()});resize.observe(canvas);
+  }catch(error){if(disposed||!host.isConnected)return;console.warn('Route bank map:',error);canvas.textContent=t.mapError;const retry=node('button',t.retry,'assessment-action');retry.type='button';retry.onclick=()=>{cleanup();retriedCleanup=mountMap(host,records,{language,enabledTypes,renderCard,onTypesChange})};status.replaceChildren(retry)}
  })();
  return cleanup;
 }

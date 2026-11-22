@@ -18,6 +18,27 @@ function script(src,ready){
 }
 let geography;
 function loadGeography(){return geography??=(Promise.all(['iran-boundary','route-cities'].map(name=>fetch(asset('./assets/'+name+'.json')).then(r=>{if(!r.ok)throw Error('Map data');return r.json()}))).catch(e=>{geography=null;throw e}))}
+// Reference distance uses the road network, never a straight-line estimate.
+let distanceCities;const distanceCache=new Map();
+async function roadDistance(origin,destination,{signal}={}){
+ const aName=normalize(origin),bName=normalize(destination);
+ if(!aName||!bName)throw Error('missingCities');
+ if(aName===bName)throw Error('sameCity');
+ distanceCities??=fetch(asset('./assets/route-cities.json')).then(r=>{if(!r.ok)throw Error('distanceUnavailable');return r.json()}).catch(e=>{distanceCities=null;throw e});
+ const cities=await distanceCities,lookup=new Map(Object.entries(cities).map(([name,p])=>[normalize(name),p])),a=lookup.get(aName),b=lookup.get(bName);
+ if(!a||!b)throw Error('unknownCity');
+ if(signal?.aborted)throw Error('aborted');
+ const path=a.join(',')+';'+b.join(',');if(distanceCache.has(path))return distanceCache.get(path);
+ const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
+ const timer=setTimeout(abort,20000);
+ try{
+  const response=await fetch('https://router.project-osrm.org/route/v1/driving/'+path+'?overview=false&steps=false',{signal:controller.signal});
+  if(!response.ok)throw Error('distanceUnavailable');
+  const data=await response.json(),meters=data.routes?.[0]?.distance;
+  if(data.code!=='Ok'||!Number.isFinite(meters)||meters<=0||meters>200000000)throw Error('distanceUnavailable');
+  const km=Math.round(meters/1000*1000)/1000;distanceCache.set(path,km);return km;
+ }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort)}
+}
 function node(tag,text='',cls=''){const e=document.createElement(tag);e.textContent=text;e.className=cls;return e}
 function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(palette)),renderCard,onTypesChange=()=>{}}={}){
  const t=labels[language]||labels.fa,li=langIndex[language]??0,fmt=n=>n.toLocaleString(language==='fa'?'fa-IR':language);
@@ -117,5 +138,5 @@ async function downloadExcel(records,options){
  const book=buildWorkbook(root.ExcelJS,records,options),buffer=await book.xlsx.writeBuffer(),url=URL.createObjectURL(new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
  const a=node('a');a.href=url;a.download='BAMCO-routes-'+new Date().toISOString().slice(0,10)+'.xlsx';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
-const api={palette,locate,mountMap,buildWorkbook,downloadExcel};if(typeof module==='object'&&module.exports)module.exports=api;else root.BAMCO_ROUTE_BANK_TOOLS=api;
+const api={roadDistance,palette,locate,mountMap,buildWorkbook,downloadExcel};if(typeof module==='object'&&module.exports)module.exports=api;else root.BAMCO_ROUTE_BANK_TOOLS=api;
 })(typeof window!=='undefined'?window:globalThis);

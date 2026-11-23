@@ -8,7 +8,7 @@ const unit={fa:'مسیر',en:'routes',zh:'条路线'};
 const normalize=s=>String(s||'').trim().replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\s\u200c\u200e\u200f]+/g,'');
 function locate(records,coords){
  const lookup=new Map(Object.entries(coords).map(([name,point])=>[normalize(name),point]));
- return records.map(row=>{const d=row.definition,a=lookup.get(normalize(d.origin)),b=lookup.get(normalize(d.destination));return {row,a,b,missing:[!a&&d.origin,!b&&d.destination].filter(Boolean)}});
+ return records.map(row=>{const d=row.definition,a=validPoint(d.originPoint)?d.originPoint:lookup.get(normalize(d.origin)),b=validPoint(d.destinationPoint)?d.destinationPoint:lookup.get(normalize(d.destination));return {row,a,b,missing:[!a&&d.origin,!b&&d.destination].filter(Boolean)}});
 }
 const asset=p=>root.BAMCO_RELEASE?.asset(p)||p;
 const pending=new Map();
@@ -18,32 +18,54 @@ function script(src,ready){
 }
 let geography;
 function loadGeography(){return geography??=(Promise.all(['iran-boundary','route-cities'].map(name=>fetch(asset('./assets/'+name+'.json')).then(r=>{if(!r.ok)throw Error('Map data');return r.json()}))).catch(e=>{geography=null;throw e}))}
-// Reference distance uses the road network, never a straight-line estimate.
-let distanceCities;const distanceCache=new Map();
+// Shared online city resolution for distance calculation and map markers.
+let distanceCities;const distanceCache=new Map(),cityCache=new Map();
+const validPoint=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&p[0]>=44&&p[0]<=64&&p[1]>=24&&p[1]<=40;
+try{for(const [key,point] of Object.entries(JSON.parse(root.localStorage?.getItem('bamco-route-cities-v1')||'{}')))if(validPoint(point))cityCache.set(key,point)}catch{}
+function rememberCity(name,point){cityCache.set(normalize(name),point);try{root.localStorage?.setItem('bamco-route-cities-v1',JSON.stringify(Object.fromEntries([...cityCache].slice(-500))))}catch{}return point}
+function knownPoint(name){return cityCache.get(normalize(name))}
+async function cityReference(){
+ distanceCities??=fetch(asset('./assets/route-cities.json')).then(r=>{if(!r.ok)throw Error('distanceUnavailable');return r.json()}).catch(e=>{distanceCities=null;throw e});
+ const coords=await distanceCities;for(const [name,point]of Object.entries(coords))if(!cityCache.has(normalize(name)))cityCache.set(normalize(name),point);return coords;
+}
+async function requestJSON(url,{signal,timeout=20000}={}){
+ if(signal?.aborted)throw Error('aborted');
+ const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});const timer=setTimeout(abort,timeout);
+ try{const r=await fetch(url,{signal:controller.signal});if(!r.ok)throw Error('distanceUnavailable');return await r.json()}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort)}
+}
+async function resolveCity(name,{signal}={}){
+ if(signal?.aborted)throw Error('aborted');if(!normalize(name))throw Error('missingCities');
+ await cityReference();if(signal?.aborted)throw Error('aborted');if(knownPoint(name))return knownPoint(name);
+ const url='https://photon.komoot.io/api/?'+new URLSearchParams({q:name.trim(),bbox:'44,24,64,40',limit:'10'});
+ const data=await requestJSON(url,{signal,timeout:15000});if(signal?.aborted)throw Error('aborted');
+ const candidates=(data.features||[]).filter(f=>f.properties?.countrycode==='IR'&&['city','town','village','hamlet'].includes(f.properties?.osm_value)&&validPoint(f.geometry?.coordinates));
+ const exact=candidates.filter(f=>normalize(f.properties.name)===normalize(name));
+ const matches=exact.length?exact:candidates;
+ // Do not silently choose a province, road or an ambiguous same-name settlement.
+ if(matches.length!==1)throw Error(matches.length?'ambiguousCity':'unknownCity');
+ return rememberCity(name,matches[0].geometry.coordinates);
+}
+async function resolveMapCoordinates(records,coords,{signal}={}){
+ const result={...coords};for(const [name,point]of cityCache)result[name]=point;
+ const missing=[...new Set(locate(records,result).flatMap(x=>x.missing))];
+ for(const name of missing){if(signal?.aborted)break;try{result[name]=await resolveCity(name,{signal})}catch{}}
+ return result;
+}
+// Distances use the road network, never a straight-line estimate.
 async function roadDistance(origin,destination,{signal}={}){
  const aName=normalize(origin),bName=normalize(destination);
- if(!aName||!bName)throw Error('missingCities');
- if(aName===bName)throw Error('sameCity');
- distanceCities??=fetch(asset('./assets/route-cities.json')).then(r=>{if(!r.ok)throw Error('distanceUnavailable');return r.json()}).catch(e=>{distanceCities=null;throw e});
- const cities=await distanceCities,lookup=new Map(Object.entries(cities).map(([name,p])=>[normalize(name),p])),a=lookup.get(aName),b=lookup.get(bName);
- if(!a||!b)throw Error('unknownCity');
- if(signal?.aborted)throw Error('aborted');
+ if(signal?.aborted)throw Error('aborted');if(!aName||!bName)throw Error('missingCities');if(aName===bName)throw Error('sameCity');
+ const a=await resolveCity(origin,{signal}),b=await resolveCity(destination,{signal});if(signal?.aborted)throw Error('aborted');
  const path=a.join(',')+';'+b.join(',');if(distanceCache.has(path))return distanceCache.get(path);
- const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});
- const timer=setTimeout(abort,20000);
- try{
-  const response=await fetch('https://router.project-osrm.org/route/v1/driving/'+path+'?overview=false&steps=false',{signal:controller.signal});
-  if(!response.ok)throw Error('distanceUnavailable');
-  const data=await response.json(),meters=data.routes?.[0]?.distance;
-  if(data.code!=='Ok'||!Number.isFinite(meters)||meters<=0||meters>200000000)throw Error('distanceUnavailable');
-  const km=Math.round(meters/1000*1000)/1000;distanceCache.set(path,km);return km;
- }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort)}
+ const data=await requestJSON('https://router.project-osrm.org/route/v1/driving/'+path+'?overview=false&steps=false',{signal});
+ const meters=data.routes?.[0]?.distance;if(data.code!=='Ok'||!Number.isFinite(meters)||meters<=0||meters>200000000)throw Error('distanceUnavailable');
+ const km=Math.round(meters/1000*1000)/1000;distanceCache.set(path,km);return km;
 }
 function node(tag,text='',cls=''){const e=document.createElement(tag);e.textContent=text;e.className=cls;return e}
 function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(palette)),renderCard,onTypesChange=()=>{}}={}){
  const t=labels[language]||labels.fa,li=langIndex[language]??0,fmt=n=>n.toLocaleString(language==='fa'?'fa-IR':language);
  const ui={fa:{close:'بستن',previous:'قبلی',next:'بعدی',city:'مسیرهای',empty:'برای نمایش مسیرها، یک نوع مسیر را روشن کنید.',tiles:'نقشه زمینه در دسترس نیست؛ نمای ساده نمایش داده می‌شود.'},en:{close:'Close',previous:'Previous',next:'Next',city:'Routes at',empty:'Turn on a route type to display routes.',tiles:'Basemap unavailable; showing the simplified map.'},zh:{close:'关闭',previous:'上一条',next:'下一条',city:'路线：',empty:'请启用一种路线类型。',tiles:'底图不可用，正在显示简化地图。'}}[language]||{};
- let map,disposed=false,resize,retriedCleanup,drawLayers=()=>{};
+ const mapController=new AbortController();let map,disposed=false,resize,retriedCleanup,drawLayers=()=>{};
  const bar=node('div','','bank-map-heading'),heading=node('h2',t.map);
  const fit=node('button',t.fit,'assessment-action');fit.type='button';fit.disabled=true;bar.append(heading,fit);
  const legend=node('div','','bank-map-legend');legend.setAttribute('role','group');legend.setAttribute('aria-label',t.type);
@@ -57,12 +79,13 @@ function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(p
  const canvas=node('div','','bank-map-canvas');canvas.setAttribute('aria-label',t.map);canvas.setAttribute('role','region');canvas.tabIndex=0;
  const caption=node('p',t.overview,'bank-map-caption'),status=node('div','','bank-map-status');status.setAttribute('role','status');
  host.replaceChildren(bar,legend,canvas,caption,status);
- const cleanup=()=>{disposed=true;retriedCleanup?.();resize?.disconnect();if(map){map.remove();map=null}};
+ const cleanup=()=>{disposed=true;mapController.abort();retriedCleanup?.();resize?.disconnect();if(map){map.remove();map=null}};
  (async()=>{
   try{
    if(!document.querySelector('[data-bank-leaflet]')){const css=document.createElement('link');css.rel='stylesheet';css.href=asset('./vendor/leaflet-1.9.4.css');css.dataset.bankLeaflet='';document.head.append(css)}
-   const [[boundary,coords]]=await Promise.all([loadGeography(),script('./vendor/leaflet-1.9.4.js',()=>root.L)]);
+   const [[boundary,reference]]=await Promise.all([loadGeography(),script('./vendor/leaflet-1.9.4.js',()=>root.L)]);
    if(disposed||!host.isConnected)return;
+   let coords={...reference};
    const L=root.L;map=L.map(canvas,{scrollWheelZoom:false,minZoom:3,maxZoom:14,zoomSnap:.5,attributionControl:true}).setView([32.4,53.7],5);
    map.attributionControl.setPrefix(false);
    const country=L.geoJSON(boundary,{style:{color:'#598d7d',weight:1.7,fillColor:'#f5faf6',fillOpacity:.07},interactive:false}).addTo(map);
@@ -107,7 +130,9 @@ function mountMap(host,records,{language='fa',enabledTypes=new Set(Object.keys(p
     const missing=located.filter(x=>x.missing.length);
     if(missing.length){const details=node('details','','bank-map-missing');details.append(node('summary',t.missing+' · '+fmt(missing.length)));for(const x of missing){const item=node('button',x.row.definition.name,'assessment-action');item.type='button';item.onclick=()=>{const point=x.a||x.b;openCards([x.row],null,point?[point[1],point[0]]:map.getCenter())};details.append(item)}status.append(details)}
    };
-   drawLayers();reset();resize=new ResizeObserver(()=>{if(map)map.invalidateSize()});resize.observe(canvas);
+   drawLayers();reset();
+   if(locate(records,coords).some(item=>item.missing.length))resolveMapCoordinates(records,coords,{signal:mapController.signal}).then(resolved=>{if(!disposed){coords=resolved;drawLayers()}});
+   resize=new ResizeObserver(()=>{if(map)map.invalidateSize()});resize.observe(canvas);
   }catch(error){if(disposed||!host.isConnected)return;console.warn('Route bank map:',error);canvas.textContent=t.mapError;const retry=node('button',t.retry,'assessment-action');retry.type='button';retry.onclick=()=>{cleanup();retriedCleanup=mountMap(host,records,{language,enabledTypes,renderCard,onTypesChange})};status.replaceChildren(retry)}
  })();
  return cleanup;
@@ -138,5 +163,5 @@ async function downloadExcel(records,options){
  const book=buildWorkbook(root.ExcelJS,records,options),buffer=await book.xlsx.writeBuffer(),url=URL.createObjectURL(new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
  const a=node('a');a.href=url;a.download='BAMCO-routes-'+new Date().toISOString().slice(0,10)+'.xlsx';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
 }
-const api={roadDistance,palette,locate,mountMap,buildWorkbook,downloadExcel};if(typeof module==='object'&&module.exports)module.exports=api;else root.BAMCO_ROUTE_BANK_TOOLS=api;
+const api={roadDistance,resolveCity,knownPoint,resolveMapCoordinates,validPoint,palette,locate,mountMap,buildWorkbook,downloadExcel};if(typeof module==='object'&&module.exports)module.exports=api;else root.BAMCO_ROUTE_BANK_TOOLS=api;
 })(typeof window!=='undefined'?window:globalThis);

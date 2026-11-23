@@ -72,32 +72,6 @@ function applyScriptFont(field){
 }
 function wireScriptFonts(root){root.querySelectorAll('input:not([type="file"]),textarea').forEach(applyScriptFont)}
 
-let evaluatorSession=null,evaluatorLanguage='';
-function renderComprehensiveEvaluators(){
- const c=app.scoreContext?.(),existing=$('comprehensive-evaluators');
- if(c?.tab!=='comprehensive'||c.section!=='scores'){existing?.remove();evaluatorSession=null;return}
- const session=app.editSession(),language=window.BAMCO_I18N?.language||'fa';
- if(existing&&session===evaluatorSession&&language===evaluatorLanguage)return;
- existing?.remove();evaluatorSession=session;evaluatorLanguage=language;
- const words={fa:{title:'مشخصات ارزیابان',name:'نام و نام خانوادگی ارزیاب',add:'افزودن ارزیاب',remove:'حذف',save:'ذخیره مشخصات ارزیابان'},en:{title:'Evaluator details',name:'Evaluator full name',add:'Add evaluator',remove:'Remove',save:'Save evaluator details'},zh:{title:'评估员信息',name:'评估员姓名',add:'添加评估员',remove:'删除',save:'保存评估员信息'}}[language]||{};
- const meta=app.mission(c.key),names=Array.isArray(meta.evaluators)?meta.evaluators:[];
- const section=document.createElement('section');section.id='comprehensive-evaluators';section.className='bamco-day-workflow comprehensive-evaluators';
- section.innerHTML='<form id="comprehensive-evaluator-form"><div class="bamco-block-heading"><h2>'+words.title+'</h2><button type="button" class="secondary" data-add-evaluator>'+words.add+'</button></div><div class="bamco-day-fields comprehensive-evaluator-fields"></div><div class="comprehensive-evaluator-actions"><button type="submit" class="primary" id="comprehensiveEvaluatorSave">'+words.save+'</button><span id="comprehensiveEvaluatorStatus" role="status"></span></div></form>';
- $('workPanel').insertBefore(section,$('workPanel').querySelector('.workspace'));
- const form=section.querySelector('form'),fields=section.querySelector('.comprehensive-evaluator-fields'),add=section.querySelector('[data-add-evaluator]');
- const stage=()=>{if(app.isReadOnly()||app.editSession()!==session)return;const values=[...fields.querySelectorAll('input')].map(input=>input.value.trim()).filter(Boolean);app.setMission(c.key,{...app.mission(c.key),evaluators:values,updatedAt:new Date().toISOString()})};
- function renumber(){for(const [i,row] of [...fields.children].entries()){const input=row.querySelector('input'),label=row.querySelector('label');input.id='comprehensive-evaluator-'+(i+1);label.htmlFor=input.id;label.firstChild.textContent=words.name+' '+number(i+1);row.querySelector('button').disabled=app.isReadOnly()||fields.children.length===1}}
- function append(name=''){
-  const row=document.createElement('div');row.className='comprehensive-evaluator-row';const label=document.createElement('label'),input=document.createElement('input'),remove=document.createElement('button');
-  label.append(document.createTextNode(''),input);input.type='text';input.name='evaluator';input.value=String(name);input.maxLength=160;input.autocomplete='name';input.disabled=app.isReadOnly();input.addEventListener('input',stage);applyScriptFont(input);
-  remove.type='button';remove.className='secondary';remove.textContent=words.remove;remove.onclick=()=>{if(app.isReadOnly()||fields.children.length===1)return;row.remove();renumber();stage()};row.append(label,remove);fields.append(row);renumber();return input;
- }
- for(const name of names.length?names:[''])append(name);
- add.disabled=app.isReadOnly();add.onclick=()=>{if(!app.isReadOnly())append().focus()};
- form.onsubmit=e=>{e.preventDefault();if(!app.isReadOnly()){stage();window.BAMCO_DAY_SCORES?.save()}};
- if(app.isReadOnly())section.querySelector('.comprehensive-evaluator-actions').hidden=true;
-}
-
 function context(){
  const c=app.dayContext?.();
  return c&&['form','scores'].includes(c.section)?c:null;
@@ -482,13 +456,12 @@ function roadContext() {
 }
 
 document.addEventListener('bamco:render', () => {
-  renderComprehensiveEvaluators();
   syncFormActions();
   const c = roadContext();
   if (!c?.day || c.section !== 'scores') renderRoad(c);
 });
-new MutationObserver(() => {renderRoad(roadContext());renderComprehensiveEvaluators()}).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
-document.addEventListener('bamco:assessment-close',()=>{$('comprehensive-evaluators')?.remove();evaluatorSession=null;lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
+new MutationObserver(() => renderRoad(roadContext())).observe(document.documentElement, {attributes:true, attributeFilter:['lang']});
+document.addEventListener('bamco:assessment-close',()=>{lastStamp='';document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(node=>node.remove())});
 document.addEventListener('bamco:day-render',()=>{lastStamp='';paint()});
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');
@@ -534,7 +507,6 @@ app.currentDayForm = () => {
   if (c?.section !== 'form' || !form) return null;
   return {context:{...c}, values:formData(form), title:window.BAMCO_CASES?.current()?.title || $('assessmentName')?.textContent || 'BAMCO'};
 };
-renderComprehensiveEvaluators();
 app.customQuestionCards=()=>{const c=context();return c?.section==='scores'?customTests(normalize(app.mission(c.key))).map(t=>({id:t.id,html:customCard(t)})):[]};
 paint();
 })();

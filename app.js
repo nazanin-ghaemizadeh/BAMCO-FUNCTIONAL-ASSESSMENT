@@ -327,9 +327,9 @@ function openComprehensive(section,day){
  if(section==='form'){if(!comprehensiveDays().includes(day))return;state.comprehensiveDay=day;}
  dayScreen=section;state.category='همه';state.query='';state.page=0;finishNavigation();
 }
-let addingComprehensiveDay=false;
+let addingComprehensiveDay=false,deletingComprehensiveDay=false;
 async function addComprehensiveDay(){
- if(addingComprehensiveDay||readOnly||!cloudSave||state.tab!=='comprehensive'||dayScreen!=='forms')return;
+ if(addingComprehensiveDay||deletingComprehensiveDay||readOnly||!cloudSave||state.tab!=='comprehensive'||dayScreen!=='forms')return;
  const generation=caseGeneration,day=Math.max(0,...comprehensiveDays())+1,key='comprehensive:day-'+day;
  const entry={createdAt:new Date().toISOString()};
  addingComprehensiveDay=true;state.missions={...state.missions,[key]:entry};
@@ -347,6 +347,25 @@ async function addComprehensiveDay(){
   }
  }
 }
+async function deleteComprehensiveDay(day){
+ if(addingComprehensiveDay||deletingComprehensiveDay||readOnly||!cloudSave||state.tab!=='comprehensive'||dayScreen!=='forms'||!comprehensiveDays().includes(day))return;
+ const prompt='روز '+number(day)+' و تمام اطلاعات فرم آن حذف شود؟';
+ if(!window.confirm(window.BAMCO_I18N?.text(prompt)||prompt))return;
+ const generation=caseGeneration,key='comprehensive:day-'+day,previous=state.missions[key];
+ deletingComprehensiveDay=true;state.missions={...state.missions};delete state.missions[key];
+ document.querySelectorAll('[data-delete-comprehensive-day],[data-comprehensive-day],#addComprehensiveDay').forEach(button=>button.disabled=true);
+ let ok=false;
+ try{ok=window.BAMCO_CASES?.saveNow?await window.BAMCO_CASES.saveNow(snapshot()):save()}
+ catch{}finally{
+  deletingComprehensiveDay=false;
+  if(generation===caseGeneration){
+   if(!ok&&!Object.hasOwn(state.missions,key))state.missions={...state.missions,[key]:previous};
+   if(state.tab==='comprehensive'&&dayScreen==='forms'){
+    render();toast(ok?'روز ارزیابی حذف شد.':'حذف روز تأیید نشد. دوباره تلاش کنید.');
+   }
+  }
+ }
+}
 function renderComprehensiveNavigation(host){
  host.classList.toggle('hidden',!['menu','forms'].includes(dayScreen));host.replaceChildren();
  if(dayScreen==='menu'){
@@ -357,7 +376,7 @@ function renderComprehensiveNavigation(host){
    const saved=mission('comprehensive:day-'+day),meta={...saved,...saved.dailyFormDraft},theme=dayRouteAppearance({routeId:meta.roadType});
    const icon=meta.roadType?theme.icon:'<svg viewBox="0 0 160 128" aria-hidden="true"><use href="./assets/assessment-modules.svg#comprehensive"></use></svg>';
    const status=saved.dailyFormDraft?'پیش‌نویس':saved.dailyInfoSavedAt?'ذخیره شده':'ثبت نشده';
-   return '<button type="button" class="assessment-day-tile" data-route="'+esc(meta.roadType||'urban')+'" data-comprehensive-day="'+day+'"><span class="day-card-top"><strong>روز '+number(day)+'</strong></span><span class="day-route-icon">'+icon+'</span><span class="day-card-footer"><span class="day-route-label report-user-text">'+esc([meta.origin,meta.destination].filter(Boolean).join(' — '))+'</span><small>'+esc(meta.date||'')+'</small><span class="comprehensive-day-status">'+status+'</span></span></button>';
+   return '<article class="comprehensive-day-card"><button type="button" class="assessment-day-tile" data-route="'+esc(meta.roadType||'urban')+'" data-comprehensive-day="'+day+'"'+(deletingComprehensiveDay?' disabled':'')+'><span class="day-card-top"><strong>روز '+number(day)+'</strong></span><span class="day-route-icon">'+icon+'</span><span class="day-card-footer"><span class="day-route-label report-user-text">'+esc([meta.origin,meta.destination].filter(Boolean).join(' — '))+'</span><small>'+esc(meta.date||'')+'</small><span class="comprehensive-day-status">'+status+'</span></span></button>'+(readOnly?'':'<button type="button" class="comprehensive-day-delete" data-delete-comprehensive-day="'+day+'" aria-label="حذف روز '+number(day)+'"'+(addingComprehensiveDay||deletingComprehensiveDay?' disabled':'')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5"/></svg><span>حذف روز</span></button>')+'</article>';
   }).join('')+'</div>':'<div class="empty">هنوز روزی برای ارزیابی ثبت نشده است.</div>';
  }
 }
@@ -670,7 +689,7 @@ if(phases&&state.tab==='durability'&&['phase','phaseScores','days'].includes(day
 if(state.tab==='results'&&resultActions){actions.append(...resultActions.children);resultActions.remove()}
 if(state.tab==='comprehensive'&&dayScreen!=='menu'){
  const back=document.createElement('button');back.type='button';back.className='secondary';back.textContent=dayScreen==='form'?'بازگشت به روزهای ارزیابی':'بازگشت';back.onclick=()=>openComprehensive(dayScreen==='form'?'forms':'menu');actions.append(back);
- if(dayScreen==='forms'&&!readOnly){const add=document.createElement('button');add.type='button';add.className='primary';add.id='addComprehensiveDay';add.textContent='افزودن روز';add.disabled=addingComprehensiveDay;add.onclick=addComprehensiveDay;actions.append(add);}
+ if(dayScreen==='forms'&&!readOnly){const add=document.createElement('button');add.type='button';add.className='primary';add.id='addComprehensiveDay';add.textContent='افزودن روز';add.disabled=addingComprehensiveDay||deletingComprehensiveDay;add.onclick=addComprehensiveDay;actions.append(add);}
 }
 if(daily&&daily.tab!=='comprehensive'&&dayScreen!=='days'){
  const back=document.createElement('button');back.type='button';back.className='secondary';
@@ -840,6 +859,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el
  changeTab(el.dataset.moduleDashboard+'Dashboard');return;
 }
 if(el.dataset.open){changeTab(el.dataset.open);return}
+if(el.dataset.deleteComprehensiveDay){deleteComprehensiveDay(Number(el.dataset.deleteComprehensiveDay));return}
 if(el.dataset.comprehensiveSection){openComprehensive(el.dataset.comprehensiveSection);return}
 if(el.dataset.comprehensiveDay){openComprehensive('form',Number(el.dataset.comprehensiveDay));return}
 if(el.dataset.daysection){navigateDay(el.dataset.daysection);return}

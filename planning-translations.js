@@ -163,3 +163,6 @@ Object.assign(window.BAMCO_TRANSLATIONS.en,{
 Object.assign(window.BAMCO_TRANSLATIONS.zh,{
  'فرم ارزیابی':'评估表','فرم ارزیابی جامع':'综合评估表','افزودن روز':'添加一天','بازگشت به روزهای ارزیابی':'返回评估日期','هنوز روزی برای ارزیابی ثبت نشده است.':'尚未添加评估日期。','افزودن روز تأیید نشد. دوباره تلاش کنید.':'无法保存新的评估日期，请重试。','ذخیره شده':'已保存','ثبت نشده':'未记录','پیش‌نویس':'草稿','مبدا':'起点','ورود به بخش':'打开模块'
 });
+
+Object.assign(window.BAMCO_TRANSLATIONS.en,{'حذف روز':'Delete day','و تمام اطلاعات فرم آن حذف شود؟':'and all of its form details will be deleted. Continue?','روز ارزیابی حذف شد.':'Assessment day deleted.','حذف روز تأیید نشد. دوباره تلاش کنید.':'The day could not be deleted. Please try again.'});
+Object.assign(window.BAMCO_TRANSLATIONS.zh,{'حذف روز':'删除日期','و تمام اطلاعات فرم آن حذف شود؟':'及其所有表单信息将被删除。是否继续？','روز ارزیابی حذف شد.':'评估日期已删除。','حذف روز تأیید نشد. دوباره تلاش کنید.':'无法删除评估日期，请重试。'});

@@ -212,6 +212,8 @@ function visit(path,url,reply,options={}){
   }
   click('[data-open="comprehensiveMenu"]');
   click('[data-open="comprehensive"]');
+  assert.equal(w.location.hash,'#types/comprehensive/start');
+  click('[data-comprehensive-section="scores"]');
   assert.equal(w.location.hash,'#types/comprehensive/scores');
   assert(!d.querySelector('#assessmentPageActions [data-module-dashboard]'));
   assert.equal(fetched.filter(x=>x==='i18n.js').length,1);

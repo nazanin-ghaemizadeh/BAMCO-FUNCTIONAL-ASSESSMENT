@@ -155,7 +155,7 @@ function formData(form) {
     refueled:Boolean(fuelType || fuelStation || fuelLiters!=='' || fuelOdometer!==''), fuelType, fuelStation, fuelLiters, fuelOdometer,
     breakdown, breakdownCause:breakdown?text('breakdownCause'):'', correctiveAction:breakdown?text('correctiveAction'):'',
     breakdownTime:breakdown?persianTime(text('breakdownTime')):'', otherNotes:text('otherNotes'),
-    preDrive:{reviewed, comments}
+    ...(fields.origin?{origin:text('origin'),destination:text('destination'),roadType:text('roadType')}:{preDrive:{reviewed, comments}})
   };
 }
 
@@ -167,6 +167,8 @@ function syncFormActions() {
 }
 
 function formMarkup(c,meta){
+  const comprehensive=c.tab==='comprehensive';
+  const routeFields=comprehensive?'<div class="bamco-day-block"><h3>مسیر پیمایش</h3><div class="bamco-day-fields"><label>مبدا<input name="origin" required maxlength="160" value="'+esc(meta.origin)+'"></label><label>مقصد<input name="destination" required maxlength="160" value="'+esc(meta.destination)+'"></label><label class="bamco-span-2">نوع جاده<select name="roadType" required><option value="">انتخاب کنید</option>'+[['urban','شهری'],['rural','برون‌شهری'],['hot','گرمسیری'],['mountain','کوهستانی'],['offroad','خارج‌جاده / خاکی']].map(([id,label])=>'<option value="'+id+'" '+(meta.roadType===id?'selected':'')+'>'+label+'</option>').join('')+'</select></label></div></div>':'';
   const passengerCount=Math.max(1,meta.passengers.length);
   return '<div class="section-heading"><div><h2>گزارش پیمایش روز '+number(c.day)+'</h2><p>اطلاعات پیمایش، شرایط روز و رخدادهای خودرو را ثبت کنید.</p></div><span class="chip">فرم روزانه</span></div>'+
     '<form id="bamco-day-form" novalidate><div class="bamco-day-block"><h3>زمان و پیمایش</h3><div class="bamco-day-fields">'+
@@ -176,13 +178,13 @@ function formMarkup(c,meta){
     '<label>کیلومتر شروع پیمایش<input name="startKm" type="text" dir="ltr" data-numeric="mileage" inputmode="decimal" required value="'+esc(formatMileage(meta.startKm))+'"></label>'+
     '<label>کیلومتر پایان پیمایش<input name="endKm" type="text" dir="ltr" data-numeric="mileage" inputmode="decimal" required value="'+esc(formatMileage(meta.endKm))+'"></label>'+
     '<label class="bamco-distance-field">کیلومتر طی‌شده<input name="distanceKm" type="text" dir="ltr" data-numeric="mileage" readonly tabindex="-1" value="'+esc(formatMileage(meta.distanceKm))+'" placeholder="محاسبه خودکار"></label>'+
-    '</div></div>'+
+    '</div></div>'+routeFields+
     '<div class="bamco-day-block"><div class="bamco-block-heading"><h3>افراد حاضر در خودرو</h3><div class="bamco-inline-actions"><button type="button" class="secondary" data-add-passenger="1">+ افزودن سرنشین</button><button type="button" class="secondary" data-remove-passenger="1">حذف آخرین سرنشین</button></div></div><div class="bamco-day-fields"><label>نام و نام خانوادگی راننده<input name="driver" required autocomplete="name" value="'+esc(meta.driver)+'"></label><div id="bamco-passenger-fields" class="bamco-passenger-grid">'+Array.from({length:passengerCount},(_,index)=>passengerField(index,meta.passengers[index])).join('')+'</div></div></div>'+
     '<div class="bamco-day-block"><h3>شرایط محیطی</h3><div class="bamco-day-fields"><label>دمای هوا (درجه سانتی‌گراد)<select name="temperature" required><option value="">انتخاب دما</option>'+temperatureOptions(meta.temperature)+'</select></label><label>نوع آب‌وهوا<select name="weather" required><option value="">انتخاب کنید</option>'+['آفتابی','نیمه‌ابری','ابری','بارانی','برفی','مه‌آلود','باد شدید','گرد و غبار'].map(item=>'<option '+(meta.weather===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label></div></div>'+
     '<details class="bamco-day-block bamco-optional-section"><summary>سوخت‌گیری</summary><div class="bamco-day-fields"><label>نوع بنزین<select name="fuelType"><option value="">انتخاب کنید</option>'+['معمولی','سوپر','یورو ۴','یورو ۵','سایر'].map(item=>'<option '+(meta.fuelType===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label>جایگاه سوخت<input name="fuelStation" value="'+esc(meta.fuelStation)+'" placeholder="نام یا محل جایگاه"></label><label>لیتر بنزین زده‌شده<input name="fuelLiters" type="number" min="0" step="0.01" value="'+esc(meta.fuelLiters)+'"></label><label>کیلومتر خودرو هنگام سوخت‌گیری<input name="fuelOdometer" type="number" min="0" step="0.1" value="'+esc(meta.fuelOdometer)+'"></label></div></details>'+
     '<details class="bamco-day-block bamco-optional-section"><summary>خرابی خودرو</summary><label class="bamco-switch bamco-switch-alert"><input name="breakdown" type="checkbox" '+(meta.breakdown?'checked':'')+'><span>در این روز خرابی خودرو رخ داده است</span></label><div class="bamco-day-fields bamco-conditional" data-condition="breakdown" '+(meta.breakdown?'':'hidden')+'><label class="bamco-span-2">علت خرابی<textarea name="breakdownCause" rows="3" placeholder="شرح علت یا نشانه خرابی">'+esc(meta.breakdownCause)+'</textarea></label><label class="bamco-span-2">اقدام اصلاحی صورت‌گرفته<textarea name="correctiveAction" rows="3" placeholder="اقدام انجام‌شده یا تصمیم پیگیری">'+esc(meta.correctiveAction)+'</textarea></label><label>ساعت رخداد<input name="breakdownTime" type="text" inputmode="numeric" dir="ltr" value="'+esc(meta.breakdownTime)+'" placeholder="۱۴:۳۰"></label></div></details>'+
     '<div class="bamco-day-block"><label class="bamco-full-label">سایر توضیحات<textarea name="otherNotes" rows="4" placeholder="هر توضیح دیگری که باید در گزارش این روز ثبت شود...">'+esc(meta.otherNotes)+'</textarea></label></div>'+
-    checklistMarkup(meta.preDrive)+'</form>';
+    (comprehensive?'':checklistMarkup(meta.preDrive))+'</form>';
 }
 
 function setConditional(form,name,active){
@@ -295,7 +297,7 @@ async function begin(c,form){
   const complete = [...form.querySelectorAll('[required]')].every(field => field.value.trim() !== '');
   const previous = app.mission(c.key);
   const now = new Date().toISOString();
-  const mission = {...previous, preDrive:{...previous.preDrive, ...preDrive}, updatedAt:now};
+  const mission = {...previous, ...(preDrive?{preDrive:{...previous.preDrive, ...preDrive}}:{}), updatedAt:now};
   if (complete) {
     Object.assign(mission, values, {dailyInfoSavedAt:now, startedAt:previous.startedAt||now});
     delete mission.dailyFormDraft;

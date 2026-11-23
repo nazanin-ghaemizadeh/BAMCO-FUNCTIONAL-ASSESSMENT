@@ -88,14 +88,14 @@ function exportName(data,kind='scores') {
     c.charCodeAt(0) < 32 || '/\\:*?"<>|'.includes(c) ? '-' : c
   ).join('').trim() || 'BAMCO';
   if(data.context.phase)return title+'-durability-phase-'+data.context.phase+'-'+kind+'.xlsx';
-  if(data.context.tab==='comprehensive')return title+'-comprehensive-'+kind+'.xlsx';
+  if(data.context.tab==='comprehensive')return title+'-comprehensive-'+(data.context.day?'day-'+data.context.day+'-':'')+kind+'.xlsx';
   const module = data.context.tab === 'drive' ? 'driveability' : 'durability';
   return title + '-' + module + '-day-' + data.context.day + '-' + kind + '.xlsx';
 }
 
 function reportTitle(data,date) {
   if(data.context.phase)return [data.title,'دوام','فاز '+data.context.phase,reportDate(date)].filter(Boolean).join(' | ');
-  if(data.context.tab==='comprehensive')return [data.title,'ارزیابی جامع خودرو',reportDate(date)].filter(Boolean).join(' | ');
+  if(data.context.tab==='comprehensive')return [data.title,'ارزیابی جامع خودرو',data.context.day?'روز '+data.context.day:'',reportDate(date)].filter(Boolean).join(' | ');
   const moduleName = data.context.tab === 'drive' ? 'قابلیت رانندگی' : 'دوام';
   return [data.title, moduleName, 'روز ' + data.context.day, reportDate(date)].filter(Boolean).join(' | ');
 }
@@ -190,6 +190,7 @@ function addFormSheets(book, info, values) {
   const add = (category,field,value) => rows.push([rows.length+1,category,field,value ?? '']);
   const fields = [
     ['زمان و پیمایش',[['تاریخ شمسی',reportDate(values.date)],['ساعت شروع پیمایش',values.startTime],['ساعت پایان پیمایش',values.endTime],['کیلومتر شروع پیمایش',values.startKm],['کیلومتر پایان پیمایش',values.endKm],['کیلومتر طی‌شده',values.distanceKm]]],
+    ...(Object.hasOwn(values,'origin')?[['مسیر پیمایش',[['مبدا',values.origin],['مقصد',values.destination],['نوع جاده',({urban:'شهری',rural:'برون‌شهری',hot:'گرمسیری',mountain:'کوهستانی',offroad:'خارج‌جاده / خاکی'})[values.roadType]||'']]]]:[]),
     ['افراد حاضر در خودرو',[['نام و نام خانوادگی راننده',values.driver],['سرنشینان',values.passengers.join('، ')]]],
     ['شرایط محیطی',[['دمای هوا (درجه سانتی‌گراد)',values.temperature],['نوع آب‌وهوا',values.weather]]],
     ['سوخت‌گیری',[['سوخت‌گیری ثبت شده',values.refueled?'بله':'خیر'],['نوع بنزین',values.fuelType],['جایگاه سوخت',values.fuelStation],['لیتر بنزین زده‌شده',values.fuelLiters],['کیلومتر خودرو هنگام سوخت‌گیری',values.fuelOdometer]]],
@@ -198,14 +199,14 @@ function addFormSheets(book, info, values) {
   ];
   for (const [category,entries] of fields) for (const [field,value] of entries) add(category,field,value);
   const checklist = [];
-  for (const group of window.BAMCO_PRE_DRIVE) {
+  for (const group of values.preDrive?window.BAMCO_PRE_DRIVE:[]) {
     group.items.forEach((item,i) => {
       const checked = values.preDrive.reviewed[item.key] === true;
       checklist.push([checklist.length+1,group.title,item.title,checked ? '✓ بررسی شده' : '× بررسی نشده',!i ? values.preDrive.comments[group.id] || '' : '']);
     });
   }
   addDailyTable(book, info, 'فرم روزانه', 'DailyForm', ['ردیف','بخش','عنوان','مقدار'], [8.88671875,32,48,70], rows);
-  addDailyTable(book, info, 'چک‌لیست پیش از پیمایش', 'PreDriveChecklist', ['ردیف','دسته','مورد بازرسی','وضعیت بررسی','توضیحات دسته'], [8.88671875,44,80,22,54], checklist);
+  if(values.preDrive)addDailyTable(book, info, 'چک‌لیست پیش از پیمایش', 'PreDriveChecklist', ['ردیف','دسته','مورد بازرسی','وضعیت بررسی','توضیحات دسته'], [8.88671875,44,80,22,54], checklist);
 }
 
 async function downloadForm() {

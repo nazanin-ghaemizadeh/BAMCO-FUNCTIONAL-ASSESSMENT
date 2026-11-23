@@ -92,6 +92,7 @@ surveySource.records={'drive:1:CR-0443':{score:4}};
 const surveyOpen=(source,locked=false)=>{
  api.open(structuredClone(source),v=>saved=structuredClone(v),locked);
  click('[data-open="comprehensive"]');
+ click('[data-comprehensive-section="scores"]');
 };
 surveyOpen(surveySource);
 assert.equal(d.querySelectorAll('#questionsPanel .question').length,12);

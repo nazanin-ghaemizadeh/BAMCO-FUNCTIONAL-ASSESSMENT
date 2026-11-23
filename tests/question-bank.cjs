@@ -102,7 +102,7 @@ async function until(condition) {
   const app = w.BAMCO_ASSESSMENT;
   const snapshot = {setupComplete: true, config: {}, records: {['drive:1:' + original.id]: {score:8}}};
   app.open(snapshot, () => {}, false);
-  app.navigateModule('comprehensive'); d.querySelector('[data-open=comprehensive]').click();
+  app.navigateModule('comprehensive'); d.querySelector('[data-open=comprehensive]').click();d.querySelector('[data-comprehensive-section=scores]').click();
   const filter = (id, value) => { const input = d.getElementById(id); input.value = value; input.dispatchEvent(new w.Event('change',{bubbles:true})); };
   filter('comprehensiveLoad','نیمه بار'); filter('comprehensiveRoad','rural');
   assert(d.getElementById('q-' + added.id));

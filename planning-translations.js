@@ -156,3 +156,10 @@ Object.assign(window.BAMCO_TRANSLATIONS.zh, {
  "پایان پیمایش، بزرگراه ارتش": "终点位于阿尔特什快速路",
  "کهورک": "卡胡拉克"
 });
+
+Object.assign(window.BAMCO_TRANSLATIONS.en,{
+ 'فرم ارزیابی':'Assessment form','فرم ارزیابی جامع':'Comprehensive assessment form','افزودن روز':'Add day','بازگشت به روزهای ارزیابی':'Back to assessment days','هنوز روزی برای ارزیابی ثبت نشده است.':'No assessment days have been added yet.','افزودن روز تأیید نشد. دوباره تلاش کنید.':'The new day could not be saved. Please try again.','ذخیره شده':'Saved','ثبت نشده':'Not recorded','پیش‌نویس':'Draft','مبدا':'Origin','ورود به بخش':'Open section'
+});
+Object.assign(window.BAMCO_TRANSLATIONS.zh,{
+ 'فرم ارزیابی':'评估表','فرم ارزیابی جامع':'综合评估表','افزودن روز':'添加一天','بازگشت به روزهای ارزیابی':'返回评估日期','هنوز روزی برای ارزیابی ثبت نشده است.':'尚未添加评估日期。','افزودن روز تأیید نشد. دوباره تلاش کنید.':'无法保存新的评估日期，请重试。','ذخیره شده':'已保存','ثبت نشده':'未记录','پیش‌نویس':'草稿','مبدا':'起点','ورود به بخش':'打开模块'
+});

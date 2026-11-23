@@ -37,7 +37,8 @@ function save(data=snapshot()){if(readOnly)return false;if(cloudSave){cloudSave(
 let draft = null, caseGeneration = 0;
 function scoreContext(){
  if(phases&&state.tab==='durability'&&dayScreen==='phaseScores')return {tab:'durability',phase:state.durPhase,day:null,key:'durability:phase-'+state.durPhase,section:'scores'};
- if(['comprehensive','supplementary'].includes(state.tab))return {tab:state.tab,key:state.tab+':general',section:'scores'};
+ if(state.tab==='comprehensive')return dayScreen==='scores'?{tab:state.tab,key:'comprehensive:general',section:'scores'}:dayContext();
+ if(state.tab==='supplementary')return {tab:state.tab,key:state.tab+':general',section:'scores'};
  return dayContext();
 }
 function syncDraft(){
@@ -318,7 +319,51 @@ const grouped=new Map();items.forEach(t=>grouped.set(t.cat,(grouped.get(t.cat)||
 byId('categories').innerHTML=['<button class="cat-item '+(state.category==='همه'?'active':'')+'" data-category="همه"><span>همه شاخص‌ها</span><span>'+number(items.length)+'</span></button>'].concat([...new Set([...categories,...grouped.keys()])].filter(c=>grouped.has(c)).map(c=>'<button class="cat-item '+(state.category===c?'active':'')+'" data-category="'+esc(c)+'"><span>'+esc(c)+'</span><span>'+number(grouped.get(c))+'</span></button>')).join('')
 }
 
+function comprehensiveDays(){
+ return Object.keys(state.missions||{}).map(key=>/^comprehensive:day-([1-9]\d*)$/.exec(key)).filter(Boolean).map(match=>Number(match[1])).sort((a,b)=>a-b);
+}
+function openComprehensive(section,day){
+ if(state.tab!=='comprehensive'||!['menu','forms','form','scores'].includes(section))return;
+ if(section==='form'){if(!comprehensiveDays().includes(day))return;state.comprehensiveDay=day;}
+ dayScreen=section;state.category='همه';state.query='';state.page=0;finishNavigation();
+}
+let addingComprehensiveDay=false;
+async function addComprehensiveDay(){
+ if(addingComprehensiveDay||readOnly||!cloudSave||state.tab!=='comprehensive'||dayScreen!=='forms')return;
+ const generation=caseGeneration,day=Math.max(0,...comprehensiveDays())+1,key='comprehensive:day-'+day;
+ const entry={createdAt:new Date().toISOString()};
+ addingComprehensiveDay=true;state.missions={...state.missions,[key]:entry};
+ const button=byId('addComprehensiveDay');if(button)button.disabled=true;
+ let ok=false;
+ try{ok=window.BAMCO_CASES?.saveNow?await window.BAMCO_CASES.saveNow(snapshot()):save()}
+ catch{}finally{
+  addingComprehensiveDay=false;
+  if(generation===caseGeneration){
+   if(!ok&&state.missions[key]===entry)delete state.missions[key];
+   if(state.tab==='comprehensive'&&dayScreen==='forms'){
+    if(ok)openComprehensive('form',day);
+    else{render();toast('افزودن روز تأیید نشد. دوباره تلاش کنید.');}
+   }
+  }
+ }
+}
+function renderComprehensiveNavigation(host){
+ host.classList.toggle('hidden',!['menu','forms'].includes(dayScreen));host.replaceChildren();
+ if(dayScreen==='menu'){
+  host.innerHTML='<div class="gate-grid comprehensive-sections">'+[['forms','فرم ارزیابی','comprehensive'],['scores','امتیازدهی','results']].map(([section,title,icon])=>'<button type="button" class="gate-card" data-comprehensive-section="'+section+'" data-gate-icon="'+icon+'"><span class="gate-illustration" aria-hidden="true"></span><strong>'+title+'</strong><span class="gate-cta">ورود به بخش</span></button>').join('')+'</div>';
+ }else if(dayScreen==='forms'){
+  const days=comprehensiveDays();
+  host.innerHTML=days.length?'<div class="assessment-days-grid comprehensive-days">'+days.map(day=>{
+   const saved=mission('comprehensive:day-'+day),meta={...saved,...saved.dailyFormDraft},theme=dayRouteAppearance({routeId:meta.roadType});
+   const icon=meta.roadType?theme.icon:'<svg viewBox="0 0 160 128" aria-hidden="true"><use href="./assets/assessment-modules.svg#comprehensive"></use></svg>';
+   const status=saved.dailyFormDraft?'پیش‌نویس':saved.dailyInfoSavedAt?'ذخیره شده':'ثبت نشده';
+   return '<button type="button" class="assessment-day-tile" data-route="'+esc(meta.roadType||'urban')+'" data-comprehensive-day="'+day+'"><span class="day-card-top"><strong>روز '+number(day)+'</strong></span><span class="day-route-icon">'+icon+'</span><span class="day-card-footer"><span class="day-route-label report-user-text">'+esc([meta.origin,meta.destination].filter(Boolean).join(' — '))+'</span><small>'+esc(meta.date||'')+'</small><span class="comprehensive-day-status">'+status+'</span></span></button>';
+  }).join('')+'</div>':'<div class="empty">هنوز روزی برای ارزیابی ثبت نشده است.</div>';
+ }
+}
+
 function dayContext(){
+ if(state.tab==='comprehensive')return dayScreen==='form'?{tab:'comprehensive',day:state.comprehensiveDay,key:'comprehensive:day-'+state.comprehensiveDay,section:'form'}:null;
  if(!['drive','durability'].includes(state.tab)||phaseView())return null;
  const day=currentDay();
  return {tab:state.tab,day,key:state.tab+':'+day,section:dayScreen};
@@ -336,6 +381,7 @@ function dayRouteAppearance(p){
  return {kind,icon:'<svg viewBox="0 0 96 96" aria-hidden="true">'+(icons[kind]||icons.rural)+'</svg>',label:p.name||p.route||text};
 }
 function renderDayNavigation(){
+ if(state.tab==='comprehensive'){renderComprehensiveNavigation(byId('dayNavigation'));return}
  if(phaseView()){const host=byId('dayNavigation');host.classList.toggle('hidden',dayScreen==='phaseScores');if(dayScreen!=='phaseScores')window.BAMCO_PHASE_UI?.render(host,dayScreen,state.durPhase);return}
  const c=dayContext(),host=byId('dayNavigation');
  host.classList.toggle('hidden',!c||!['days','menu'].includes(dayScreen));
@@ -419,7 +465,7 @@ const modes={
  drive:{label:'قابلیت رانندگی',activity:'تقویم روزانه',path:'calendar'},
  durability:{label:'آزمون دوام',activity:'تقویم روزانه',path:'calendar'},
  supplementary:{label:'بررسی استاتیک',activity:'امتیازدهی',path:'scores'},
- comprehensive:{label:'ارزیابی جامع',activity:'امتیازدهی',path:'scores'}
+ comprehensive:{label:'ارزیابی جامع',activity:'شروع ارزیابی',path:'start'}
 };
 const pages=new Map();
 let dashboardModule=null;
@@ -477,12 +523,13 @@ function renderGate(){
  }
  byId('innerHero').classList.toggle('hidden',state.tab==='home');
  const back=byId('backModulesBtn');
- back.classList.toggle('hidden',state.tab==='home'||state.tab==='modules'||Boolean(dayContext()&&dayScreen!=='days')||Boolean(phases&&state.tab==='durability'&&dayScreen!=='phases'));
+ back.classList.toggle('hidden',(state.tab==='comprehensive'&&dayScreen!=='menu')||state.tab==='home'||state.tab==='modules'||Boolean(dayContext()&&dayScreen!=='days')||Boolean(phases&&state.tab==='durability'&&dayScreen!=='phases'));
  back.dataset.open=caseType&&page?.scope?'modules':caseType&&[caseMode()+'Menu','assessmentTypes'].includes(page?.parent)?'modules':page?.parent||'modules';
  back.textContent='بازگشت';
  byId('assessmentBack').classList.toggle('hidden',state.tab!=='modules');
 }
 function routePath(){
+ if(state.tab==='comprehensive')return 'types/comprehensive/'+(dayScreen==='menu'?'start':dayScreen==='form'?'forms/'+state.comprehensiveDay:dayScreen);
  if(phases&&state.tab==='durability'){if(dayScreen==='phases')return 'types/durability/phases';if(['phase','phaseScores','days'].includes(dayScreen))return 'types/durability/phases/'+state.durPhase+(dayScreen==='phaseScores'?'/scores':dayScreen==='days'?'/days':'')}
  const page=currentPage();
  if(!page)return '';
@@ -502,7 +549,12 @@ function finishNavigation(){
 }
 function restoreRoute(){
  const path=location.hash.slice(1);
- let page=pathPages.get(path),section='days',day=1,phase=1;
+ let page=pathPages.get(path),section=page?.tab==='comprehensive'?'menu':'days',day=1,phase=1;
+ const comprehensive=/^types\/comprehensive\/(start|scores|forms)(?:\/([1-9]\d*))?$/.exec(path);
+ if(comprehensive){
+  page=pages.get('comprehensive');section=comprehensive[1]==='start'?'menu':comprehensive[1];
+  if(comprehensive[2]){day=Number(comprehensive[2]);section=section==='forms'&&comprehensiveDays().includes(day)?'form':'forms';}
+ }
  if(phases){const match=/^types\/durability\/phases(?:\/([1-4])(?:\/(scores|days))?)?$/.exec(path);if(match){page=pages.get('durability');phase=Number(match[1]||1);section=match[1]?(match[2]==='scores'?'phaseScores':match[2]==='days'?'days':'phase'):'phases'}else if(page?.tab==='durability')section='phases';}
  if(!page){
    const daily=/^(types\/(?:drive|durability)\/calendar)\/([1-9]\d*)(?:\/(form|route|scores))?$/.exec(path);
@@ -516,6 +568,7 @@ function restoreRoute(){
  if(!state.setupComplete&&!page.cards&&page.tab!=='setup'){page=pages.get(hasPermission('setup')?'setup':'modules');section='days'}
  activatePage(page);
  dayScreen=section;
+ if(page.tab==='comprehensive')state.comprehensiveDay=day;
  if(page.tab==='drive')state.driveDay=day;
  if(page.tab==='durability'){state.durDay=day;state.durPhase=section==='menu'||['form','route','scores'].includes(section)?dayCategoryPlan().find(p=>p.day===day)?.phase||1:phase;}
  const canonical=routePath();
@@ -526,7 +579,7 @@ window.addEventListener('popstate',()=>{if(cloudSave&&caseDocument()&&location.h
 function activatePage(page){
  dashboardModule=page.scope;
  state.tab=page.scope&&page.scope!=='comprehensive'?'results':page.tab;
- dayScreen=phases&&page.tab==='durability'?'phases':'days';state.query='';state.category='همه';state.page=0;
+ dayScreen=page.tab==='comprehensive'?'menu':phases&&page.tab==='durability'?'phases':'days';state.query='';state.category='همه';state.page=0;
 }
 function routeClassification(s){
  const v=String(s||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -570,7 +623,7 @@ const titles={home:['',''],modules:['پرونده خودرو',''],setup:['تنظ
 const daily=dayContext();
 const page=currentPage();
 const sectionNames={menu:'',form:'فرم روزانه',route:'مسیر پیمایش',scores:'امتیازدهی'};
-byId('pageTitle').textContent=(state.tab==='setup'&&caseType)?'ویرایش مشخصات':(page?.cards||page?.scope)?page.title:(titles[state.tab]?.[0]||page?.title||'پرونده خودرو');
+byId('pageTitle').textContent=state.tab==='comprehensive'&&['forms','form'].includes(dayScreen)?'فرم ارزیابی جامع':(state.tab==='setup'&&caseType)?'ویرایش مشخصات':(page?.cards||page?.scope)?page.title:(titles[state.tab]?.[0]||page?.title||'پرونده خودرو');
 let pageContext=byId('pageContext');
 if(!pageContext){pageContext=document.createElement('div');pageContext.id='pageContext';pageContext.className='page-context';byId('pageTitle').insertAdjacentElement('afterend',pageContext)}
 pageContext.replaceChildren();
@@ -588,16 +641,17 @@ byId('resultsPanel').classList.toggle('hidden',state.tab!=='results');
 document.querySelectorAll('.bamco-day-final,.bamco-day-extra').forEach(el=>el.remove());
 renderDayNavigation();
 const workspace=byId('workPanel').querySelector('.workspace');
-workspace.classList.toggle('hidden',Boolean(daily)&&['days','menu'].includes(dayScreen)||phaseView()&&dayScreen!=='phaseScores');
+workspace.classList.toggle('hidden',(state.tab==='comprehensive'&&['menu','forms'].includes(dayScreen))||Boolean(daily)&&['days','menu'].includes(dayScreen)||phaseView()&&dayScreen!=='phaseScores');
 workspace.classList.toggle('assessment-single-section',Boolean(daily)&&dayScreen!=='scores');
-byId('schedulePanel').classList.toggle('hidden',state.tab==='comprehensive'||phaseView()||Boolean(daily)&&dayScreen==='scores');
+byId('schedulePanel').classList.toggle('hidden',state.tab==='comprehensive'&&dayScreen!=='form'||phaseView()||Boolean(daily)&&dayScreen==='scores');
 byId('questionsPanel').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 workspace.querySelector('.sidebar').classList.toggle('hidden',Boolean(daily)&&dayScreen!=='scores');
 if(state.tab==='setup')renderSetup();
 else if(state.tab==='results')renderResults();
 else if(Object.hasOwn(modes,state.tab)){
  if(phaseView()){if(dayScreen==='phaseScores')renderQuestions()}
- else if(!daily){if(state.tab!=='comprehensive')renderSchedule();renderQuestions()}
+ else if(state.tab==='comprehensive'&&dayScreen!=='form'){byId('schedulePanel').replaceChildren();byId('questionsPanel').replaceChildren();if(dayScreen==='scores')renderQuestions()}
+ else if(!daily){renderSchedule();renderQuestions()}
  else {
   byId('schedulePanel').replaceChildren();byId('questionsPanel').replaceChildren();
   if(dayScreen==='route')renderSchedule();
@@ -614,7 +668,11 @@ if(phases&&state.tab==='durability'&&['phase','phaseScores','days'].includes(day
  const back=document.createElement('button');back.type='button';back.className='secondary';back.textContent=dayScreen==='phase'?'بازگشت به فازها':'بازگشت به برنامه فاز';back.onclick=()=>{dayScreen=dayScreen==='phase'?'phases':'phase';finishNavigation()};actions.append(back);
 }
 if(state.tab==='results'&&resultActions){actions.append(...resultActions.children);resultActions.remove()}
-if(daily&&dayScreen!=='days'){
+if(state.tab==='comprehensive'&&dayScreen!=='menu'){
+ const back=document.createElement('button');back.type='button';back.className='secondary';back.textContent=dayScreen==='form'?'بازگشت به روزهای ارزیابی':'بازگشت';back.onclick=()=>openComprehensive(dayScreen==='form'?'forms':'menu');actions.append(back);
+ if(dayScreen==='forms'&&!readOnly){const add=document.createElement('button');add.type='button';add.className='primary';add.id='addComprehensiveDay';add.textContent='افزودن روز';add.disabled=addingComprehensiveDay;add.onclick=addComprehensiveDay;actions.append(add);}
+}
+if(daily&&daily.tab!=='comprehensive'&&dayScreen!=='days'){
  const back=document.createElement('button');back.type='button';back.className='secondary';
  back.textContent=dayScreen==='menu'?'بازگشت به تقویم روزانه':'بازگشت به بخش‌های روز';
  back.addEventListener('click',()=>navigateDay(dayScreen==='menu'?'days':'menu'));
@@ -782,6 +840,8 @@ document.addEventListener('click',e=>{const el=e.target.closest('button');if(!el
  changeTab(el.dataset.moduleDashboard+'Dashboard');return;
 }
 if(el.dataset.open){changeTab(el.dataset.open);return}
+if(el.dataset.comprehensiveSection){openComprehensive(el.dataset.comprehensiveSection);return}
+if(el.dataset.comprehensiveDay){openComprehensive('form',Number(el.dataset.comprehensiveDay));return}
 if(el.dataset.daysection){navigateDay(el.dataset.daysection);return}
 if(el.dataset.day){
  const plan=state.tab==='drive'?driveProgram():dayCategoryPlan(),day=num(el.dataset.day);
@@ -817,7 +877,7 @@ window.BAMCO_ASSESSMENT={
     Object.assign(state,{
       config:normalizeConfig(data.config||{},Boolean(data.setupComplete)),
       records:data.records||{},mileage:data.mileage||{drive:{},durability:{}},durabilitySchedule:data.durabilitySchedule,checkpointAssignments:data.checkpointAssignments||{},
-      setupComplete:Boolean(data.setupComplete),missions:data.missions||{},driveDay:1,durDay:1,durPhase:1,
+      setupComplete:Boolean(data.setupComplete),missions:data.missions||{},driveDay:1,durDay:1,durPhase:1,comprehensiveDay:1,
       category:'همه',query:'',loadFilter:'',roadFilter:'',page:0,tab:'modules'
     });
     if(phases&&hasDurabilitySetup()){state.durabilitySchedule=phases.manualPlan(snapshot(),readOnly,targetRows());state.config.durabilityPhaseVersion=2;}
@@ -889,7 +949,7 @@ window.BAMCO_ASSESSMENT={
   async saveDailyForm(context, mission, distance){
     if(!cloudSave || readOnly || dayContext()?.key !== context.key) return false;
     const before=snapshot(),generation=caseGeneration;
-    if(distance!==null){
+    if(distance!==null&&context.tab!=='comprehensive'){
       state.config={...state.config};
       state.mileage={...state.mileage,[context.tab]:{...state.mileage[context.tab]}};
       state.checkpointAssignments={...state.checkpointAssignments};

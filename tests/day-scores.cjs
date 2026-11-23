@@ -92,6 +92,7 @@ assert(pickup && fs.existsSync(pickup.getAttribute('src')));
 for(const mode of ['supplementary','comprehensive']){
   api.open({setupComplete:true,missions:{'supplementary:general':{customTests:[{id:'CUSTOM-road',cat:'شاخص',sub:'زیرشاخص',name:'آزمون'}]}}},()=>{},false);
   click('[data-open="'+mode+'"]');
+  if(mode==='comprehensive')click('[data-comprehensive-section="scores"]');
   const total=api.currentTests().length;checkProgress(0,total);
   click('#questionsPanel [data-score="6"]');checkProgress(1,total);
   api.openDashboard(mode);assert(road.hidden);

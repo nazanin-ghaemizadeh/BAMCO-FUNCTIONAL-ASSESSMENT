@@ -16,7 +16,7 @@
 <script id="release-runtime">
 (() => {
   'use strict';
-  const config = {"version":"a8720123ad674924","assets":{"app.js":"1b94beb4c64aeb8f","assessment-rules.js":"0e75c0036b673097","assessment-workspace.css":"01c73f79455a28c3","assessment-workspace.js":"58f9f039228283c9","catalog-banks.css":"6e9d795562556c85","catalog-banks.js":"d2de61ff03192251","dashboard-translations.js":"cf5fc086d9c0b7ff","data.js":"e940a86f2f50cdc9","day-pdf.css":"ae1d1863abf51b5e","day-pdf.js":"83266b60b8540f81","day-scores.js":"dc6a97e5a08fef6c","day-workflow.css":"c399a5386c768f7b","day-workflow.js":"65739ee03b39264b","dropdowns.css":"c56d825cf4a47478","dropdowns.js":"f118e6ddc8c1e929","durability-phases-ui.js":"e7c3ae4af83b21f4","durability-phases.css":"41acc6733e32ee71","durability-phases.js":"589b73536803e8f1","durability-planner.js":"b87fdb0d134c37d0","i18n.js":"e2bc622ef95443a7","legacy-planner.js":"7b60eea51d435f28","manager-dashboard.js":"2e34880e4570a793","planning-translations.js":"a028d653211787b4","planning.css":"ecf4f26500921f98","polish.js":"55c23d7e22b25216","portal.css":"9c1d737b341de748","portal.js":"750eb9c9bbb5b242","pre-drive-checklist.js":"b169d0a9a139e4bd","question-bank.css":"1dae2780ad8286cc","question-bank.js":"fd643d756911d097","refined.css":"ceb94b54b40bcfaa","release.css":"dd6ef96f04cf2a04","release.js":"3b29467a50cb3c87","report-charts.js":"492f7701394fd0af","report-export.js":"6e7c8d519c9d1204","report-model.js":"998eaba1a2c4afb2","report-ui.css":"65e22660c3574c9b","report-ui.js":"cba199e806a6ec1b","review-contract.js":"e466b22e00592838","route-bank-tools.js":"41c2404beed13f34","route-map.js":"7ab82b81e7125397","snapshot-merge.js":"dfe04520de17288b","style.css":"37de57a03c1457d9","translations-en.js":"36fcc1fb62c5dd75","translations-zh.js":"fad00c66f43c272d","weighting-catalog.js":"5d30a2fb1ae39555","weighting-content.js":"6ccf9e267a5e822f","weighting.css":"d9076a75519dd8f2","weighting.js":"afd63e96b00dc41b","workbook-metadata.js":"8398e4408169a6d6","assets/drive-routes.json":"7afc3e33edc613f5","assets/iran-boundary.json":"f106ee7353e37907","assets/route-cities.json":"18eb05d8ec3d4649","assets/weighting-sample.json":"116ea5f6d9e2a50f","vendor/leaflet-1.9.4.css":"652db25ba73a950c","vendor/leaflet-1.9.4.js":"b117185e02a3d27d","manager-reference/view/manager.html":"d3856670bc764ed5"}};
+  const config = {"version":"9690fdffa1dad484","assets":{"app.js":"5c2977c2f053fcb6","assessment-rules.js":"0e75c0036b673097","assessment-workspace.css":"01c73f79455a28c3","assessment-workspace.js":"58f9f039228283c9","catalog-banks.css":"6e9d795562556c85","catalog-banks.js":"d2de61ff03192251","dashboard-translations.js":"cf5fc086d9c0b7ff","data.js":"e940a86f2f50cdc9","day-pdf.css":"ae1d1863abf51b5e","day-pdf.js":"83266b60b8540f81","day-scores.js":"b8022b9409e972bf","day-workflow.css":"6970d80c302d93f3","day-workflow.js":"f0476885b8fb8395","dropdowns.css":"c56d825cf4a47478","dropdowns.js":"f118e6ddc8c1e929","durability-phases-ui.js":"e7c3ae4af83b21f4","durability-phases.css":"41acc6733e32ee71","durability-phases.js":"589b73536803e8f1","durability-planner.js":"b87fdb0d134c37d0","i18n.js":"e2bc622ef95443a7","legacy-planner.js":"7b60eea51d435f28","manager-dashboard.js":"2e34880e4570a793","planning-translations.js":"edd486696fe2d3b8","planning.css":"ecf4f26500921f98","polish.js":"55c23d7e22b25216","portal.css":"9c1d737b341de748","portal.js":"750eb9c9bbb5b242","pre-drive-checklist.js":"b169d0a9a139e4bd","question-bank.css":"1dae2780ad8286cc","question-bank.js":"fd643d756911d097","refined.css":"ceb94b54b40bcfaa","release.css":"dd6ef96f04cf2a04","release.js":"3b29467a50cb3c87","report-charts.js":"492f7701394fd0af","report-export.js":"6e7c8d519c9d1204","report-model.js":"998eaba1a2c4afb2","report-ui.css":"65e22660c3574c9b","report-ui.js":"cba199e806a6ec1b","review-contract.js":"e466b22e00592838","route-bank-tools.js":"41c2404beed13f34","route-map.js":"7ab82b81e7125397","snapshot-merge.js":"dfe04520de17288b","style.css":"37de57a03c1457d9","translations-en.js":"36fcc1fb62c5dd75","translations-zh.js":"fad00c66f43c272d","weighting-catalog.js":"5d30a2fb1ae39555","weighting-content.js":"6ccf9e267a5e822f","weighting.css":"d9076a75519dd8f2","weighting.js":"afd63e96b00dc41b","workbook-metadata.js":"8398e4408169a6d6","assets/drive-routes.json":"7afc3e33edc613f5","assets/iran-boundary.json":"f106ee7353e37907","assets/route-cities.json":"18eb05d8ec3d4649","assets/weighting-sample.json":"116ea5f6d9e2a50f","vendor/leaflet-1.9.4.css":"652db25ba73a950c","vendor/leaflet-1.9.4.js":"b117185e02a3d27d","manager-reference/view/manager.html":"d3856670bc764ed5"}};
   const root = new URL('./', location.href);
   function asset(value) {
     const url = new URL(value, root);
@@ -97,7 +97,7 @@
 <style>[hidden]{display:none!important}</style>
 <link rel="stylesheet" data-shell-style href="./style.css?v=37de57a03c1457d9">
 <link rel="stylesheet" data-shell-style href="./refined.css?v=ceb94b54b40bcfaa"><link data-style="case" data-href="./durability-phases.css?v=41acc6733e32ee71">
-<link data-style="case" data-href="./day-workflow.css?v=c399a5386c768f7b"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css?v=652db25ba73a950c"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=01c73f79455a28c3"><link data-style="case" data-href="./planning.css?v=ecf4f26500921f98"><link data-style="case" data-href="./report-ui.css?v=65e22660c3574c9b"><link data-style="case" data-href="./day-pdf.css?v=ae1d1863abf51b5e"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
+<link data-style="case" data-href="./day-workflow.css?v=6970d80c302d93f3"><link data-style="map" data-href="./vendor/leaflet-1.9.4.css?v=652db25ba73a950c"><link rel="stylesheet" data-shell-style href="./assessment-workspace.css?v=01c73f79455a28c3"><link data-style="case" data-href="./planning.css?v=ecf4f26500921f98"><link data-style="case" data-href="./report-ui.css?v=65e22660c3574c9b"><link data-style="case" data-href="./day-pdf.css?v=ae1d1863abf51b5e"><link rel="preconnect" href="https://cwpfzvcwuiawjtvsnpkq.supabase.co">
 <style id="portal-styles">
 #portalSessionState {margin:clamp(32px,8vh,88px) auto;text-align:center;color:#486c5d}
 #portalSessionState p {margin:0 0 12px;text-align:center}
@@ -381,7 +381,7 @@ select.vehicle-native-hidden {position:absolute!important;opacity:0!important;po
 <input id="importBackup" type="file" accept=".json" class="hidden">
 <div id="toast" class="toast hidden" role="status"></div>
 <template id="caseAssets">
-<script src="./planning-translations.js?v=a028d653211787b4"></script>
+<script src="./planning-translations.js?v=edd486696fe2d3b8"></script>
 <script src="./dashboard-translations.js?v=cf5fc086d9c0b7ff"></script>
 <script src="./pre-drive-checklist.js?v=b169d0a9a139e4bd"></script>
 <script src="./i18n.js?v=e2bc622ef95443a7"></script>
@@ -397,14 +397,14 @@ select.vehicle-native-hidden {position:absolute!important;opacity:0!important;po
 <script src="./assessment-rules.js?v=0e75c0036b673097"></script>
 <script src="./question-bank.js?v=fd643d756911d097"></script>
 <script src="./report-model.js?v=998eaba1a2c4afb2"></script>
-<script src="./app.js?v=1b94beb4c64aeb8f"></script>
+<script src="./app.js?v=5c2977c2f053fcb6"></script>
 <script src="./durability-phases-ui.js?v=e7c3ae4af83b21f4"></script>
 <script src="./polish.js?v=55c23d7e22b25216"></script>
-<script src="./day-workflow.js?v=65739ee03b39264b"></script>
+<script src="./day-workflow.js?v=f0476885b8fb8395"></script>
 <script src="./snapshot-merge.js?v=dfe04520de17288b"></script>
 <script src="./report-ui.js?v=cba199e806a6ec1b"></script>
 <script src="./day-pdf.js?v=83266b60b8540f81"></script>
-<script src="./day-scores.js?v=dc6a97e5a08fef6c"></script>
+<script src="./day-scores.js?v=b8022b9409e972bf"></script>
 <script src="./manager-dashboard.js?v=2e34880e4570a793"></script>
 </template>
 <template id="caseDictionaries">
